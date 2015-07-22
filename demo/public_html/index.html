@@ -1,0 +1,77 @@
+
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="HTMLvideo-min.js"></script>
+  </head>
+  <body>
+    <div id="videoPlayer" class="abs"></div>
+    <div id="videoPlayer2" class="abs"></div>
+    <div id="groupwrapper1" class="rel">
+      <div class="fieldwrapper">
+        <div id="load" class="btn box">load video</div>
+        <div id="destroy" class="btn box">unload</div>
+        <div id="obliterate" class="btn box">destroy</div>
+        <div id="initialize" class="btn box">(re)initialize</div>
+      </div>
+      <div id="resize" class="fieldwrapper">
+        <input id="width" type="textfield"/><span>x</span>
+        <input id="height" type="textfield"/>
+        <div id="reflow" class="btn box">resize</div>
+      </div>
+      <div class="fieldwrapper">
+        <div id="defaults" class="btn box">defaults</div>
+      </div>
+      <div class="cboxwrapper">
+        <input id="debug" type="checkbox" class="cb"/><span>video.debug</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="ismobile" type="checkbox" class="cb"/><span>video.ismobile</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="autoplay" type="checkbox" class="cb"/><span>video.autoplay</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="startmuted" type="checkbox" class="cb"/><span>video.startmuted</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="replaywithsound" type="checkbox" class="cb"/><span>video.replaywithsound</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="loop" type="checkbox" class="cb"/><span>video.loop</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="allowfullscreen" type="checkbox" class="cb"/><span>video.allowfullscreen</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="playonseek" type="checkbox" class="cb"/><span>video.playonseek</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="uniquereplay" type="checkbox" class="cb"/><span>video.uniquereplay</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="chromeless" type="checkbox" class="cb"/><span>video.chromeless</span>
+      </div>
+      <div class="cboxwrapper">
+        <input id="elementtrigger" type="checkbox" class="cb"/><span>video.elementtrigger</span>
+      </div>
+    </div>
+    <div id="groupwrapper2" class="rel">
+      <div class="fieldwrapper">
+        <div class="header">Enter video source URL(s) below</div>
+        <textarea id="sources"></textarea>
+        <div class="info">For multiple sources, separate using a comma</div>
+        <div class="info">Click <span id='ppMulti' class='btn linkage'>here</span> (multiple) or <span id='ppSingle' class='btn linkage'>here</span> (single) to pre-populate.</div>
+      </div>
+      <div class="fieldwrapper">
+        <div class="header">Enter (optional) video poster URL below</div>
+        <input id="poster" type="textfield"/>
+        <div class="info"> Click <span id='ppPoster' class='btn linkage'>here</span> to pre-populate.</div>
+      </div>
+    </div>
+    <div id="debugField" class="abs"></div>
+    <script type="text/javascript" src="main.js"></script>
+  </body>
+</html>

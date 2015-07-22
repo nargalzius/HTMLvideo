@@ -1,0 +1,88 @@
+html(lang="en")
+	head
+		meta(name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1")
+		link(rel="stylesheet", type="text/css", href="style.css")
+		script(type="text/javascript",src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js")
+		script(type="text/javascript",src="HTMLvideo-min.js")
+
+	body
+
+		#videoPlayer.abs
+
+		#videoPlayer2.abs
+
+		#groupwrapper1.rel
+			.fieldwrapper
+				#load.btn.box load video
+				#destroy.btn.box unload
+				#obliterate.btn.box destroy
+				#initialize.btn.box (re)initialize
+
+			#resize.fieldwrapper
+				input#width(type='textfield')
+				span x
+				input#height(type='textfield')
+				#reflow.btn.box resize
+
+			.fieldwrapper
+				#defaults.btn.box defaults
+
+			.cboxwrapper
+				input#debug(type="checkbox").cb
+				span video.debug
+
+			.cboxwrapper
+				input#ismobile(type="checkbox").cb
+				span video.ismobile
+
+			.cboxwrapper
+				input#autoplay(type="checkbox").cb
+				span video.autoplay
+
+			.cboxwrapper
+				input#startmuted(type="checkbox").cb
+				span video.startmuted
+
+			.cboxwrapper
+				input#replaywithsound(type="checkbox").cb
+				span video.replaywithsound
+
+			.cboxwrapper
+				input#loop(type="checkbox").cb
+				span video.loop
+
+			.cboxwrapper
+				input#allowfullscreen(type="checkbox").cb
+				span video.allowfullscreen
+
+			.cboxwrapper
+				input#playonseek(type="checkbox").cb
+				span video.playonseek
+
+			.cboxwrapper
+				input#uniquereplay(type="checkbox").cb
+				span video.uniquereplay
+
+			.cboxwrapper
+				input#chromeless(type="checkbox").cb
+				span video.chromeless
+
+			.cboxwrapper
+				input#elementtrigger(type="checkbox").cb
+				span video.elementtrigger
+
+		#groupwrapper2.rel
+			.fieldwrapper
+				.header Enter video source URL(s) below
+				textarea#sources
+				.info For multiple sources, separate using a comma
+				.info Click <span id='ppMulti' class='btn linkage'>here</span> (multiple) or <span id='ppSingle' class='btn linkage'>here</span> (single) to pre-populate.
+
+			.fieldwrapper
+				.header Enter (optional) video poster URL below
+				input#poster(type='textfield')
+				.info  Click <span id='ppPoster' class='btn linkage'>here</span> to pre-populate.
+
+		#debugField.abs
+
+		script(type="text/javascript",src="main.js")
