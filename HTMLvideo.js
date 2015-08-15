@@ -1,7 +1,7 @@
 /*!
  *	HTML VIDEO HELPER
  *
- *	2.0
+ *	2.1
  *
  *	author: Carlo J. Santos
  *	email: carlosantos@gmail.com
@@ -9,21 +9,6 @@
  *
  *	Copyright (c) 2015, All Rights Reserved, www.nargalzius.com
  */
-
-var cssId = 'fontAwesome';
-
-if (!document.getElementById(cssId))
-{
-	var head  = document.getElementsByTagName('head')[0];
-	var link  = document.createElement('link');
-		link.id   = cssId;
-		link.rel  = 'stylesheet';
-		link.type = 'text/css';
-		link.href = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css';
-		link.media = 'all';
-
-		head.appendChild(link);
-}
 
 var VideoPlayer = function(){};
 
@@ -58,6 +43,19 @@ VideoPlayer.prototype = {
 		'ogv': 'video/ogg',
 		'webm': 'video/webm'
 	},
+
+	svg: {
+		bigplay: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 24 24"><path fill="#444444" d="M12 20.016q3.281 0 5.648-2.367t2.367-5.648-2.367-5.648-5.648-2.367-5.648 2.367-2.367 5.648 2.367 5.648 5.648 2.367zM12 2.016q4.125 0 7.055 2.93t2.93 7.055-2.93 7.055-7.055 2.93-7.055-2.93-2.93-7.055 2.93-7.055 7.055-2.93zM9.984 16.5v-9l6 4.5z"></path></svg>',
+		bigsound: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 24 24"><path fill="#444444" d="M14.016 3.234q3.047 0.656 5.016 3.117t1.969 5.648-1.969 5.648-5.016 3.117v-2.063q2.203-0.656 3.586-2.484t1.383-4.219-1.383-4.219-3.586-2.484v-2.063zM16.5 12q0 2.813-2.484 4.031v-8.063q2.484 1.219 2.484 4.031zM3 9h3.984l5.016-5.016v16.031l-5.016-5.016h-3.984v-6z"></path></svg>',
+		replay: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 24 24"><path fill="#444444" d="M12 5.016q3.328 0 5.672 2.344t2.344 5.625q0 3.328-2.367 5.672t-5.648 2.344-5.648-2.344-2.367-5.672h2.016q0 2.484 1.758 4.242t4.242 1.758 4.242-1.758 1.758-4.242-1.758-4.242-4.242-1.758v4.031l-5.016-5.016 5.016-5.016v4.031z"></path></svg>',
+		mute: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24"><path fill="#444444" d="M14.016 3.234q3.047 0.656 5.016 3.117t1.969 5.648-1.969 5.648-5.016 3.117v-2.063q2.203-0.656 3.586-2.484t1.383-4.219-1.383-4.219-3.586-2.484v-2.063zM16.5 12q0 2.813-2.484 4.031v-8.063q2.484 1.219 2.484 4.031zM3 9h3.984l5.016-5.016v16.031l-5.016-5.016h-3.984v-6z"></path></svg>',
+		unmute: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24"><path fill="#444444" d="M12 3.984v4.219l-2.109-2.109zM4.266 3l16.734 16.734-1.266 1.266-2.063-2.063q-1.734 1.359-3.656 1.828v-2.063q1.172-0.328 2.25-1.172l-4.266-4.266v6.75l-5.016-5.016h-3.984v-6h4.734l-4.734-4.734zM18.984 12q0-2.391-1.383-4.219t-3.586-2.484v-2.063q3.047 0.656 5.016 3.117t1.969 5.648q0 2.25-1.031 4.172l-1.5-1.547q0.516-1.266 0.516-2.625zM16.5 12q0 0.422-0.047 0.609l-2.438-2.438v-2.203q2.484 1.219 2.484 4.031z"></path></svg>',
+		play: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24"><path fill="#444444" d="M8.016 5.016l10.969 6.984-10.969 6.984v-13.969z"></path></svg>',
+		pause: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24"><path fill="#444444" d="M14.016 5.016h3.984v13.969h-3.984v-13.969zM6 18.984v-13.969h3.984v13.969h-3.984z"></path></svg>',
+		spin: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="45" height="45" viewBox="0 0 32 32"><path fill="#444444" d="M24.5 28c0.275 0 0.5 0.224 0.5 0.5s0 1.5 0 1.5h-19c0 0 0-1.224 0-1.5s0.224-0.5 0.5-0.5h1.67c0.083-6.658 4.432-8.804 4.432-11.495 0-2.705-4.429-2.885-4.471-11.505h-1.631c-0.276 0-0.5-0.224-0.5-0.5s0-1.5 0-1.5h19c0 0 0 1.224 0 1.5s-0.225 0.5-0.5 0.5h-1.53c-0.042 8.62-4.471 8.8-4.471 11.505 0 2.691 4.35 4.837 4.433 11.495h1.568zM17.111 16.505c0-2.716 4.43-2.885 4.471-11.505h-12.063c0.041 8.62 4.471 8.789 4.471 11.505 0 2.611-4.351 4.812-4.433 11.495h0.758c0.178-0.593 0.769-1.306 1.79-1.834l1.327-0.677c0.834-0.431 1.334-0.722 1.5-0.872s0.354-0.486 0.564-1.008c0.221 0.521 0.41 0.857 0.57 1.008s0.654 0.441 1.484 0.872l1.32 0.677c1.015 0.528 1.604 1.241 1.779 1.834h0.894c-0.082-6.683-4.432-8.884-4.432-11.495zM16.070 15.037c-0.12 0.236-0.221 0.685-0.301 1.347-0.020 0.2-0.064 0.501-0.135 0.902-0.070-0.401-0.115-0.702-0.135-0.902-0.081-0.662-0.182-1.11-0.303-1.347-0.121-0.235-0.462-0.658-1.025-1.271l-1.251-1.368c-0.855-0.922-1.403-1.584-1.644-1.984 1.484 0.945 2.933 1.418 4.347 1.418s2.868-0.473 4.362-1.418c-0.25 0.4-0.8 1.062-1.649 1.984l-1.246 1.368c-0.56 0.613-0.901 1.036-1.020 1.271z"></path></svg>',
+		fs: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="16" viewBox="0 0 32 32"><path fill="#444444" d="M27.414 24.586l-4.586-4.586-2.828 2.828 4.586 4.586-4.586 4.586h12v-12zM12 0h-12v12l4.586-4.586 4.543 4.539 2.828-2.828-4.543-4.539zM12 22.828l-2.828-2.828-4.586 4.586-4.586-4.586v12h12l-4.586-4.586zM32 0h-12l4.586 4.586-4.543 4.539 2.828 2.828 4.543-4.539 4.586 4.586z"></path></svg>'
+
+	},
 	
 	colors_scrubber_bg: '#000',
 	colors_scrubber_progress: '#666',
@@ -88,58 +86,97 @@ VideoPlayer.prototype = {
 	dom_fs: null,
 	dom_template_textshadow: '0px 0px 14px rgba(0, 0, 0, 1)',
 
+	barsize: 27,
+
 	dom_template_bigplay: function() {
 		this.dom_bigplay = document.createElement('div');
-		this.dom_bigplay.className = 'fa fa-play-circle-o fa-4x';
-		this.dom_bigplay.style.color = this.colors_bigplay;
+		
+		//this.dom_bigplay.className = 'fa fa-play-circle-o fa-4x';
+		//this.dom_bigplay.style.color = this.colors_bigplay;
+
+		this.dom_bigplay.innerHTML = this.svg.bigplay;
+		this.dom_bigplay.getElementsByTagName('path')[0].style.fill = this.colors_bigplay;
 	},
 	dom_template_bigsound: function() {
 		this.dom_bigsound = document.createElement('div');
-		this.dom_bigsound.className = 'fa fa-volume-up fa-3x';
-		this.dom_bigsound.style.color = 'this.colors_bigsound';
-		this.dom_bigsound.style.color = this.colors_bigsound;
+		
+		// this.dom_bigsound.className = 'fa fa-volume-up fa-3x';
+		// this.dom_bigsound.style.color = this.colors_bigsound;
+
+		this.dom_bigsound.innerHTML = this.svg.bigsound;
+		this.dom_bigsound.getElementsByTagName('path')[0].style.fill = this.colors_bigsound;
 	},
 	dom_template_replay: function() {
 		this.dom_replay = document.createElement('div');
-		this.dom_replay.style.color = this.colors_replay;
-		this.dom_replay.className = 'fa fa-repeat fa-3x';
+		
+		// this.dom_replay.style.color = this.colors_replay;
+		// this.dom_replay.className = 'fa fa-repeat fa-3x';
+
+		this.dom_replay.innerHTML = this.svg.replay;
+		this.dom_replay.getElementsByTagName('path')[0].style.fill = this.colors_replay;
 	},
 	dom_template_spinner: function() {
 		this.dom_spinner = document.createElement('div');
-		this.dom_spinner.className = 'fa fa-spinner fa-pulse fa-3x';
-		this.dom_spinner.style.color = this.colors_spinner;
+		
+		// this.dom_spinner.className = 'fa fa-spinner fa-pulse fa-3x';
+		// this.dom_spinner.style.color = this.colors_spinner;
+		
+		this.dom_spinner.innerHTML = this.svg.spin;
+		this.dom_spinner.getElementsByTagName('path')[0].style.fill = this.colors_spinner;
+
 	},
 	dom_template_play: function() {
 		this.dom_play = document.createElement('span');
-		this.dom_play.className = 'fa fa-play';
-		this.dom_play.style.color = this.colors_play_pause;
-		this.dom_play.style.fontSize = 15 + 'px';
+		
+		// this.dom_play.className = 'fa fa-play';
+		// this.dom_play.style.color = this.colors_play_pause;
+		// this.dom_play.style.fontSize = 15 + 'px';
+
+		this.dom_play.innerHTML = this.svg.play;
+		this.dom_play.getElementsByTagName('path')[0].style.fill = this.colors_play_pause;
+
 	},
 	dom_template_pause: function() {
 		this.dom_pause = document.createElement('span');
-		this.dom_pause.className = 'fa fa-pause';
-		this.dom_pause.style.color = this.colors_play_pause;
-		this.dom_pause.style.fontSize = 15 + 'px';
+		
+		// this.dom_pause.className = 'fa fa-pause';
+		// this.dom_pause.style.color = this.colors_play_pause;
+		// this.dom_pause.style.fontSize = 15 + 'px';
+
+		this.dom_pause.innerHTML = this.svg.pause;
+		this.dom_pause.getElementsByTagName('path')[0].style.fill = this.colors_play_pause;
 	},
 	dom_template_mute: function() {
 		this.dom_mute = document.createElement('span');
-		this.dom_mute.className = 'fa fa-volume-up';
-		this.dom_mute.style.color = this.colors_mute_unmute;
-		this.dom_mute.style.fontSize = 18 + 'px';
+		
+		// this.dom_mute.className = 'fa fa-volume-up';
+		// this.dom_mute.style.color = this.colors_mute_unmute;
+		// this.dom_mute.style.fontSize = 18 + 'px';
+
+		this.dom_mute.innerHTML = this.svg.mute;
+		this.dom_mute.getElementsByTagName('path')[0].style.fill = this.colors_mute_unmute;
 	},
 	dom_template_unmute: function() {
 		this.dom_unmute = document.createElement('span');
-		this.dom_unmute.className = 'fa fa-volume-off';
-		this.dom_unmute.style.color = this.colors_mute_unmute;
-		this.dom_unmute.style.fontSize = 18 + 'px';
-		this.dom_unmute.style.width = 18 + 'px';
+		
+		// this.dom_unmute.className = 'fa fa-volume-off';
+		// this.dom_unmute.style.color = this.colors_mute_unmute;
+		// this.dom_unmute.style.fontSize = 18 + 'px';
+		// this.dom_unmute.style.width = 18 + 'px';
+
+		this.dom_unmute.innerHTML = this.svg.unmute;
+		this.dom_unmute.getElementsByTagName('path')[0].style.fill = this.colors_mute_unmute;
 	},
 	dom_template_fs: function() {
 		this.dom_fs = document.createElement('span');
-		this.dom_fs.className = 'fa fa-expand';
-		this.dom_fs.style.color = this.colors_fs;
-		this.dom_fs.style.top = 4 + 'px';
-		this.dom_fs.style.right = 6 + 'px';
+		
+		// this.dom_fs.className = 'fa fa-expand';
+		// this.dom_fs.style.color = this.colors_fs;
+		// this.dom_fs.style.top = 4 + 'px';
+		// this.dom_fs.style.right = 6 + 'px';
+
+		this.dom_fs.innerHTML = this.svg.fs;
+		this.dom_fs.getElementsByTagName('path')[0].style.fill = this.colors_fs;
 	},
 
 	userAgent: function() {
@@ -229,9 +266,9 @@ VideoPlayer.prototype = {
 
 			this.dom_controller.style.zIndex = this.zindex+1;
 			this.dom_controller.style.position = 'relative';
-			this.dom_controller.style.height = 25 + 'px';
+			this.dom_controller.style.height = this.barsize + 'px';
 			this.dom_controller.style.width = '100%';
-			this.dom_controller.style.top = ( this.dom_container.offsetHeight - 25 ) + 'px';
+			this.dom_controller.style.top = ( this.dom_container.offsetHeight - this.barsize ) + 'px';
 			this.dom_controller.style.left = 0;
 			this.dom_container.appendChild(this.dom_controller);
 
@@ -241,7 +278,7 @@ VideoPlayer.prototype = {
 				tcbg.style.backgroundColor = '#000';
 				tcbg.style.opacity = 0.6;
 				tcbg.style.width = '100%';
-				tcbg.style.height = 25 + 'px';
+				tcbg.style.height = this.barsize + 'px';
 
 			this.dom_controller.appendChild(tcbg);
 
@@ -250,10 +287,11 @@ VideoPlayer.prototype = {
 			var tcppc = document.createElement('div');
 				tcppc.style.position = 'relative';
 				tcppc.style.float = 'left';
-				tcppc.style.top = 5 + 'px';
-				tcppc.style.marginLeft = 10 + 'px';
-				tcppc.style.height = 15 + 'px';
-				tcppc.style.width = 15 + 'px';
+				tcppc.style.top = 1 + 'px';
+				//tcppc.style.top = 5 + 'px';
+				tcppc.style.marginLeft = 5 + 'px';
+				//tcppc.style.height = 15 + 'px';
+				//tcppc.style.width = 15 + 'px';
 
 			this.dom_controller.appendChild(tcppc);
 
@@ -281,6 +319,8 @@ VideoPlayer.prototype = {
 				this.addClass(this.dom_fs, 'cbtn');
 				this.dom_fs.style.display = 'block';
 				this.dom_fs.style.position = 'absolute';
+				this.dom_fs.style.top = 5 + 'px';
+				this.dom_fs.style.right = 10 + 'px';
 				this.dom_fs.style.cursor = 'pointer';
 				this.dom_controller.appendChild(this.dom_fs);
 			}
@@ -289,15 +329,15 @@ VideoPlayer.prototype = {
 
 			var tcmmc = document.createElement('div');
 				tcmmc.style.position = 'absolute';
-				tcmmc.style.top = 3 + 'px';
-				tcmmc.style.height = 15 + 'px';
-				tcmmc.style.width = 15 + 'px';
+				tcmmc.style.top = 1 + 'px';
+				// tcmmc.style.height = 15 + 'px';
+				// tcmmc.style.width = 15 + 'px';
 				tcmmc.style.textAlign = 'left';
 				if(!this.allowfullscreen) {
-					tcmmc.style.right = 9 + 'px';
+					tcmmc.style.right = 30 + 'px';
 				}
 				else {
-					tcmmc.style.right = 30 + 'px';
+					tcmmc.style.right = 58 + 'px';
 				}
 			this.dom_controller.appendChild(tcmmc);
 
@@ -1089,7 +1129,7 @@ VideoPlayer.prototype = {
 				this.proxy.height = this.dom_container.offsetHeight;
 			}
 
-			this.dom_controller.style.top = ( this.dom_container.offsetHeight - 25 ) + 'px';
+			this.dom_controller.style.top = ( this.dom_container.offsetHeight - this.barsize ) + 'px';
 			this.dom_controller.style.left = 0;
 
 			this.dom_bigplay.style.top = ( ( this.dom_container.offsetHeight - this.dom_bigplay.offsetHeight ) / 2 )  + 'px';
