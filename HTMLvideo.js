@@ -1,7 +1,7 @@
 /*!
  *	HTML VIDEO HELPER
  *
- *	2.1
+ *	2.5
  *
  *	author: Carlo J. Santos
  *	email: carlosantos@gmail.com
@@ -23,6 +23,7 @@ VideoPlayer.prototype = {
 	chromeless: false,
 	elementtrigger: true,
 	loop: false,
+	progressive: true,
 
 	isinitialized: false,
 	ismobile: null,
@@ -270,6 +271,7 @@ VideoPlayer.prototype = {
 			this.dom_controller.style.width = '100%';
 			this.dom_controller.style.top = ( this.dom_container.offsetHeight - this.barsize ) + 'px';
 			this.dom_controller.style.left = 0;
+			this.dom_controller.style.display = 'none';
 			this.dom_container.appendChild(this.dom_controller);
 
 			var tcbg = document.createElement('div');
@@ -501,6 +503,8 @@ VideoPlayer.prototype = {
 
 		var parent = this;
 
+		this.trackReset();
+
 		if(this.isinitialized) {
 
 			this.firsttime = true;
@@ -526,6 +530,14 @@ VideoPlayer.prototype = {
 
 				if(parent.autoplay && !parent.ismobile) {
 					tve.setAttribute('autoplay', true);
+				}
+
+				if(parent.progressive) {
+					tve.setAttribute('preload', "auto");
+				}
+				else
+				{
+					tve.setAttribute('preload', "metadata");
 				}
 
 				if(parent.ismobile) {
@@ -636,6 +648,8 @@ VideoPlayer.prototype = {
 		else {
 			this.trace('nothing to unload');
 		}
+
+		this.trackReset();
 	},
 
 	destroy: function() {
@@ -836,6 +850,8 @@ VideoPlayer.prototype = {
 			this.reflow(true);
 
 			this.callback_end();
+			this.track_end();
+			this.trackReset();
 
 			this.isplaying = false;
 
@@ -852,6 +868,14 @@ VideoPlayer.prototype = {
 		}
 
 		this.callback_play();
+
+		if(!this.track.started) {
+			this.track.started = true;
+			this.track_start();
+		}
+		else {
+			this.track_play();
+		}
 	},
 
 	dlPause: function() {
@@ -859,16 +883,19 @@ VideoPlayer.prototype = {
 		this.dom_play.style.display = 'block';
 
 		this.callback_pause();
+		this.track_pause();
 	},
 
 	dlVolumeChange: function() {
 		if(this.proxy.muted) {
 			this.dom_mute.style.display = 'none';
 			this.dom_unmute.style.display = 'block';
+			this.track_mute();
 		} else {
 			this.dom_mute.style.display = 'block';
 			this.dom_unmute.style.display = 'none';
 			this.dom_bigsound.style.display = 'none';
+			this.track_unmute();
 		}
 
 		this.callback_volume();
@@ -932,6 +959,28 @@ VideoPlayer.prototype = {
 
 		this.dom_phead.style.width = phpercentage+'%';
 
+		// QUARTILES
+		if(!this.track.q25 && phpercentage >= 25) {
+		    this.track.q25 = true;
+		    
+			this.track_q25();
+		    
+		}
+		
+		if(!this.track.q50 && phpercentage >= 50) {
+		    this.track.q50 = true;
+		    
+		    this.track_q50();
+		    
+		}
+		
+		if(!this.track.q75 && phpercentage >= 75) {
+		    this.track.q75 = true;
+		    
+		    this.track_q75();
+		    
+		}
+
 		this.callback_progress();
 
 	},
@@ -987,6 +1036,61 @@ VideoPlayer.prototype = {
 		this.trace('Video Ready');
 	},
 
+	// TRACKING
+
+	track: {
+		started: false,
+		q25: false,
+		q50: false,
+		q75: false
+	},
+
+	trackReset: function() {
+		
+		var parent = this;
+		
+		this.track.started = false;
+		this.track.q25 = false;
+		this.track.q50 = false;
+		this.track.q75 = false;
+	},
+	
+	track_start: function() {
+		// console.log('track start');
+	},
+
+	track_play: function() {
+		// console.log('track play');
+	},
+
+	track_end: function() {
+		// console.log('track end');
+	},
+
+	track_pause: function() {
+		// console.log('track pause');
+	},
+
+	track_mute: function() {
+		// console.log('track mute');
+	},
+
+	track_unmute: function() {
+		// console.log('track unmute');
+	},
+
+	track_q25: function() {
+		// console.log('track first quartile');
+	},
+
+	track_q50: function() {
+		// console.log('track midpoint');
+	},
+
+	track_q75: function() {
+		// console.log('track third quartile');
+	},
+
 	controlHandler: function(e) {
 
 		switch(e.currentTarget)
@@ -1025,6 +1129,8 @@ VideoPlayer.prototype = {
 				} else {
 					this.dom_controller.style.display = 'none';
 				}
+
+				this.trackReset();
 
 			break;
 			case this.dom_bigsound:

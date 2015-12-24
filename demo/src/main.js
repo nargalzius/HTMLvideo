@@ -13,6 +13,7 @@ function init(){
     video = new VideoPlayer();
 
     video.userAgent();
+    video.progressive = false;
 
     resetVars = {
         autoplay: video.autoplay,
