@@ -1,7 +1,7 @@
 /*!
  *	HTML VIDEO HELPER
  *
- *	2.5
+ *	2.8
  *
  *	author: Carlo J. Santos
  *	email: carlosantos@gmail.com
@@ -38,6 +38,7 @@ VideoPlayer.prototype = {
 	isready: false,
 	isplaying: false,
 	videostarted: false,
+	iscompleted: false,
 	
 	mTypes: {
 		'mp4': 'video/mp4',
@@ -394,6 +395,7 @@ VideoPlayer.prototype = {
 			this.dom_template_bigplay();
 			this.addClass(this.dom_bigplay, 'cbtn');
 			this.addClass(this.dom_bigplay, 'v_controls_bb');
+			this.addClass(this.dom_bigplay, 'play');
 			this.dom_bigplay.style.zIndex = this.zindex + 3;
 			this.dom_bigplay.style.display = 'block';
 			this.dom_bigplay.style.position = 'absolute';
@@ -410,6 +412,7 @@ VideoPlayer.prototype = {
 			}
 			this.addClass(this.dom_replay, 'cbtn');
 			this.addClass(this.dom_replay, 'v_controls_bb');
+			this.addClass(this.dom_replay, 'replay');
 			this.dom_replay.style.zIndex = this.zindex + 3;
 			this.dom_replay.style.display = 'block';
 			this.dom_replay.style.position = 'absolute';
@@ -421,6 +424,7 @@ VideoPlayer.prototype = {
 			this.dom_template_bigsound();
 			this.addClass(this.dom_bigsound, 'cbtn');
 			this.addClass(this.dom_bigsound, 'v_controls_bb');
+			this.addClass(this.dom_bigsound, 'sound');
 			this.dom_bigsound.style.zIndex = this.zindex + 3;
 			this.dom_bigsound.style.display = 'block';
 			this.dom_bigsound.style.position = 'absolute';
@@ -433,6 +437,7 @@ VideoPlayer.prototype = {
 			this.dom_template_spinner();
 			this.addClass(this.dom_spinner, 'cbtn');
 			this.addClass(this.dom_spinner, 'v_controls_bb');
+			this.addClass(this.dom_spinner, 'wait');
 			this.dom_spinner.style.zIndex = this.zindex + 3;
 			this.dom_spinner.style.display = 'block';
 			this.dom_spinner.style.position = 'absolute';
@@ -823,6 +828,8 @@ VideoPlayer.prototype = {
 
 	dlEnded: function() {
 
+		this.iscompleted = true;
+
 		if(this.loop) {
 			this.callback_end();
 			this.play();
@@ -869,12 +876,19 @@ VideoPlayer.prototype = {
 
 		this.callback_play();
 
-		if(!this.track.started) {
+		if(!this.track.started && !this.iscompleted) {
 			this.track.started = true;
 			this.track_start();
 		}
 		else {
-			this.track_play();
+			if(this.iscompleted)
+			{
+				this.iscompleted = false;
+				this.track.started = true;
+				this.track_replay();
+			} else {
+				this.track_play();
+			}
 		}
 	},
 
@@ -882,8 +896,11 @@ VideoPlayer.prototype = {
 		this.dom_pause.style.display = 'none';
 		this.dom_play.style.display = 'block';
 
-		this.callback_pause();
-		this.track_pause();
+		if( this.duration > this.playhead ) {
+			this.callback_pause();
+			this.track_pause();
+		}
+
 	},
 
 	dlVolumeChange: function() {
@@ -1063,6 +1080,10 @@ VideoPlayer.prototype = {
 		// console.log('track play');
 	},
 
+	track_replay: function() {
+		// console.log('track replay');	
+	},
+
 	track_end: function() {
 		// console.log('track end');
 	},
@@ -1175,6 +1196,8 @@ VideoPlayer.prototype = {
 		this.seek(0);
 		this.pause();
 		this.isplaying = false;
+		this.trackReset();
+		this.iscompleted = false;
 	},
 
 	replay: function() {
@@ -1263,7 +1286,7 @@ VideoPlayer.prototype = {
 		
 		if(this.debug) {
 		 	if( this.dom_debug ) {
-		 		console.log(str);
+		 		if(console) console.log(str);
 		 		this.dom_debug.innerHTML += str + '<br>';
 		 	}
 		}

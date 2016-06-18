@@ -27,6 +27,7 @@ function init(){
         chromeless: video.chromeless,
         loop: video.loop,
         debug: video.debug,
+        progressive: video.progressive
     }
 
     //video.dom_debug = document.getElementById('debug');
@@ -49,7 +50,8 @@ function init(){
             $(this).attr('id') === 'autoplay' ||
             $(this).attr('id') === 'startmuted' ||
             $(this).attr('id') === 'chromeless' ||
-            $(this).attr('id') === 'uniquereplay'
+            $(this).attr('id') === 'uniquereplay' ||
+            $(this).attr('id') === 'progressive'
             ) )
         {
             video.destroy();
@@ -169,6 +171,7 @@ function resetVariables() {
     video.elementtrigger = resetVars.elementtrigger;
     video.loop = resetVars.loop;
     video.debug = resetVars.debug;
+    video.progressive = resetVars.progressive;
 
 
     $('#autoplay').prop('checked', resetVars.autoplay);
@@ -181,6 +184,7 @@ function resetVariables() {
     $('#elementtrigger').prop('checked', resetVars.elementtrigger);
     $('#loop').prop('checked', resetVars.loop);
     $('#debug').prop('checked', resetVars.debug);
+    $('#progressive').prop('checked', resetVars.progressive);
 
     setExceptions();
 
