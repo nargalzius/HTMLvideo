@@ -112,17 +112,6 @@
 		"shouldRunBless": 1,
 		"useLibsass": false
 		},
-	"\/HTMLvideo-min.js": {
-		"fileType": 64,
-		"ignore": 0,
-		"ignoreWasSetByUser": 0,
-		"inputAbbreviatedPath": "\/HTMLvideo-min.js",
-		"outputAbbreviatedPath": "\/public_html\/HTMLvideo-min.js",
-		"outputPathIsOutsideProject": 0,
-		"outputPathIsSetByUser": 0,
-		"outputStyle": 1,
-		"syntaxCheckerStyle": 0
-		},
 	"\/HTMLvideo.js": {
 		"fileType": 64,
 		"ignore": 0,
