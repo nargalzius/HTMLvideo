@@ -1,11 +1,11 @@
 /*!
  *	HTML VIDEO HELPER
  *
- *	2.9
+ *	2.10
  *
  *	author: Carlo J. Santos
  *	email: carlosantos@gmail.com
- *	documentation: 
+ *	documentation: https://github.com/nargalzius/HTMLvideo
  *
  *	Copyright (c) 2015, All Rights Reserved, www.nargalzius.com
  */
@@ -409,6 +409,7 @@ VideoPlayer.prototype = {
 				this.dom_template_replay();
 			} else {
 				this.dom_replay = this.dom_bigplay.cloneNode(true);
+				removeClass(this.dom_replay, 'play');
 			}
 			this.addClass(this.dom_replay, 'cbtn');
 			this.addClass(this.dom_replay, 'v_controls_bb');
