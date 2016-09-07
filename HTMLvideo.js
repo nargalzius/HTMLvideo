@@ -1,7 +1,7 @@
 /*!
  *	HTML VIDEO HELPER
  *
- *	2.10
+ *	2.12
  *
  *	author: Carlo J. Santos
  *	email: carlosantos@gmail.com
@@ -229,15 +229,42 @@ VideoPlayer.prototype = {
 
 			document.addEventListener("fullscreenchange", function () {
 				parent.trace("fullscreen: "+document.fullscreen);
-				parent.isfs = false;
+				
+				if(document.fullscreen) {
+					parent.track_enterfs();
+					parent.isfs = true;
+				}
+				else {
+					parent.track_exitfs();
+					parent.isfs = false;
+				}
+				
 			}, false);
 			document.addEventListener("mozfullscreenchange", function () {
 				parent.trace("fullscreen: "+document.mozFullScreen);
-				parent.isfs = false;
+				
+				if(document.mozFullScreen) {
+					parent.track_enterfs();
+					parent.isfs = true;
+				}
+				else {
+					parent.track_exitfs();
+					parent.isfs = false;
+				}
+
 			}, false);
 			document.addEventListener("webkitfullscreenchange", function () {
 				parent.trace("fullscreen: "+document.webkitIsFullScreen);
-				parent.isfs = false;
+
+				if(document.webkitIsFullScreen) {
+					parent.track_enterfs();
+					parent.isfs = true;
+				}
+				else {
+					parent.track_exitfs();
+					parent.isfs = false;
+				}
+
 			}, false);
 
 			// PLAYER FRAME
@@ -249,13 +276,15 @@ VideoPlayer.prototype = {
 
 			// POSTER
 
-			this.dom_poster = document.createElement('img');
+			this.dom_poster = document.createElement('div');
 			this.dom_poster.style.zIndex = this.zindex + 2;
 			this.dom_poster.style.position = 'absolute';
 			this.dom_poster.style.backgroundColor = '#000';
 			this.dom_poster.style.display = 'block';
 			this.dom_poster.style.width = '100%';
 			this.dom_poster.style.height = '100%';
+			this.dom_poster.style.backgroundSize = 'cover';
+			this.dom_poster.style.backgroundRepeat = 'no-repeat';
 			this.dom_container.appendChild(this.dom_poster);
 
 			// CONTROL
@@ -605,7 +634,7 @@ VideoPlayer.prototype = {
 			newImg.onload = function() {
 				parent.trace('loaded: '+str);
 
-				parent.dom_poster.src = str;
+				parent.dom_poster.style.backgroundImage = 'url('+str+')';
 				parent.dom_poster.style.display = 'block';
 
 				if(parent.ismobile) {
@@ -1113,6 +1142,14 @@ VideoPlayer.prototype = {
 		// console.log('track third quartile');
 	},
 
+	track_enterfs: function() {
+		
+	},
+
+	track_exitfs: function() {
+		
+	},
+
 	controlHandler: function(e) {
 
 		switch(e.currentTarget)
@@ -1238,13 +1275,16 @@ VideoPlayer.prototype = {
 
 		if (this.proxy.requestFullscreen) {
 			this.proxy.requestFullscreen();
-			this.isfs = true;
+			// this.isfs = true;
+			// this.track_enterfs();
 		} else if (this.proxy.mozRequestFullScreen) {
 			this.proxy.mozRequestFullScreen(); // Firefox
-			this.isfs = true;
+			// this.isfs = true;
+			// this.track_enterfs();
 		} else if (this.proxy.webkitRequestFullscreen) {
 			this.proxy.webkitRequestFullscreen(); // Chrome and Safari
-			this.isfs = true;
+			// this.isfs = true;
+			// this.track_enterfs();
 		}
 	},
 
