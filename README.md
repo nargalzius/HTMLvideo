@@ -77,6 +77,66 @@ Allows clicking of the entire video container itself to play/pause. If set to `f
 `debug` | Default: `false`  
 Output player logs to console. 
 
+## Methods
+#### Usual Suspects
+
+`init(CONTAINER_DIV)`  
+`CONTAINER_DIV` is the `id` of your chosen video container DOM element.
+
+`load(FILE(S), POSTER)`  
+`FILE(S)` could be a string to a single file, or an array of filepaths.
+
+`play()`  
+Plays video
+
+`pause()`  
+Pauses video
+
+`stop()`  
+"Stops" video. Techincally, there's no realy `stop()` method in HTML video. So what this does is it mimmicks a "stop" by pausing it and rewinding back to the initial frame.
+
+`replay()`  
+Plays video from initial frame.
+
+`mute()`  
+Mutes video
+
+`unmute()`  
+Unmutes video
+
+`seek(TIME)`  
+Jumps to time
+
+`setPoster(IMAGE)`  
+Manually set poster image
+
+#### Some methods that are available but not necessarily advertized.
+
+`reflow()`  
+Can be called if you dynamically change the size of the video container and need the control elements to re-position relative to the new container dimensions.
+
+`unload()`  
+Unloads the video. Instance itself is still active.
+
+`destroy()`  
+Destroys the video instance completely. You'll have to re-initialize it if you want to use it again.
+
+`isPlaying()`  
+The same as checking `isplaying` but in method format.
+
+## Convenience variables
+#### Some variables you can check for current video status.
+
+`playhead`  
+Position of the playhead
+
+`duration`  
+Total duration of the video
+
+`proxy`  
+If for some reason, you want to access the `<video>` element itself, you can do it through this :)
+
+
 ## Callbacks and Tracking
 #### Callbacks that can be overriden
 
@@ -162,29 +222,3 @@ VIDEO_INSTANCE.dom_template_bigplay = function() {
 
 Note: you have to use the `dom_bigplay` within the overriden method because the player subroutines manipulates that element (to toggle visibility, etc.)
 
-## Convenience Methods
-#### Some methods that are available but not necessarily advertized.
-
-`reflow`:  
-Can be called if you dynamically change the size of the video container and need the control elements to re-position relative to the new container dimensions.
-
-`unload`:  
-Unloads the video. Instance itself is still active.
-
-`destroy`:  
-Destroys the video instance completely. You'll have to re-initialize it if you want to use it again.
-
-## Convenience variables
-#### Some variables you can check for current video status.
-
-`playhead`  
-Position of the playhead
-
-`duration`  
-Total duration of the video
-
-`isplaying`  
-Check if video is currently playing
-
-`proxy`  
-If for some reason, you want to access the `<video>` element itself, you can do it through this :)
