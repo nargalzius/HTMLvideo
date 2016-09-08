@@ -16,7 +16,7 @@ To load a video, I've implemented some fuzzy logic into it. This means that you 
 
 You can also input an optional second string parameter for a poster file.
 
-The video has rudimentary detection what browser environment you're on. If you're on a mobile browser, once playback starts, it will remove all "custom" controls and default to built-in browser player controls - this is to ensure proper behavior/compatibility. Of course, I did say "rudimentary", so you can always manually set it via the `ismobile` variable.
+The video has rudimentary detection what browser environment you're on. If you're on a mobile browser, once playback starts, it will remove all "custom" controls and default to built-in browser player controls - this is to ensure proper behavior/compatibility. Of course, I did say "rudimentary" (i.e. not bullet-proof), so you can always manually set it via the `ismobile` variable.
 
 
 ## Quick Start
@@ -57,19 +57,22 @@ Loops the video.
 Enables manual fullscreen button. 
 
 `playonseek` | Default: `true`  
-Forces playback whenever you move the playhead (by default it stays on its last play/pause state).  
+Forces playback whenever you move the playhead. If set to `false` it stays on its last play/pause state even after jumping/seeking.  
 
 `uniqereplay` | Default: `true`  
-Uses a replay icon for the replay. When set to false, it'll use the play button. 
+Uses a replay icon for the replay. When set to `false`, it'll use the same icon as the play button. 
 
 `chromeless` | Default: `false`  
-Removes all controls (useful for preview videos on collapsed states for desktop units where you don't want video controls visible). 
+Removes all controls. Useful for preview videos on collapsed states for desktop units where you don't want video controls visible. Clicking on the player itself only toggles play/pause. 
 
 `progressive` | Default: `true`  
 Preloads the entire video (or a huge chunk of it) before playback. 
 
 `ismobile` | Default: auto-detect  
 Reverts to built-in video player and controls. Naturally a lot of the "special behaviors above" will be disabled in this mode.
+
+`elementtrigger` | Default: `true`  
+Allows clicking of the entire video container itself to play/pause. If set to `false`, you'll have to use the control icons/buttons.
 
 `debug` | Default: `false`  
 Output player logs to console. 
@@ -116,6 +119,8 @@ VIDEO_INSTANCE.callback_end = function(e) {
 };
 ```
 
+Alternatively, you could inject it to `track_end` instead. More than one way to skin a cat ;)
+
 
 ## Control Skinning
 #### Overriding control DOM elements
@@ -124,14 +129,14 @@ While the position of control elements are pretty much fixed (the big play butot
 
 These are the methods you can override:
 
-`dom_template_bigplay`
-`dom_template_bigsound`
-`dom_template_replay`
-`dom_template_spinner`
-`dom_template_play`
-`dom_template_pause`
-`dom_template_mute`
-`dom_template_unmute`
+`dom_template_bigplay` 
+`dom_template_bigsound` 
+`dom_template_replay` 
+`dom_template_spinner` 
+`dom_template_play` 
+`dom_template_pause` 
+`dom_template_mute` 
+`dom_template_unmute` 
 `dom_template_fs`
 
 #### Example(s)
@@ -156,3 +161,30 @@ VIDEO_INSTANCE.dom_template_bigplay = function() {
 ```
 
 Note: you have to use the `dom_bigplay` within the overriden method because the player subroutines manipulates that element (to toggle visibility, etc.)
+
+## Convenience Methods
+#### Some methods that are available but not necessarily advertized.
+
+`reflow`:  
+Can be called if you dynamically change the size of the video container and need the control elements to re-position relative to the new container dimensions.
+
+`unload`:  
+Unloads the video. Instance itself is still active.
+
+`destroy`:  
+Destroys the video instance completely. You'll have to re-initialize it if you want to use it again.
+
+## Convenience variables
+#### Some variables you can check for current video status.
+
+`playhead`  
+Position of the playhead
+
+`duration`  
+Total duration of the video
+
+`isplaying`  
+Check if video is currently playing
+
+`proxy`  
+If for some reason, you want to access the `<video>` element itself, you can do it through this :)
