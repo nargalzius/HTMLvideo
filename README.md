@@ -41,38 +41,38 @@ That's it ;)
 ## Parameters
 #### Behavioral settings for the player
 
-`autoplay`  
-Auto plays video. Default: `false`
+`autoplay` | Default: `false`
+Auto plays video. 
 
-`startmuted`  
-Mutes video on initial (auto) play. Requires `autoplay` to be true. Default: `false`
+`startmuted` | Default: `false`
+Mutes video on initial (auto) play. Requires `autoplay` to be true. 
 
-`replaywithsound`  
-Force unmutes video on replay (by default it uses the last audio setting). Default: `false`
+`replaywithsound` | Default: `false`
+Force unmutes video on replay (by default it uses the last audio setting). 
 
-`loop`  
-Loops the video. Default: `false`
+`loop` | Default: `false`
+Loops the video. 
 
-`allowfullscreen`  
-Enables manual fullscreen button. Default: `false`
+`allowfullscreen` | Default: `false`
+Enables manual fullscreen button. 
 
-`playonseek`  
-Forces playback whenever you move the playhead (by default it stays on its last play/pause state).  Default: `true`
+`playonseek` | Default: `true`
+Forces playback whenever you move the playhead (by default it stays on its last play/pause state).  
 
-`uniqereplay`  
-Uses a replay icon for the replay. When set to false, it'll use the play button. Default: `true`
+`uniqereplay` | Default: `true`
+Uses a replay icon for the replay. When set to false, it'll use the play button. 
 
-`chromeless`  
-Removes all controls (useful for preview videos on collapsed states for desktop units where you don't want video controls visible). Default: `false`
+`chromeless` | Default: `false`
+Removes all controls (useful for preview videos on collapsed states for desktop units where you don't want video controls visible). 
 
-`progressive`  
-Preloads the entire video (or a huge chunk of it) before playback. Default: `true`
+`progressive` | Default: `true`
+Preloads the entire video (or a huge chunk of it) before playback. 
 
-`ismobile`  
-Reverts to built-in video player and controls. Naturally a lot of the "special behaviors above" will be disabled in this mode. Default: auto-detect
+`ismobile` | Default: auto-detect
+Reverts to built-in video player and controls. Naturally a lot of the "special behaviors above" will be disabled in this mode.
 
-`debug`  
-Output player logs to console. Default: `false`
+`debug` | Default: `false`
+Output player logs to console. 
 
 ## Callbacks and Tracking
 #### Callbacks that can be overriden
