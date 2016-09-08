@@ -16,7 +16,7 @@ To load a video, I've implemented some fuzzy logic into it. This means that you 
 
 You can also input an optional second string parameter for a poster file.
 
-The video has rudimentary detection what browser environment you're on. If you're on a mobile browser, once playback starts, it will remove all "custom" controls and default to built-in browser player controls - this is to ensure proper behavior/compatibility. Of course, I did say "rudimentary", so you can always manually set it via the `mobile` variable.
+The video has rudimentary detection what browser environment you're on. If you're on a mobile browser, once playback starts, it will remove all "custom" controls and default to built-in browser player controls - this is to ensure proper behavior/compatibility. Of course, I did say "rudimentary", so you can always manually set it via the `ismobile` variable.
 
 
 ## Quick Start
