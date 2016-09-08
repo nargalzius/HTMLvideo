@@ -33,7 +33,7 @@ var video = new VideoPlayer();
 Next, load your video and (optional) poster.
 
 ```javascript
-video.load('https://joystick.cachefly.net/resources/video/video.mp4', 'https://joystick.cachefly.net/JMC/v/vid_become_legend.jpg');
+video.load('VIDEO_FILE', 'POSTER_FILE');
 ```
 
 That's it ;)
@@ -41,66 +41,66 @@ That's it ;)
 ## Parameters
 #### Behavioral settings for the player
 
-`autoplay`:  
+`autoplay`  
 Auto plays video
 
-`startmuted`:  
+`startmuted`  
 Kills video on initial (auto) play. Requires `autoplay` to be true
 
-`replaywithsound`:  
+`replaywithsound`  
 Force unmutes video on replay (by default it uses the last audio setting)
 
-`loop`:  
+`loop`  
 Loops the video
 
-`allowfullscreen`:  
+`allowfullscreen`  
 Enables manual fullscreen button
 
-`playonseek`:  
+`playonseek`  
 Forces playback whenever you move the playhead (by default it stays on its last play/pause state)
 
-`uniqereplay`:  
+`uniqereplay`  
 Uses a replay icon for the replay. When set to false, it'll use the play button
 
-`chromeless`:  
+`chromeless`  
 Removes all controls (useful for preview videos on collapsed states for desktop units where you don't want video controls visible)
 
-`progressive`:  
+`progressive`  
 Preloads the entire video (or a huge chunk of it) before playback
 
-`ismobile`:  
+`ismobile`  
 Reverts to built-in video player and controls. Naturally a lot of the "special behaviors above" will be disabled in this mode.
 
-`debug`:  
+`debug`  
 Output player logs to console
 
 ## Callbacks and Tracking
 #### Callbacks that can be overriden
 
-`callback_end`
-`callback_play`
-`callback_pause`
-`callback_volume`
-`callback_loading`
-`callback_progress`
-`callback_ready`
+`callback_end` 
+`callback_play` 
+`callback_pause` 
+`callback_volume` 
+`callback_loading` 
+`callback_progress` 
+`callback_ready` 
 
-`track_start`
-`track_play`
-`track_replay`
-`track_end`
-`track_pause`
-`track_mute`
-`track_unmute`
-`track_q25`
-`track_q50`
-`track_q75`
-`track_enterfs`
-`track_exitfs`
+`track_start` 
+`track_play` 
+`track_replay` 
+`track_end` 
+`track_pause` 
+`track_mute` 
+`track_unmute` 
+`track_q25` 
+`track_q50` 
+`track_q75` 
+`track_enterfs` 
+`track_exitf` 
 
 #### Example(s)
 
-To override, simply override the prototype of your video instance. For example to add in a Studio tracking event on video start:
+To override, simply override the method your video instance. For example to add in a Studio tracking event on video start:
 
 ```javascript
 VIDEO_INSTANCE.track_start = function(e) {
