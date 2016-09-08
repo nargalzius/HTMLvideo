@@ -1,7 +1,7 @@
 /*!
  *	HTML VIDEO HELPER
  *
- *	2.12
+ *	2.13
  *
  *	author: Carlo J. Santos
  *	email: carlosantos@gmail.com
@@ -92,91 +92,48 @@ VideoPlayer.prototype = {
 
 	dom_template_bigplay: function() {
 		this.dom_bigplay = document.createElement('div');
-		
-		//this.dom_bigplay.className = 'fa fa-play-circle-o fa-4x';
-		//this.dom_bigplay.style.color = this.colors_bigplay;
-
 		this.dom_bigplay.innerHTML = this.svg.bigplay;
 		this.dom_bigplay.getElementsByTagName('path')[0].style.fill = this.colors_bigplay;
 	},
 	dom_template_bigsound: function() {
 		this.dom_bigsound = document.createElement('div');
-		
-		// this.dom_bigsound.className = 'fa fa-volume-up fa-3x';
-		// this.dom_bigsound.style.color = this.colors_bigsound;
-
 		this.dom_bigsound.innerHTML = this.svg.bigsound;
 		this.dom_bigsound.getElementsByTagName('path')[0].style.fill = this.colors_bigsound;
 	},
 	dom_template_replay: function() {
 		this.dom_replay = document.createElement('div');
-		
-		// this.dom_replay.style.color = this.colors_replay;
-		// this.dom_replay.className = 'fa fa-repeat fa-3x';
-
 		this.dom_replay.innerHTML = this.svg.replay;
 		this.dom_replay.getElementsByTagName('path')[0].style.fill = this.colors_replay;
 	},
 	dom_template_spinner: function() {
 		this.dom_spinner = document.createElement('div');
-		
-		// this.dom_spinner.className = 'fa fa-spinner fa-pulse fa-3x';
-		// this.dom_spinner.style.color = this.colors_spinner;
-		
 		this.dom_spinner.innerHTML = this.svg.spin;
 		this.dom_spinner.getElementsByTagName('path')[0].style.fill = this.colors_spinner;
 
 	},
 	dom_template_play: function() {
 		this.dom_play = document.createElement('span');
-		
-		// this.dom_play.className = 'fa fa-play';
-		// this.dom_play.style.color = this.colors_play_pause;
-		// this.dom_play.style.fontSize = 15 + 'px';
-
 		this.dom_play.innerHTML = this.svg.play;
 		this.dom_play.getElementsByTagName('path')[0].style.fill = this.colors_play_pause;
 
 	},
 	dom_template_pause: function() {
 		this.dom_pause = document.createElement('span');
-		
-		// this.dom_pause.className = 'fa fa-pause';
-		// this.dom_pause.style.color = this.colors_play_pause;
-		// this.dom_pause.style.fontSize = 15 + 'px';
-
 		this.dom_pause.innerHTML = this.svg.pause;
 		this.dom_pause.getElementsByTagName('path')[0].style.fill = this.colors_play_pause;
 	},
 	dom_template_mute: function() {
 		this.dom_mute = document.createElement('span');
-		
-		// this.dom_mute.className = 'fa fa-volume-up';
-		// this.dom_mute.style.color = this.colors_mute_unmute;
-		// this.dom_mute.style.fontSize = 18 + 'px';
-
 		this.dom_mute.innerHTML = this.svg.mute;
 		this.dom_mute.getElementsByTagName('path')[0].style.fill = this.colors_mute_unmute;
 	},
 	dom_template_unmute: function() {
 		this.dom_unmute = document.createElement('span');
-		
-		// this.dom_unmute.className = 'fa fa-volume-off';
-		// this.dom_unmute.style.color = this.colors_mute_unmute;
-		// this.dom_unmute.style.fontSize = 18 + 'px';
-		// this.dom_unmute.style.width = 18 + 'px';
-
 		this.dom_unmute.innerHTML = this.svg.unmute;
 		this.dom_unmute.getElementsByTagName('path')[0].style.fill = this.colors_mute_unmute;
 	},
 	dom_template_fs: function() {
 		this.dom_fs = document.createElement('span');
-		
-		// this.dom_fs.className = 'fa fa-expand';
-		// this.dom_fs.style.color = this.colors_fs;
-		// this.dom_fs.style.top = 4 + 'px';
-		// this.dom_fs.style.right = 6 + 'px';
-
 		this.dom_fs.innerHTML = this.svg.fs;
 		this.dom_fs.getElementsByTagName('path')[0].style.fill = this.colors_fs;
 	},
@@ -277,6 +234,7 @@ VideoPlayer.prototype = {
 			// POSTER
 
 			this.dom_poster = document.createElement('div');
+			this.dom_poster.className = 'poster';
 			this.dom_poster.style.zIndex = this.zindex + 2;
 			this.dom_poster.style.position = 'absolute';
 			this.dom_poster.style.backgroundColor = '#000';
