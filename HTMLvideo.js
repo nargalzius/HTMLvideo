@@ -1,7 +1,7 @@
 /*!
  *	HTML VIDEO HELPER
  *
- *	2.13
+ *	2.14
  *
  *	author: Carlo J. Santos
  *	email: carlosantos@gmail.com
@@ -396,7 +396,7 @@ VideoPlayer.prototype = {
 				this.dom_template_replay();
 			} else {
 				this.dom_replay = this.dom_bigplay.cloneNode(true);
-				removeClass(this.dom_replay, 'play');
+				this.removeClass(this.dom_replay, 'play');
 			}
 			this.addClass(this.dom_replay, 'cbtn');
 			this.addClass(this.dom_replay, 'v_controls_bb');
