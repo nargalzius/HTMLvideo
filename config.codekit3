@@ -12,7 +12,7 @@
 	"\/demo\/public_html\/HTMLvideo-min.js": {
 		"ft": 64,
 		"mi": 1,
-		"oA": 1,
+		"oA": 0,
 		"oAP": "\/public_html\/HTMLvideo-min.js",
 		"oF": 0,
 		"sC": 0,
@@ -98,6 +98,15 @@
 		"oF": 2,
 		"oS": 0,
 		"uL": 1
+		},
+	"\/device.js": {
+		"ft": 64,
+		"mi": 1,
+		"oA": 1,
+		"oAP": "\/public_html\/device.js",
+		"oF": 0,
+		"sC": 0,
+		"tS": 0
 		},
 	"\/HTMLvideo.js": {
 		"ft": 64,

@@ -12,7 +12,7 @@ function init(){
 
     video = new VideoPlayer();
 
-    video.userAgent();
+    video.checkForMobile();
     video.progressive = false;
 
     resetVars = {
@@ -119,7 +119,7 @@ function init(){
     $('#height').val($('#videoPlayer').height());
 
     loadVid();
-    loadSecondaryVideo();
+    // loadSecondaryVideo();
 }
 
 function ppMulti()
