@@ -1,13 +1,13 @@
 /*!
- *	HTML VIDEO HELPER
+ *  HTML VIDEO HELPER
  *
- *	2.14
+ *  2.2
  *
- *	author: Carlo J. Santos
- *	email: carlosantos@gmail.com
- *	documentation: https://github.com/nargalzius/HTMLvideo
+ *  author: Carlo J. Santos
+ *  email: carlosantos@gmail.com
+ *  documentation: https://github.com/nargalzius/HTMLvideo
  *
- *	Copyright (c) 2015, All Rights Reserved, www.nargalzius.com
+ *  Copyright (c) 2015, All Rights Reserved, www.nargalzius.com
  */
 
 var VideoPlayer = function(){};
@@ -16,7 +16,7 @@ VideoPlayer.prototype = {
 	debug: false,
 	autoplay: false,
 	startmuted: false,
-	replaywithsound: false,
+	replaywithsound: true,
 	allowfullscreen: false,
 	playonseek: true,
 	uniquereplay: true,
@@ -24,6 +24,7 @@ VideoPlayer.prototype = {
 	elementtrigger: true,
 	loop: false,
 	progressive: true,
+	inline: false,
 
 	isinitialized: false,
 	ismobile: null,
@@ -39,7 +40,7 @@ VideoPlayer.prototype = {
 	isplaying: false,
 	videostarted: false,
 	iscompleted: false,
-	
+
 	mTypes: {
 		'mp4': 'video/mp4',
 		'ogv': 'video/ogg',
@@ -58,7 +59,7 @@ VideoPlayer.prototype = {
 		fs: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="16" viewBox="0 0 32 32"><path fill="#444444" d="M27.414 24.586l-4.586-4.586-2.828 2.828 4.586 4.586-4.586 4.586h12v-12zM12 0h-12v12l4.586-4.586 4.543 4.539 2.828-2.828-4.543-4.539zM12 22.828l-2.828-2.828-4.586 4.586-4.586-4.586v12h12l-4.586-4.586zM32 0h-12l4.586 4.586-4.543 4.539 2.828 2.828 4.543-4.539 4.586 4.586z"></path></svg>'
 
 	},
-	
+
 	colors_scrubber_bg: '#000',
 	colors_scrubber_progress: '#666',
 	colors_scrubber_playback: '#FFF',
@@ -69,7 +70,7 @@ VideoPlayer.prototype = {
 	colors_replay: '#FFF',
 	colors_spinner: '#FFF',
 	colors_fs: '#FFF',
-	
+
 	dom_container: null,
 	dom_frame: null,
 	dom_debug: null,
@@ -174,19 +175,19 @@ VideoPlayer.prototype = {
 				var s = document.defaultView.getComputedStyle( this.dom_container, '' );
 				this.zindex = parseInt( s.getPropertyValue('z-index'), 10 );
 			} else if( this.dom_container.currentStyle ) {
-				this.zindex = parseInt( this.dom_container.currentStyle['zIndex'], 10 );
+				this.zindex = parseInt( this.dom_container.currentStyle.zIndex, 10 );
 			}
 
 			if(!this.zindex) {
 				this.zindex = 0;
-				this.trace("z-index for video container element not detected, make sure position property is set\nzIndex set to 0");
+				this.trace("z-index for video container element not detected, make sure position property is set.\nzIndex set to 0");
 			}
 
 			// SET FULLSCREEN EXIT
 
 			document.addEventListener("fullscreenchange", function () {
 				parent.trace("fullscreen: "+document.fullscreen);
-				
+
 				if(document.fullscreen) {
 					parent.track_enterfs();
 					parent.isfs = true;
@@ -195,11 +196,11 @@ VideoPlayer.prototype = {
 					parent.track_exitfs();
 					parent.isfs = false;
 				}
-				
+
 			}, false);
 			document.addEventListener("mozfullscreenchange", function () {
 				parent.trace("fullscreen: "+document.mozFullScreen);
-				
+
 				if(document.mozFullScreen) {
 					parent.track_enterfs();
 					parent.isfs = true;
@@ -447,7 +448,7 @@ VideoPlayer.prototype = {
 		if(
 			!this.isfs &&
 			!this.ismobile &&
-			!this.chromeless && 
+			!this.chromeless &&
 			this.videostarted &&
 			( this.dom_bigsound.style.display !== 'block' ) &&
 			( this.dom_replay.style.display !== 'block' ) &&
@@ -472,11 +473,11 @@ VideoPlayer.prototype = {
 			this.play(true);
 		}
 
-		if(	this.dom_bigsound.style.display === 'block' && 
+		if( this.dom_bigsound.style.display === 'block' &&
 			this.elementtrigger ) {
 			this.cfs(true);
 		}
-			
+
 	},
 	barSeek: function(e) {
 		var ro = (e.pageX - this.dom_pbar.getBoundingClientRect().left);
@@ -525,6 +526,11 @@ VideoPlayer.prototype = {
 					tve.setAttribute('autoplay', true);
 				}
 
+				if(parent.inline) {
+					tve.setAttribute('playsinline', true);
+					tve.setAttribute('webkit-playsinline', true);
+				}
+
 				if(parent.progressive) {
 					tve.setAttribute('preload', "auto");
 				}
@@ -536,7 +542,7 @@ VideoPlayer.prototype = {
 				if(parent.ismobile) {
 					if(!parent.chromeless) {
 						tve.setAttribute('controls', true);
-					} 
+					}
 
 					parent.dom_controller.style.display = 'none';
 				}
@@ -953,12 +959,13 @@ VideoPlayer.prototype = {
 		if( this.dom_poster.style.display === 'block' ) {
 			this.dom_poster.style.display = 'none';
 		}
-		if( this.proxy.style.display === 'none') {
+		if( this.proxy && this.proxy.style.display === 'none') {
 			this.proxy.style.display = 'block';
 		}
-
-		this.playhead = this.proxy.currentTime;
-		this.duration = this.proxy.duration;
+		if( this.proxy ) {
+			this.playhead = this.proxy.currentTime;
+			this.duration = this.proxy.duration;
+		}
 
 		var phpercentage = ( this.playhead / this.duration ) * 100;
 
@@ -966,24 +973,24 @@ VideoPlayer.prototype = {
 
 		// QUARTILES
 		if(!this.track.q25 && phpercentage >= 25) {
-		    this.track.q25 = true;
-		    
+			this.track.q25 = true;
+
 			this.track_q25();
-		    
+
 		}
-		
+
 		if(!this.track.q50 && phpercentage >= 50) {
-		    this.track.q50 = true;
-		    
-		    this.track_q50();
-		    
+			this.track.q50 = true;
+
+			this.track_q50();
+
 		}
-		
+
 		if(!this.track.q75 && phpercentage >= 75) {
-		    this.track.q75 = true;
-		    
-		    this.track_q75();
-		    
+			this.track.q75 = true;
+
+			this.track_q75();
+
 		}
 
 		this.callback_progress();
@@ -1051,15 +1058,15 @@ VideoPlayer.prototype = {
 	},
 
 	trackReset: function() {
-		
-		var parent = this;
-		
+
+		// var parent = this;
+
 		this.track.started = false;
 		this.track.q25 = false;
 		this.track.q50 = false;
 		this.track.q75 = false;
 	},
-	
+
 	track_start: function() {
 		// console.log('track start');
 	},
@@ -1069,7 +1076,7 @@ VideoPlayer.prototype = {
 	},
 
 	track_replay: function() {
-		// console.log('track replay');	
+		// console.log('track replay');
 	},
 
 	track_end: function() {
@@ -1101,11 +1108,11 @@ VideoPlayer.prototype = {
 	},
 
 	track_enterfs: function() {
-		
+
 	},
 
 	track_exitfs: function() {
-		
+
 	},
 
 	controlHandler: function(e) {
@@ -1276,18 +1283,22 @@ VideoPlayer.prototype = {
 				this.trace('reflow video');
 			}
 		}
-		else if(!passive) { 
+		else if(!passive) {
 			this.trace("reflow useless: video elements aren't ready");
 		}
 	},
 
 	trace: function(str) {
-		
+
 		if(this.debug) {
-		 	if( this.dom_debug ) {
-		 		if(console) console.log(str);
-		 		this.dom_debug.innerHTML += str + '<br>';
-		 	}
+
+			if(window.console) { 
+				window.console.log(str); 
+			}
+
+			if( this.dom_debug ) {
+				this.dom_debug.innerHTML += str + '<br>';
+			}
 		}
 	},
 

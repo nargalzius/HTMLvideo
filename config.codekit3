@@ -7,7 +7,7 @@
 		"uuidString": "433ECC73-5514-40A9-B6C8-7019A5FFA6DA"
 		}
 	],
-"creatorBuild": "25504",
+"creatorBuild": "25568",
 "files": {
 	"\/demo\/public_html\/HTMLvideo-min.js": {
 		"ft": 64,
@@ -42,24 +42,6 @@
 		"oAP": "\/demo\/public_html\/style-min.css",
 		"oF": 0,
 		"oS": 0
-		},
-	"\/demo\/src\/.sass-cache\/d9c454b77ac7da994b260c6d6a72f2c79cb77546\/global.sassc": {
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "\/demo\/src\/.sass-cache\/d9c454b77ac7da994b260c6d6a72f2c79cb77546\/global.sassc",
-		"oF": 0
-		},
-	"\/demo\/src\/.sass-cache\/d9c454b77ac7da994b260c6d6a72f2c79cb77546\/reset.sassc": {
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "\/demo\/src\/.sass-cache\/d9c454b77ac7da994b260c6d6a72f2c79cb77546\/reset.sassc",
-		"oF": 0
-		},
-	"\/demo\/src\/.sass-cache\/d9c454b77ac7da994b260c6d6a72f2c79cb77546\/style.sassc": {
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "\/demo\/src\/.sass-cache\/d9c454b77ac7da994b260c6d6a72f2c79cb77546\/style.sassc",
-		"oF": 0
 		},
 	"\/demo\/src\/global.sass": {
 		"aP": 0,
@@ -123,20 +105,20 @@
 		"oA": 0,
 		"oAP": "\/demo\/public_html\/HTMLvideo-min.js",
 		"oF": 2,
-		"sC": 0,
+		"sC": 1,
 		"tS": 0
 		},
 	"\/HTMLvideo.sublime-project": {
 		"ft": 8192,
-		"oA": 2,
+		"oA": 1,
 		"oAP": "\/HTMLvideo.sublime-project",
-		"oF": 0
+		"oF": 1
 		},
 	"\/HTMLvideo.sublime-workspace": {
 		"ft": 8192,
-		"oA": 2,
+		"oA": 1,
 		"oAP": "\/HTMLvideo.sublime-workspace",
-		"oF": 0
+		"oF": 1
 		},
 	"\/README.md": {
 		"cS": 0,
@@ -1037,6 +1019,10 @@
 			"active": 0,
 			"optionString": ""
 			},
+		"no-multi-assign": {
+			"active": 0,
+			"optionString": ""
+			},
 		"no-multi-spaces": {
 			"active": 0,
 			"optionString": "{'exceptions': {'Property': true, 'BinaryExpression': false, 'VariableDeclarator': false, 'ImportDeclaration': false}}"
@@ -1365,6 +1351,10 @@
 			"active": 0,
 			"optionString": ""
 			},
+		"prefer-promise-reject-errors": {
+			"active": 0,
+			"optionString": "{'allowEmptyReject': false}"
+			},
 		"prefer-rest-params": {
 			"active": 0,
 			"optionString": ""
@@ -1458,6 +1448,10 @@
 			"optionString": ""
 			},
 		"template-curly-spacing": {
+			"active": 0,
+			"optionString": "'never'"
+			},
+		"template-tag-spacing": {
 			"active": 0,
 			"optionString": "'never'"
 			},

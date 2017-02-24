@@ -27,7 +27,8 @@ function init(){
         chromeless: video.chromeless,
         loop: video.loop,
         debug: video.debug,
-        progressive: video.progressive
+        progressive: video.progressive,
+        inline: video.inline
     }
 
     //video.dom_debug = document.getElementById('debug');
@@ -45,13 +46,15 @@ function init(){
 
     $('.cb').click(function(e){
 
-        if( !$(this).parent().hasClass('inactive') && ( $(this).attr('id') === 'ismobile' || 
+        if( !$(this).parent().hasClass('inactive') && ( 
+            $(this).attr('id') === 'ismobile' || 
             $(this).attr('id') === 'allowfullscreen' || 
             $(this).attr('id') === 'autoplay' ||
             $(this).attr('id') === 'startmuted' ||
             $(this).attr('id') === 'chromeless' ||
             $(this).attr('id') === 'uniquereplay' ||
-            $(this).attr('id') === 'progressive'
+            $(this).attr('id') === 'progressive' ||
+            $(this).attr('id') === 'inline'
             ) )
         {
             video.destroy();
@@ -116,7 +119,7 @@ function init(){
     $('#height').val($('#videoPlayer').height());
 
     loadVid();
-    //loadSecondaryVideo();
+    loadSecondaryVideo();
 }
 
 function ppMulti()
@@ -185,6 +188,7 @@ function resetVariables() {
     $('#loop').prop('checked', resetVars.loop);
     $('#debug').prop('checked', resetVars.debug);
     $('#progressive').prop('checked', resetVars.progressive);
+    $('#inline').prop('checked', resetVars.inline);
 
     setExceptions();
 
