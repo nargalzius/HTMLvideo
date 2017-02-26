@@ -1,3 +1,5 @@
+// @codekit-prepend "../../device.js"
+
 var video;
 var multiSource = [
     'https://joystick.cachefly.net/resources/video/video.mp4',
