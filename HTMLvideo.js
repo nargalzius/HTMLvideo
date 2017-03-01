@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  3.0
+ *  3.1
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -124,7 +124,10 @@ VideoPlayer.prototype = {
 		volume: false,
 		start: true,
 		preview_start: true,
-		play: true
+		play: true,
+		pause: true,
+		quartiles: true
+
 	},
 	disableNotification: function(str) {
 		this.notifications[str] = false;
@@ -686,10 +689,14 @@ VideoPlayer.prototype = {
 
 	unload: function(bool) {
 
+		var self = this;
+
 		this.started = false;
 		this.playing = false;
 		this.isfs = false;
 		this.ready = false;
+
+		this.disableNotification('quartiles');
 
 		if( this.proxy ) {
 			if(!bool) {
@@ -723,6 +730,7 @@ VideoPlayer.prototype = {
 	},
 
 	destroy: function() {
+		
 		if(this.initialized) {
 			this.unload(true);
 			this.dom_container.innerHTML = '';
@@ -920,6 +928,7 @@ VideoPlayer.prototype = {
 			this.proxy.style.display = 'none';
 			this.dom_bigsound.style.display = 'none';
 
+			this.disableNotification('volume');
 			
 			this.callback_end();
 			
@@ -1031,12 +1040,14 @@ VideoPlayer.prototype = {
 				this.restartOnPlay = true;
 				this.trackReset();
 				this.preview = 0;
-				this.track_preview_end();
+				this.track_preview_end(); // **** TODO
 			}
 			else {
 				this.disableNotification('end');
 				this.disableNotification('preview_end');
-				this.track_pause();
+				if(this.notifications.pause) {
+					this.track_pause();	
+				}
 			}
 		}
 	},
@@ -1125,17 +1136,17 @@ VideoPlayer.prototype = {
 		this.dom_phead.style.width = phpercentage+'%';
 
 		// QUARTILES
-		if(!this.preview && !this.track.q25 && phpercentage >= 25) {
+		if(this.notifications.quartiles && !this.preview && !this.track.q25 && phpercentage >= 25) {
 			this.track.q25 = true;
 			this.track_q25();
 		}
 
-		if(!this.preview && !this.track.q50 && phpercentage >= 50) {
+		if(this.notifications.quartiles && !this.preview && !this.track.q50 && phpercentage >= 50) {
 			this.track.q50 = true;
 			this.track_q50();
 		}
 
-		if(!this.preview && !this.track.q75 && phpercentage >= 75) {
+		if(this.notifications.quartiles && !this.preview && !this.track.q75 && phpercentage >= 75) {
 			this.track.q75 = true;
 			this.track_q75();
 		}
@@ -1183,11 +1194,19 @@ VideoPlayer.prototype = {
 	callback_play: function() {
 		this.trace('Video Play');
 	},
+	callback_stop: function() {
+		this.trace('Video Stopped (Manually)');
+	},
 	callback_pause: function() {
 		this.trace('Video Paused');
 	},
 	callback_volume: function() {
-		this.trace('Video Volume Change');
+		if(this.proxy.muted) {
+			if(this.notifications.volume) this.trace('Video Muted');
+		}
+		else {
+			if(this.notifications.volume) this.trace('Video Unmuted');
+		}
 	},
 	callback_loading: function() {
 		// this.trace('Video data downloading');
@@ -1218,21 +1237,21 @@ VideoPlayer.prototype = {
 		this.track.q75 = false;
 	},
 
-	track_start: function() {},
-	track_end: function() {},
-	track_preview_start: function() {},
-	track_preview_end: function() {},
-	track_play: function() {},
-	track_replay: function() {},
-	track_pause: function() {},
-	track_mute: function() {},
-	track_unmute: function() {},
-	track_q25: function() {},
-	track_q50: function() {},
-	track_q75: function() {},
-	track_enterfs: function() {},
-	track_exitfs: function() {},
-	track_cfs: function() {},
+	track_start: function() { this.trace('TRACK: Start'); },
+	track_end: function() { this.trace('TRACK: End'); },
+	track_preview_start: function() { this.trace('TRACK: Preview Start'); },
+	track_preview_end: function() { this.trace('TRACK: Preview End'); },
+	track_play: function() { this.trace('TRACK: Play'); },
+	track_replay: function() { this.trace('TRACK: Replay'); },
+	track_pause: function() { this.trace('TRACK: Pause'); },
+	track_mute: function() { this.trace('TRACK: Mute'); },
+	track_unmute: function() { this.trace('TRACK: Unmute'); },
+	track_q25: function() { this.trace('TRACK: 1st Quartile'); },
+	track_q50: function() { this.trace('TRACK: Midpoint'); },
+	track_q75: function() { this.trace('TRACK: 3rd Quartile'); },
+	track_enterfs: function() { this.trace('TRACK: Enter Fullscreen'); },
+	track_exitfs: function() { this.trace('TRACK: Exit Fullscreen'); },
+	track_cfs: function() { this.trace('TRACK: Click for Sound'); },
 
 	controlHandler: function(e) {
 
@@ -1318,12 +1337,32 @@ VideoPlayer.prototype = {
 		this.proxy.pause();
 	},
 
-	stop: function() {
-		this.seek(0);
-		this.pause();
-		this.playing = false;
-		this.trackReset();
-		this.completed = false;
+	stop: function(bool) {
+		var self = this;
+
+		if(this.playing || bool) {
+			this.callback_stop();
+
+			if(this.replaywithsound) {
+				this.disableNotification('volume');
+				this.unmute();
+			}
+
+			this.seek(0);
+			this.disableNotification('pause');
+			this.pause();
+			this.trackReset();
+			this.completed = false;
+			setTimeout(function(){
+				self.playing = false;
+				if(self.hasposter) {
+					self.dom_poster.style.display = 'block';
+				}
+				self.dom_bigplay.style.display = 'block';
+				self.reflow();
+			}, 500);
+		}
+
 	},
 
 	replay: function() {

@@ -104,15 +104,19 @@ function init(){
 
     $('#obliterate').click(function(){
         video.destroy();
-    })
+    });
 
     $('#destroy').click(function(){
         video.unload();
-    })
+    });
 
     $('#initialize').click(function(){
         video.init('videoPlayer');
-    })
+    });
+
+    $('#stop').click(function(){
+        video.stop();
+    });
 
     ppMulti();
     $('#poster').val(poster);
