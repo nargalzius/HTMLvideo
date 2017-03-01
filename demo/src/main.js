@@ -7,6 +7,7 @@ var multiSource = [
     'https://joystick.cachefly.net/resources/video/video.ogv'];
 var poster = 'https://joystick.cachefly.net/JMC/v/vid_become_legend.jpg';
 var singleSource = 'https://joystick.cachefly.net/JMC/v/vid_become_legend.mp4';
+var resetVars;
 
 $( document ).ready(init);
 
@@ -30,8 +31,9 @@ function init(){
         loop: video.loop,
         debug: video.debug,
         progressive: video.progressive,
-        inline: video.inline
-    }
+        inline: video.inline,
+        preview: video.preview
+    };
 
     //video.dom_debug = document.getElementById('debug');
 
@@ -56,15 +58,12 @@ function init(){
             $(this).attr('id') === 'chromeless' ||
             $(this).attr('id') === 'uniquereplay' ||
             $(this).attr('id') === 'progressive' ||
+            $(this).attr('id') === 'preview' ||
+            $(this).attr('id') === 'elementtrigger' ||
             $(this).attr('id') === 'inline'
             ) )
         {
-            video.destroy();
-
-            setTimeout(function(){
-                video.init('videoPlayer');
-                loadVid();
-            }, 500);
+            quickReset(50);
         }
 
         if(!$(this).parent().hasClass('inactive'))
@@ -124,6 +123,16 @@ function init(){
     // loadSecondaryVideo();
 }
 
+function quickReset(num) {
+    
+    video.destroy();
+    
+    setTimeout(function(){
+        video.init('videoPlayer');
+        loadVid();
+    }, num);
+}
+
 function ppMulti()
 {
 
@@ -165,6 +174,11 @@ function loadVid()
 
 function resetVariables() {
 
+    for(var p in resetVars) {
+        video[p] = resetVars[p];
+
+    }
+
     video.autoplay = resetVars.autoplay;
     video.startmuted = resetVars.startmuted;
     video.replaywithsound = resetVars.replaywithsound;
@@ -177,22 +191,12 @@ function resetVariables() {
     video.loop = resetVars.loop;
     video.debug = resetVars.debug;
     video.progressive = resetVars.progressive;
-
-
-    $('#autoplay').prop('checked', resetVars.autoplay);
-    $('#startmuted').prop('checked', resetVars.startmuted);
-    $('#replaywithsound').prop('checked', resetVars.replaywithsound);
-    $('#allowfullscreen').prop('checked', resetVars.allowfullscreen);
-    $('#uniquereplay').prop('checked', resetVars.uniquereplay);
-    $('#ismobile').prop('checked', resetVars.ismobile);
-    $('#chromeless').prop('checked', resetVars.chromeless);
-    $('#elementtrigger').prop('checked', resetVars.elementtrigger);
-    $('#loop').prop('checked', resetVars.loop);
-    $('#debug').prop('checked', resetVars.debug);
-    $('#progressive').prop('checked', resetVars.progressive);
-    $('#inline').prop('checked', resetVars.inline);
+    video.inline = resetVars.inline;
+    video.preview = resetVars.preview;
 
     setExceptions();
+
+    quickReset(100);
 
 }
 
@@ -200,11 +204,16 @@ function setExceptions() {
 
     $('.cboxwrapper').removeClass('inactive');
 
-    if(!video.autoplay)
+    if(!video.autoplay) {
+        video.startmuted = false;
         $('#startmuted').parent().addClass('inactive');
+    }
 
     if(video.ismobile)
     {
+        video.preview = 0;
+        video.autoplay = false;
+        video.startmuted = false;
         $('#autoplay').parent().addClass('inactive');
         $('#startmuted').parent().addClass('inactive');
         $('#allowfullscreen').parent().addClass('inactive');
@@ -212,8 +221,28 @@ function setExceptions() {
         $('#replaywithsound').parent().addClass('inactive');
         $('#chromeless').parent().addClass('inactive');
         $('#elementtrigger').parent().addClass('inactive');
+        $('#preview').parent().addClass('inactive');
     }
 
+    if(video.preview) {
+        video.preview = 7;
+        video.autoplay = true;
+        video.startmuted = true;
+        $('#autoplay').parent().addClass('inactive');
+        $('#startmuted').parent().addClass('inactive');
+    }
+
+    setCheckboxes();
+
+}
+
+function setCheckboxes() {
+    // console.log('');
+    for(var p in resetVars) {
+        // console.log(p+': '+video[p]);
+        $('#'+p).prop('checked', video[p]);
+    }
+    // console.log('');
 }
 
 function loadSecondaryVideo()
