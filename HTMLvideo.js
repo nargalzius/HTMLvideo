@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  3.3
+ *  3.4
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -611,7 +611,7 @@ VideoPlayer.prototype = {
 
 				if(self.ismobile) {
 					if(!self.chromeless) {
-						tve.setAttribute('controls', true);
+						tve.setAttribute('controls', '');
 					}
 
 					self.dom_controller.style.display = 'none';
