@@ -88,6 +88,8 @@ VideoPlayer.prototype = {
 
 	},
 
+	centered_controls: [],
+
 	colors_scrubber_bg: '#000',
 	colors_scrubber_progress: '#666',
 	colors_scrubber_playback: '#FFF',
@@ -1456,8 +1458,6 @@ VideoPlayer.prototype = {
 	getMediaType: function(str) {
 		return this.mTypes[str.split('.')[str.split('.').length - 1]];
 	},
-
-	centered_controls: [],
 
 	reflow: function(passive) {
 		if(this.initialized) {

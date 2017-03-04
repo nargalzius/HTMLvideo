@@ -1,6 +1,6 @@
 # HTML Video "class"
 
-#### [Codepen Demo](http://codepen.io/nargalzius/pen/WvKOBv?editors=001)
+#### [Codepen Demo](http://codepen.io/nargalzius/full/WvKOBv)
 
 Minified version can be found in the `demo/public_html` folder
 
@@ -63,7 +63,7 @@ Forces playback whenever you move the playhead. If set to `false` it stays on it
 Uses a replay icon for the replay. When set to `false`, it'll use the same icon as the play button. 
 
 `chromeless` | Default: `false`  
-Removes all controls. Useful for preview videos on collapsed states for desktop units where you don't want video controls visible. Clicking on the player itself only toggles play/pause. 
+Removes all controls. Useful for preview videos on collapsed states for desktop units where you don't want video controls visible. **WARNING:** If you also set `elementtrigger` to false, then you can only control/toggle the video programatically.
 
 `progressive` | Default: `true`  
 Preloads the entire video (or a huge chunk of it) before playback. 
@@ -73,6 +73,9 @@ Reverts to built-in video player and controls. Naturally a lot of the "special b
 
 `elementtrigger` | Default: `true`  
 Allows clicking of the entire video container itself to play/pause. If set to `false`, you'll have to use the control icons/buttons.
+
+`preview` | Default: `0`  
+Setting to a positive integer will enable TIMED auto-playing/auto-muted playback. Then it will stop and show the play button for full video playback (with sound).
 
 `debug` | Default: `false`  
 Output player logs to console. 
@@ -113,7 +116,9 @@ Manually set poster image
 #### Some methods that are available but not necessarily advertized.
 
 `reflow()`  
-Can be called if you dynamically change the size of the video container and need the control elements to re-position relative to the new container dimensions.
+Can be called if you dynamically change the size of the video container and need the control elements to re-position relative to the new container dimensions. 
+
+The elements that are "centered" are indexed in the `centered_controls` array. Which means you can inject your own html elements programatically and also have them centered if you *push* it into the array.
 
 `unload()`  
 Unloads the video. Instance itself is still active.
@@ -136,6 +141,24 @@ Total duration of the video
 `proxy`  
 If for some reason, you want to access the `<video>` element itself, you can do it through this :)
 
+`initialized`  
+If the video instance has been initialized
+
+`ready`  
+If the video state is ready for playback
+
+`started`  
+If the video has started
+
+`firsttime`  
+If the video hasn't been replayed.
+
+`completed`  
+If the video has completed a full playback already.
+
+`hasposter`
+If the current video has a poster assigned to it.
+
 
 ## Callbacks and Tracking
 #### Callbacks that can be overriden
@@ -149,10 +172,12 @@ If for some reason, you want to access the `<video>` element itself, you can do 
 `callback_ready` 
 
 `track_start` 
-`track_play` 
-`track_replay` 
 `track_end` 
+`track_preview_start` 
+`track_preview_end` 
+`track_play` 
 `track_pause` 
+`track_replay` 
 `track_mute` 
 `track_unmute` 
 `track_q25` 
@@ -160,6 +185,7 @@ If for some reason, you want to access the `<video>` element itself, you can do 
 `track_q75` 
 `track_enterfs` 
 `track_exitf` 
+
 
 #### Example(s)
 

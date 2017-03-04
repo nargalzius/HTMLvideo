@@ -179,6 +179,8 @@ function init(){
         if($(this).hasClass('active')) {
             video.init('videoPlayer');
             $('#load').addClass('active');
+            $('#destroy').addClass('active');
+            $(this).removeClass('active');
         }
     });
 
@@ -224,6 +226,9 @@ function init(){
         if($(this).hasClass('active')) {
             loadVid();
             $('#play').addClass('active');
+            $('#unload').addClass('active');
+            $('#destroy').addClass('active');
+            $('#initialize').removeClass('active');
         }
     });
 
@@ -318,6 +323,17 @@ function quickReset(num) {
     $('#pause').removeClass('active');
     $('#mute').removeClass('active');
     $('#unmute').removeClass('active');
+
+    $('#load').addClass('active');
+    $('#unload').addClass('active');
+    $('#destroy').addClass('active');
+    $('#play').addClass('active');
+    $('#stop').removeClass('active');
+    $('#pause').removeClass('active');
+    $('#unmute').removeClass('active');
+    $('#mute').removeClass('active');
+    $('#replay').removeClass('active');
+    $('#initialize').removeClass('active');
 }
 
 function ppMulti()
