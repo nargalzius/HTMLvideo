@@ -2,8 +2,11 @@ html(lang="en")
 	head
 		meta(name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1")
 		link(rel="stylesheet", type="text/css", href="style.css")
-		script(type="text/javascript",src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js")
+		script(type="text/javascript",src="//cdnjs.cloudflare.com/ajax/libs/device.js/0.2.7/device.min.js")
+		script(type="text/javascript",src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js")
+		script(type="text/javascript",src="//use.fontawesome.com/567b6b8249.js")
 		script(type="text/javascript",src="HTMLvideo-min.js")
+			
 
 	body
 
@@ -12,83 +15,129 @@ html(lang="en")
 		#videoPlayer2.abs
 
 		#groupwrapper1.rel
-			.fieldwrapper
-				#load.btn.box load video
-				#stop.btn.box force stop
-				#destroy.btn.box unload
-				#obliterate.btn.box destroy
-				#initialize.btn.box (re)initialize
 
+			.iconControl
+				a.active#defaults
+					i.btn.fa.fa-lg.fa-sliders(aria-hidden="true") 
+					span defaults
 
+				a#initialize(title='video.init("video_container")')
+					i.btn.fa.fa-lg.fa-hourglass-start(aria-hidden="true")
+					span (re)initialize
+				a.active#load(title='video.load( [video_file(s)], poster_file )')
+					i.btn.fa.fa-lg.fa-cloud-download(aria-hidden="true")
+					span load video
+				a.active#unload(title='video.unload()')
+					i.btn.fa.fa-lg.fa-chain-broken(aria-hidden="true")
+					span unload
+				a.active#destroy(title='video.destroy()')
+					i.btn.fa.fa-lg.fa-trash-o(aria-hidden="true")
+					span destroy
+
+				a.active#play(title='video.play()')
+					i.btn.fa.fa-lg.fa-play-circle(aria-hidden="true")
+					span play
+				a#pause(title='video.pause()')
+					i.btn.fa.fa-lg.fa-pause-circle(aria-hidden="true")
+					span pause
+				a#mute(title='video.mute()')
+					i.btn.fa.fa-lg.fa-volume-off(aria-hidden="true")
+					span mute
+				a#unmute(title='video.unmute()')
+					i.btn.fa.fa-lg.fa-volume-up(aria-hidden="true")
+					span unmute
+				a#stop(title='video.stop()')
+					i.btn.fa.fa-lg.fa-stop-circle(aria-hidden="true")
+					span stop
+				a#replay(title='video.replay()')
+					i.btn.fa.fa-lg.fa-repeat(aria-hidden="true")
+					span replay
+				a.active#reflow(title='video.resize(w,h)')
+					i.btn.fa.fa-lg.fa-expand(aria-hidden="true")
+					span resize
 			#resize.fieldwrapper
 				input#width(type='textfield')
 				span x
 				input#height(type='textfield')
-				#reflow.btn.box resize
+				//- #reflow.btn.box resize
 
-			.fieldwrapper
-				#defaults.btn.box defaults
+			//- .fieldwrapper
+			//- 	#defaults.btn.box defaults
 
-			.cboxwrapper
+			.cboxwrapper.debug
 				input#debug(type="checkbox").cb
 				span video.debug
+				span#tooltip Trace to console<br>This demo is an exception - default value for <code>debug</code> is <strong>false</strong>
 
-			.cboxwrapper
+			.cboxwrapper.ismobile
 				input#ismobile(type="checkbox").cb
 				span video.ismobile
+				span#tooltip Disable custom bar controls and use vanilla <code>&lt;video&gt;</code> controls.
 
-			.cboxwrapper
+			.cboxwrapper.autoplay
 				input#autoplay(type="checkbox").cb
 				span video.autoplay
+				//- span#tooltip Auto play immediately when loaded
 
-			.cboxwrapper
+			.cboxwrapper.startmuted
 				input#startmuted(type="checkbox").cb
 				span video.startmuted
+				//- span#tooltip Start muted on first play
 
-			.cboxwrapper
+			.cboxwrapper.replaywithsound
 				input#replaywithsound(type="checkbox").cb
 				span video.replaywithsound
+				span#tooltip Force unmute on replay
 
-			.cboxwrapper
+			.cboxwrapper.loop
 				input#loop(type="checkbox").cb
 				span video.loop
+				//- span#tooltip Restart automatically on video end
 
-			.cboxwrapper
-				input#allowfullscreen(type="checkbox").cb
-				span video.allowfullscreen
+			//- .cboxwrapper.allowfullscreen
+			//- 	input#allowfullscreen(type="checkbox").cb
+			//- 	span video.allowfullscreen
 
-			.cboxwrapper
+			.cboxwrapper.playonseek
 				input#playonseek(type="checkbox").cb
 				span video.playonseek
+				span#tooltip Force play/resume on scrubber seek 
 
-			.cboxwrapper
+			.cboxwrapper.uniquereplay
 				input#uniquereplay(type="checkbox").cb
 				span video.uniquereplay
+				span#tooltip Use replay icon. Re-uses play icon if set to <strong>false</strong>
 
-			.cboxwrapper
+			.cboxwrapper.chromeless
 				input#chromeless(type="checkbox").cb
 				span video.chromeless
+				span#tooltip Remove all control buttons<br><strong>WARNING:</strong> if you set <code>elementtrigger</code> to <strong>false</strong> as well, you'll have to trigger/control the video programatically.
 
-			.cboxwrapper
+			.cboxwrapper.elementtrigger
 				input#elementtrigger(type="checkbox").cb
 				span video.elementtrigger
+				span#tooltip Enables playback/pause by clicking the video element (similar to YouTube, etc.)
 
-			.cboxwrapper
+			.cboxwrapper.progressive
 				input#progressive(type="checkbox").cb
 				span video.progressive
+				span#tooltip "Preload" video contents on load
 
-			.cboxwrapper
+			.cboxwrapper.inline
 				input#inline(type="checkbox").cb
 				span video.inline
+				span#tooltip Set <code>playsinline</code> attribute to video element
 
-			.cboxwrapper
+			.cboxwrapper.preview
 				input#preview(type="checkbox").cb
 				span video.preview
+				input#prevTime.hide(type='textfield' maxlength='3')
+				span#tooltip Enable timed "Click For Sound" behavior
 
 		#groupwrapper2.rel
 			.fieldwrapper
 				.header Enter video source URL(s) below
-				textarea#sources
+				textarea.activeextarea#sources
 				.info For multiple sources, separate using a comma
 				.info Click <span id='ppMulti' class='btn linkage'>here</span> (multiple) or <span id='ppSingle' class='btn linkage'>here</span> (single) to pre-populate.
 

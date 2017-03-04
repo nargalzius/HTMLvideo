@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  3.4
+ *  3.5
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -698,6 +698,13 @@ VideoPlayer.prototype = {
 		this.isfs = false;
 		this.ready = false;
 		this.playhead = 0;
+		this.firsttime = true;
+		this.completed = false;
+		this.restartOnPlay = false;
+		this.hasposter = false;
+		this.playhead = 0;
+		this.duration = 0;
+		this.buffered = 0;
 
 		if( this.proxy ) {
 			if(!bool) {
@@ -723,9 +730,9 @@ VideoPlayer.prototype = {
 
 			this.dom_frame.innerHTML = '';
 		}
-		else {
-			this.trace('nothing to unload');
-		}
+		// else {
+		// 	this.trace('Nothing to unload');
+		// }
 
 		this.trackReset();
 	},
@@ -1404,6 +1411,7 @@ VideoPlayer.prototype = {
 
 	cfsFlag: false,
 	cfs: function(bool) {
+
 
 		var self = this;
 		
