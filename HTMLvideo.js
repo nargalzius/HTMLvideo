@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  3.5
+ *  3.6
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -195,7 +195,6 @@ VideoPlayer.prototype = {
 
 		if(!this.initialized)
 		{
-
 			if(this.ismobile === null) { this.checkForMobile(); }
 
 			if(this.preview && !this.ismobile) {
@@ -302,10 +301,7 @@ VideoPlayer.prototype = {
 			// CONTROL
 
 			this.dom_controller = document.createElement('div');
-
-			if(!this.chromeless) {
-				this.dom_controller.style.display = 'block';
-			}
+			this.dom_controller.style.display = 'block';
 
 			this.dom_controller.style.zIndex = this.zindex+1;
 			this.dom_controller.style.position = 'relative';
@@ -314,7 +310,10 @@ VideoPlayer.prototype = {
 			this.dom_controller.style.top = ( this.dom_container.offsetHeight - this.barsize ) + 'px';
 			this.dom_controller.style.left = 0;
 			this.dom_controller.style.display = 'none';
-			this.dom_container.appendChild(this.dom_controller);
+
+			if(!this.chromeless) {
+				this.dom_container.appendChild(this.dom_controller);
+			}
 
 			var tcbg = document.createElement('div');
 				tcbg.style.display = 'block';
@@ -439,7 +438,9 @@ VideoPlayer.prototype = {
 			this.dom_bigplay.style.position = 'absolute';
 			this.dom_bigplay.style.cursor = 'pointer';
 			this.dom_bigplay.style.textShadow = this.dom_template_textshadow;
-			this.dom_container.appendChild(this.dom_bigplay);
+			if(!this.chromeless) {
+				this.dom_container.appendChild(this.dom_bigplay);
+			}
 			this.dom_bigplay.style.display = 'none';
 			this.centered_controls.push(this.dom_bigplay);
 
@@ -452,7 +453,9 @@ VideoPlayer.prototype = {
 			this.dom_preview.style.position = 'absolute';
 			this.dom_preview.style.cursor = 'pointer';
 			this.dom_preview.style.textShadow = this.dom_template_textshadow;		
-			this.dom_container.appendChild(this.dom_preview);
+			if(!this.chromeless) {
+				this.dom_container.appendChild(this.dom_preview);
+			}
 			this.dom_preview.style.display = 'none';
 			this.centered_controls.push(this.dom_preview);
 
@@ -470,7 +473,9 @@ VideoPlayer.prototype = {
 			this.dom_replay.style.position = 'absolute';
 			this.dom_replay.style.cursor = 'pointer';
 			this.dom_replay.style.textShadow = this.dom_template_textshadow;
-			this.dom_container.appendChild(this.dom_replay);
+			if(!this.chromeless) {
+				this.dom_container.appendChild(this.dom_replay);
+			}
 			this.dom_replay.style.display = 'none';
 			this.centered_controls.push(this.dom_replay);
 
@@ -483,7 +488,9 @@ VideoPlayer.prototype = {
 			this.dom_bigsound.style.position = 'absolute';
 			this.dom_bigsound.style.cursor = 'pointer';
 			this.dom_bigsound.style.textShadow = this.dom_template_textshadow;
-			this.dom_container.appendChild(this.dom_bigsound);
+			if(!this.chromeless) {
+				this.dom_container.appendChild(this.dom_bigsound);
+			}
 			this.dom_bigsound.style.display = 'none';
 			this.centered_controls.push(this.dom_bigsound);
 
@@ -514,7 +521,6 @@ VideoPlayer.prototype = {
 		if(
 			!this.isfs &&
 			!this.ismobile &&
-			!this.chromeless &&
 			this.started &&
 			( this.dom_bigsound.style.display !== 'block' ) &&
 			( this.dom_replay.style.display !== 'block' ) &&
@@ -529,7 +535,7 @@ VideoPlayer.prototype = {
 	},
 	mClick: function() {
 
-		if( this.elementtrigger && this.chromeless && !this.isPlaying() )
+		if( this.elementtrigger && !this.isPlaying() )
 		{
 			this.play(true);
 		}
@@ -644,9 +650,7 @@ VideoPlayer.prototype = {
 				if( !self.hasposter && self.ismobile ) {
 					self.dom_spinner.style.display = 'none';
 
-					if(!self.chromeless) {
-						self.dom_bigplay.style.display = 'block';
-					}
+					self.dom_bigplay.style.display = 'block';
 				}
 
 				self.proxy.style.display = 'none';
@@ -678,10 +682,7 @@ VideoPlayer.prototype = {
 
 				if(self.ismobile) {
 					self.dom_spinner.style.display = 'none';
-					
-					if(!self.chromeless) {
-						self.dom_bigplay.style.display = 'block';
-					}
+					self.dom_bigplay.style.display = 'block';
 				}
 
 				self.reflow(true); // NOT SURE
@@ -934,7 +935,7 @@ VideoPlayer.prototype = {
 				}
 			}
 
-			if(!this.chromeless || this.ismobile) {
+			if(this.ismobile) {
 				this.dom_replay.style.display = 'block';
 			}
 
@@ -1108,9 +1109,7 @@ VideoPlayer.prototype = {
 			if( this.startmuted && this.autoplay && !this.ismobile ) {
 				this.proxy.muted = true;
 
-				if(!this.chromeless) {
-					this.dom_bigsound.style.display = 'block';
-				}
+				this.dom_bigsound.style.display = 'block';
 				this.dom_controller.style.display = 'none';
 				this.playing = false;
 
@@ -1179,7 +1178,7 @@ VideoPlayer.prototype = {
 			if(!this.autoplay) {
 				this.dom_spinner.style.display = 'none';
 
-				if(!this.ismobile && !this.chromeless) {
+				if(!this.ismobile) {
 					this.dom_bigplay.style.display = 'block';
 				}
 
@@ -1188,9 +1187,7 @@ VideoPlayer.prototype = {
 			if(!this.hasposter && !this.autoplay && !this.ismobile) {
 				this.trace('no poster');
 
-				if(!this.chromeless) {
-					this.dom_bigplay.style.display = 'block';
-				}
+				this.dom_bigplay.style.display = 'block';
 				this.dom_controller.style.display = 'none';
 			}
 
@@ -1301,7 +1298,7 @@ VideoPlayer.prototype = {
 					this.proxy.muted = false;
 				}
 
-				if(!this.ismobile && !this.chromeless) {
+				if(!this.ismobile) {
 					this.dom_controller.style.display = 'block';
 				} else {
 					this.dom_controller.style.display = 'none';
@@ -1342,7 +1339,7 @@ VideoPlayer.prototype = {
 	play: function(bool) {
 		this.proxy.play();
 
-		if(bool && !this.ismobile && !this.chromeless) {
+		if(bool && !this.ismobile) {
 			this.dom_controller.style.display = 'block';
 		}
 	},
@@ -1373,11 +1370,11 @@ VideoPlayer.prototype = {
 				if(self.hasposter) {
 					self.dom_poster.style.display = 'block';
 				}
+				
 				self.dom_bigplay.style.display = 'block';
 				self.reflow();
 			}, 500);
 		}
-
 	},
 
 	replay: function() {
@@ -1432,7 +1429,7 @@ VideoPlayer.prototype = {
 			self.restartOnPlay = false;
 		}, 50);
 
-		if(bool && !this.ismobile && !this.chromeless) {
+		if(bool && !this.ismobile) {
 			this.dom_controller.style.display = 'block';
 		}
 
