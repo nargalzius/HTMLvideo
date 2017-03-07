@@ -16,6 +16,7 @@ function init(){
     video = new VideoPlayer();
     video.dom_debug = document.getElementById('debugField');
     video.debug = true;
+    // video.help();
 
     video.checkForMobile();
     video.progressive = false;
@@ -34,6 +35,7 @@ function init(){
         $('#play').removeClass('active');
         $('#pause').addClass('active');
         $('#replay').addClass('active');
+        $('#stop').addClass('active');
         video.trace('callback_play');
     };
     
@@ -109,7 +111,7 @@ function init(){
 
         if( !$(this).parent().hasClass('inactive') && ( 
             $(this).attr('id') === 'ismobile' || 
-            // $(this).attr('id') === 'allowfullscreen' || 
+            $(this).attr('id') === 'allowfullscreen' || 
             $(this).attr('id') === 'autoplay' ||
             $(this).attr('id') === 'startmuted' ||
             $(this).attr('id') === 'chromeless' ||
@@ -462,9 +464,9 @@ function setCheckboxes() {
 function loadSecondaryVideo()
 {
     video2 = new VideoPlayer();
-    video2.init('videoPlayer2');
     video2.autoplay = true;
     video2.startmuted = true;
+    video2.init('videoPlayer2');
     video2.load([
         'http://joystick.cachefly.net/JMC/v/vid_become_legend.mp4',
         'http://joystick.cachefly.net/JMC/v/vid_become_legend.ogv',

@@ -209,7 +209,11 @@ VideoPlayer.prototype = {
 			}
 
 			if(typeof vc === 'object') {
-				if($) { this.dom_container = document.getElementById( vc.attr('id') ); }
+				if( typeof(jQuery) === 'undefined' ) { 
+					this.dom_playercontainer = vc; 
+				} else {
+					this.dom_playercontainer = document.getElementById( vc.attr('id') ); 
+				}
 			} else {
 				this.dom_container = document.getElementById( vc );
 			}
@@ -913,9 +917,10 @@ VideoPlayer.prototype = {
 	dlEnded: function() {
 
 		this.completed = true;
+		this.callback_end();
 
 		if(this.loop) {
-			this.callback_end();
+
 			this.play();
 			this.trace('looping video...');
 
@@ -928,14 +933,14 @@ VideoPlayer.prototype = {
 
 			if(this.hasposter) {
 				this.dom_poster.style.display = 'block';
+				
 			} else {
 				if(!this.ismobile) {
-					this.dom_replay.style.display = 'block';
 					this.dom_controller.style.display = 'none';
 				}
 			}
 
-			if(this.ismobile) {
+			if(!this.chromeless && !this.preview) {
 				this.dom_replay.style.display = 'block';
 			}
 
@@ -943,13 +948,9 @@ VideoPlayer.prototype = {
 			this.dom_bigsound.style.display = 'none';
 
 			this.disableNotification('volume');
-			
-			this.callback_end();
-			
 
 			if(this.preview && !this.ismobile) {
-				this.dom_preview.display = 'block';
-				this.dom_replay.display = 'none';
+				this.dom_preview.style.display = 'block';
 				this.preview = 0;
 				this.completed = false;
 				this.track_preview_end();
@@ -1515,7 +1516,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	listMethods: function() {
-
+	help: function() {
+		window.open('https://github.com/nargalzius/HTMLvideo');
 	}
 };

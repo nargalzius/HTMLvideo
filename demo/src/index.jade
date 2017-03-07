@@ -94,9 +94,9 @@ html(lang="en")
 				span video.loop
 				//- span#tooltip Restart automatically on video end
 
-			//- .cboxwrapper.allowfullscreen
-			//- 	input#allowfullscreen(type="checkbox").cb
-			//- 	span video.allowfullscreen
+			.cboxwrapper.allowfullscreen
+				input#allowfullscreen(type="checkbox").cb
+				span video.allowfullscreen
 
 			.cboxwrapper.playonseek
 				input#playonseek(type="checkbox").cb
@@ -116,7 +116,7 @@ html(lang="en")
 			.cboxwrapper.elementtrigger
 				input#elementtrigger(type="checkbox").cb
 				span video.elementtrigger
-				span#tooltip Enables playback/pause by clicking the video element (similar to YouTube, etc.)
+				span#tooltip Enables playback/pause by clicking the video element (similar to YouTube, etc.) Does not affect regular (visible) controls
 
 			.cboxwrapper.progressive
 				input#progressive(type="checkbox").cb
