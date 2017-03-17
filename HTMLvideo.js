@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  3.6
+ *  3.7
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -10,7 +10,7 @@
  *  Copyright (c) 2015, All Rights Reserved, www.nargalzius.com
  */
 
-var VideoPlayer = function(){};
+function VideoPlayer(){}
 
 VideoPlayer.prototype = {
 	debug: false,
