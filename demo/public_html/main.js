@@ -6,6 +6,7 @@ var multiSource = [
     'https://joystick.cachefly.net/resources/video/video.webm',
     'https://joystick.cachefly.net/resources/video/video.ogv'];
 var poster = 'https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg';
+    // poster = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMbLEGXk2ADDBlqJxM9RtalzYamN_z1-WoB-49QYugyEl1JHzCAQ';
 var singleSource = 'https://joystick.cachefly.net/JMC/v/vid_become_legend.mp4';
 var resetVars;
 

@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  3.7
+ *  3.8
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -100,6 +100,7 @@ VideoPlayer.prototype = {
 	colors_replay: '#FFF',
 	colors_spinner: '#FFF',
 	colors_fs: '#FFF',
+	colors_bg: 'rgba(0,0,0,0.4)',
 
 	dom_container: null,
 	dom_frame: null,
@@ -143,22 +144,37 @@ VideoPlayer.prototype = {
 	},
 	dom_template_bigplay: function() {
 		this.dom_bigplay = document.createElement('div');
+		// this.setVendor(this.dom_bigplay, 'textShadow', this.dom_template_textshadow);
+		this.dom_bigplay.style.backgroundColor = this.colors_bg;
+		this.setVendor(this.dom_bigplay, 'borderRadius', '32px');
 		this.dom_bigplay.innerHTML = this.svg.bigplay;
 		this.dom_bigplay.getElementsByTagName('path')[0].style.fill = this.colors_bigplay;
+		
 	},
 	dom_template_bigsound: function() {
 		this.dom_bigsound = document.createElement('div');
+		// this.setVendor(this.dom_bigsound, 'textShadow', this.dom_template_textshadow);
+		this.dom_bigsound.style.backgroundColor = this.colors_bg;
+		this.setVendor(this.dom_bigsound, 'borderRadius', '32px');
 		this.dom_bigsound.innerHTML = this.svg.bigsound;
 		this.dom_bigsound.getElementsByTagName('path')[0].style.fill = this.colors_bigsound;
 	},
 	dom_template_replay: function() {
 		this.dom_replay = document.createElement('div');
+		// this.setVendor(this.dom_replay, 'textShadow', this.dom_template_textshadow);
+		this.dom_replay.style.backgroundColor = this.colors_bg;
+		this.setVendor(this.dom_replay, 'borderRadius', '32px');
 		this.dom_replay.innerHTML = this.svg.replay;
 		this.dom_replay.getElementsByTagName('path')[0].style.fill = this.colors_replay;
+		this.dom_replay.getElementsByTagName('svg')[0].style.marginTop = '-5px';
 	},
 	dom_template_spinner: function() {
 		this.dom_spinner = document.createElement('div');
+		// this.setVendor(this.dom_spinner, 'textShadow', this.dom_template_textshadow);
+		this.dom_spinner.style.backgroundColor = this.colors_bg;
+		this.setVendor(this.dom_spinner, 'borderRadius', '32px');
 		this.dom_spinner.innerHTML = this.svg.spin;
+		this.dom_spinner.getElementsByTagName('svg')[0].style.padding = '5px';
 		this.dom_spinner.getElementsByTagName('path')[0].style.fill = this.colors_spinner;
 
 	},
@@ -385,7 +401,6 @@ VideoPlayer.prototype = {
 				}
 			this.dom_controller.appendChild(tcmmc);
 
-
 			this.dom_template_mute();
 			this.addClass(this.dom_mute, 'cbtn');
 			this.dom_mute.style.display = 'block';
@@ -456,7 +471,6 @@ VideoPlayer.prototype = {
 			this.dom_preview.style.display = 'block';
 			this.dom_preview.style.position = 'absolute';
 			this.dom_preview.style.cursor = 'pointer';
-			this.dom_preview.style.textShadow = this.dom_template_textshadow;		
 			if(!this.chromeless) {
 				this.dom_container.appendChild(this.dom_preview);
 			}
@@ -476,7 +490,6 @@ VideoPlayer.prototype = {
 			this.dom_replay.style.display = 'block';
 			this.dom_replay.style.position = 'absolute';
 			this.dom_replay.style.cursor = 'pointer';
-			this.dom_replay.style.textShadow = this.dom_template_textshadow;
 			if(!this.chromeless) {
 				this.dom_container.appendChild(this.dom_replay);
 			}
@@ -491,7 +504,6 @@ VideoPlayer.prototype = {
 			this.dom_bigsound.style.display = 'block';
 			this.dom_bigsound.style.position = 'absolute';
 			this.dom_bigsound.style.cursor = 'pointer';
-			this.dom_bigsound.style.textShadow = this.dom_template_textshadow;
 			if(!this.chromeless) {
 				this.dom_container.appendChild(this.dom_bigsound);
 			}
@@ -505,7 +517,6 @@ VideoPlayer.prototype = {
 			this.dom_spinner.style.zIndex = this.zindex + 3;
 			this.dom_spinner.style.display = 'block';
 			this.dom_spinner.style.position = 'absolute';
-			this.dom_spinner.style.textShadow = this.dom_template_textshadow;
 			this.dom_container.appendChild(this.dom_spinner);
 			this.dom_spinner.style.display = 'none';
 			this.centered_controls.push(this.dom_spinner);
@@ -1496,6 +1507,18 @@ VideoPlayer.prototype = {
 
 			if( this.dom_debug ) {
 				this.dom_debug.innerHTML += str + '<br>';
+			}
+		}
+	},
+
+	setVendor: function(element, property, value) {
+
+		var styles = window.getComputedStyle(element, '');
+		var regexp = new RegExp(property+'$', "i");
+
+		for (var key in styles) {
+			if( regexp.test(key) ) {
+				element.style[key] = value;
 			}
 		}
 	},
