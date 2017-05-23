@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  3.8
+ *  4.0
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -19,12 +19,15 @@ VideoPlayer.prototype = {
 	replaywithsound: true,
 	allowfullscreen: false,
 	playonseek: true,
-	uniquereplay: true,
+	uniquereplay: false,
 	chromeless: false,
 	elementtrigger: true,
+	elementplayback: true,
+	bigbuttons: true,
+	controlbar: true,
 	loop: false,
 	progressive: true,
-	inline: false,
+	inline: true,
 	preview: 0,
 
 	initialized: false,
@@ -42,7 +45,6 @@ VideoPlayer.prototype = {
 	started: false,
 	completed: false,
 	restartOnPlay: false,
-
 	mTypes: {
 		'mp4': 'video/mp4',
 		'ogv': 'video/ogg',
@@ -174,7 +176,9 @@ VideoPlayer.prototype = {
 		this.dom_spinner.style.backgroundColor = this.colors_bg;
 		this.setVendor(this.dom_spinner, 'borderRadius', '32px');
 		this.dom_spinner.innerHTML = this.svg.spin;
-		this.dom_spinner.getElementsByTagName('svg')[0].style.padding = '5px';
+		this.dom_spinner.style.padding = '5px';
+		this.dom_spinner.style.width = '32px';
+		this.dom_spinner.style.height = '32px';
 		this.dom_spinner.getElementsByTagName('path')[0].style.fill = this.colors_spinner;
 
 	},
@@ -213,16 +217,20 @@ VideoPlayer.prototype = {
 		{
 			if(this.ismobile === null) { this.checkForMobile(); }
 
-			if(this.preview && !this.ismobile) {
+			// if(this.preview && !this.ismobile) {
+			if(this.preview) {
 				this.autoplay = true;
 				this.startmuted = true;
+				
+				if(this.ismobile)
+					this.inline = true;
 			}
 
-			if(this.ismobile) {
-				this.autoplay = false;
-				this.startmuted = false;
-				this.preview = 0;	
-			}
+			// if(this.ismobile) {
+			// 	this.autoplay = false;
+			// 	this.startmuted = false;
+			// 	this.preview = 0;	
+			// }
 
 			if(typeof vc === 'object') {
 				if( typeof(jQuery) === 'undefined' ) { 
@@ -321,8 +329,7 @@ VideoPlayer.prototype = {
 			// CONTROL
 
 			this.dom_controller = document.createElement('div');
-			this.dom_controller.style.display = 'block';
-
+			this.dom_controller.style.display = this.controlbar ? 'block':'none';
 			this.dom_controller.style.zIndex = this.zindex+1;
 			this.dom_controller.style.position = 'relative';
 			this.dom_controller.style.height = this.barsize + 'px';
@@ -542,7 +549,7 @@ VideoPlayer.prototype = {
 			( this.dom_bigplay.style.display !== 'block' ) &&
 			( this.dom_preview.style.display !== 'block' )
 		) {
-			this.dom_controller.style.display = 'block';
+			this.dom_controller.style.display = this.controlbar ? 'block':'none';
 		}
 	},
 	mLeave: function() {
@@ -553,18 +560,25 @@ VideoPlayer.prototype = {
 		if( this.elementtrigger && !this.isPlaying() )
 		{
 			this.play(true);
-		}
+		} else 
 
 		if( ( this.dom_bigplay.style.display === 'block' ||
 			this.dom_replay.style.display === 'block' ) &&
-			( this.elementtrigger || ( this.ismobile && this.elementtrigger ) ) ) {
+			( this.elementtrigger ) ) {
 			this.play(true);
-		}
+		
+		} else 
 
 		if( this.dom_bigsound.style.display === 'block' &&
 			this.elementtrigger ) {
 			this.cfs(true);
+		
+		} else {
+			// PREVEW?
+			this.play(true);
 		}
+
+		
 
 	},
 	barSeek: function(e) {
@@ -594,6 +608,7 @@ VideoPlayer.prototype = {
 			this.unload();
 
 			this.dom_spinner.style.display = 'block';
+
 			if(vp) {
 				this.hasposter = true;
 				this.setPoster(vp);
@@ -613,35 +628,58 @@ VideoPlayer.prototype = {
 					tve.style.cursor = 'pointer';
 				}
 
-				self.dom_frame.appendChild(tve);
+				if(self.startmuted) {
+					tve.muted = true;
+				}
 
-				if(self.autoplay && !self.ismobile) {
-					tve.setAttribute('autoplay', true);
+				if(self.autoplay) {
+
+					if( 'autoplay' in tve )
+						tve.autoplay = true;
+					
+					if( self.ismobile ) {
+						self.inline = true;
+						self.startmuted = true;
+					}
 				}
 
 				if(self.inline) {
-					tve.setAttribute('playsinline', '');
-					tve.setAttribute('webkit-playsinline', '');
+
+					if( "playsInline" in document.createElement('video') ) {
+						tve.playsInline = true;
+					} else {
+						
+						self.inline = false;
+
+						if(self.ismobile) {
+
+							self.autoplay = false;
+							self.startmuted = false;
+							self.preview = 0;
+							
+							tve.muted = false;
+							tve.autoplay = false;
+							
+						}
+					}
 				}
 
 				if(self.progressive) {
-					tve.setAttribute('preload', "auto");
-				}
-				else
-				{
-					tve.setAttribute('preload', "metadata");
-				}
-
-				if(self.ismobile) {
-					if(!self.chromeless) {
-						tve.setAttribute('controls', '');
-					}
-
-					self.dom_controller.style.display = 'none';
+					tve.preload = "auto";
+				} else {
+					tve.preload = "metadata";
 				}
 
 				if(self.chromeless) {
 					self.dom_controller.style.display = 'none';
+					tve.controls = false;
+				} else {
+					if(self.ismobile) {
+						self.dom_controller.style.display = 'none';
+
+						if(!self.autoplay)
+							tve.controls = self.controlbar ? true : false;
+					}					
 				}
 
 				if(typeof vf === 'object') {
@@ -658,17 +696,21 @@ VideoPlayer.prototype = {
 					tve.appendChild(tvs);
 				}
 
+				self.dom_frame.appendChild(tve);
+
 				self.proxy = tve;
 
 				self.setListeners(); // COME BACK HERE
 
-				if( !self.hasposter && self.ismobile ) {
+				if( !self.hasposter && self.ismobile && !self.autoplay ) {
 					self.dom_spinner.style.display = 'none';
-
 					self.dom_bigplay.style.display = 'block';
 				}
 
-				self.proxy.style.display = 'none';
+				if( self.ismobile && self.autoplay )
+					self.proxy.style.display = 'block';
+				else
+					self.proxy.style.display = 'none';
 
 				self.proxy.addEventListener('click', function(e) {
 					self.controlHandler(e);
@@ -695,9 +737,13 @@ VideoPlayer.prototype = {
 				self.dom_poster.style.backgroundImage = 'url('+str+')';
 				self.dom_poster.style.display = 'block';
 
-				if(self.ismobile) {
+				if(self.autoplay) {
+					self.dom_spinner.style.display = 'block';
+					self.dom_bigplay.style.display = 'none';
+				} else {
 					self.dom_spinner.style.display = 'none';
 					self.dom_bigplay.style.display = 'block';
+					
 				}
 
 				self.reflow(true); // NOT SURE
@@ -970,6 +1016,8 @@ VideoPlayer.prototype = {
 				this.trackReset();
 				this.playing = false;
 			}
+
+			this.dom_poster.style.cursor = 'pointer';
 		}
 
 		this.reflow(true);
@@ -990,7 +1038,7 @@ VideoPlayer.prototype = {
 		this.dom_play.style.display = 'none';
 
 		if( this.startmuted && this.autoplay && !this.ismobile && this.firsttime ) {
-			this.proxy.muted = true;
+			// this.proxy.muted = true;
 		}
 
 		this.callback_play();
@@ -998,7 +1046,7 @@ VideoPlayer.prototype = {
 		if(!this.track.started && !this.completed) {
 			this.track.started = true;
 
-			if(this.preview && !this.ismobile) {
+			if(this.preview) {
 				// PREVIEW
 				this.disableNotification('start');
 				this.disableNotification('play');
@@ -1057,7 +1105,8 @@ VideoPlayer.prototype = {
 		if( this.duration > this.playhead ) {
 			this.callback_pause();
 
-			if(this.preview && !this.ismobile) {
+			// if(this.preview && !this.ismobile) {
+			if(this.preview) {
 				this.dom_bigsound.style.display = 'none';
 				this.dom_preview.style.display = 'block';
 				this.reflow();
@@ -1066,7 +1115,7 @@ VideoPlayer.prototype = {
 				this.restartOnPlay = true;
 				this.trackReset();
 				this.preview = 0;
-				this.track_preview_end(); // **** TODO
+				this.track_preview_end();
 			}
 			else {
 				this.disableNotification('end');
@@ -1118,8 +1167,8 @@ VideoPlayer.prototype = {
 			this.firsttime = false;
 			this.started = true;
 
-			if( this.startmuted && this.autoplay && !this.ismobile ) {
-				this.proxy.muted = true;
+			if( this.startmuted && this.autoplay ) {
+				// this.proxy.muted = true;
 
 				this.dom_bigsound.style.display = 'block';
 				this.dom_controller.style.display = 'none';
@@ -1155,6 +1204,13 @@ VideoPlayer.prototype = {
 			this.duration = this.proxy.duration;
 		}
 
+		if( !this.elementplayback && 
+			this.dom_bigsound.style.display === 'none' &&
+			this.dom_preview.style.display === 'none'
+			) {
+				this.proxy.style.cursor = 'auto';
+			}
+
 		var phpercentage = ( this.playhead / this.duration ) * 100;
 
 		this.dom_phead.style.width = phpercentage+'%';
@@ -1177,13 +1233,15 @@ VideoPlayer.prototype = {
 
 		this.callback_progress();
 
-		if(this.preview && !this.ismobile && this.playhead > this.preview) {
+		if(this.preview && this.playhead > this.preview) {
 			this.pause();
 		}
 
 	},
 
 	dlCanPlay: function() {
+
+		var self = this;
 
 		if(this.firsttime) { // NOT SURE ABOUT THIS
 
@@ -1198,9 +1256,23 @@ VideoPlayer.prototype = {
 
 			if(!this.hasposter && !this.autoplay && !this.ismobile) {
 				this.trace('no poster');
-
 				this.dom_bigplay.style.display = 'block';
 				this.dom_controller.style.display = 'none';
+			}
+
+			if(this.ismobile) {
+
+				this.dom_controller.style.display = 'none';
+
+				if(this.autoplay) {
+					this.dom_spinner.style.display = 'block';
+					this.dom_bigplay.style.display = 'none';
+					this.dom_poster.style.display = 'none';
+					this.proxy.style.display = 'block';
+				} else {
+					if(!this.chromeless)
+						this.dom_bigplay.style.display = 'block';
+				}
 			}
 
 			this.reflow(true);
@@ -1311,7 +1383,7 @@ VideoPlayer.prototype = {
 				}
 
 				if(!this.ismobile) {
-					this.dom_controller.style.display = 'block';
+					this.dom_controller.style.display = this.controlbar ? 'block':'none';
 				} else {
 					this.dom_controller.style.display = 'none';
 				}
@@ -1327,21 +1399,24 @@ VideoPlayer.prototype = {
 			break;
 			case this.proxy:
 
+				// ELEMENT TRIGGER
 				if(
 					this.elementtrigger &&
 					this.dom_play.style.display === 'block' &&
 					this.dom_bigsound.style.display === 'none' &&
-					!this.ismobile
+					this.elementplayback
 				) {
-					this.play();
+					if(!this.ismobile || ( this.ismobile && this.inline && !this.controlbar ) )
+						this.play();
 				}
 
 				if( this.elementtrigger &&
 					this.dom_pause.style.display === 'block' &&
 					this.dom_bigsound.style.display === 'none' &&
-					!this.ismobile
+					this.elementplayback
 				) {
-					this.pause();
+					if(!this.ismobile || ( this.ismobile && this.inline && !this.controlbar ) ) 
+						this.pause();
 				}
 			break;
 		}
@@ -1349,43 +1424,50 @@ VideoPlayer.prototype = {
 	},
 
 	play: function(bool) {
-		this.proxy.play();
+		if(this.proxy) {
+			this.proxy.play();
 
-		if(bool && !this.ismobile) {
-			this.dom_controller.style.display = 'block';
+			if(bool && !this.ismobile) {
+				this.dom_controller.style.display = this.controlbar ? 'block':'none';
+			}
 		}
 	},
 
 	pause: function() {
-		this.proxy.pause();
+		if(this.proxy) {
+			this.proxy.pause();
+		}
 	},
 
 	stop: function(bool) {
-		var self = this;
 
-		if(this.playing || bool) {
-			this.callback_stop();
-			this.track_stop();
+		if(this.proxy) {
+			var self = this;
 
-			if(this.replaywithsound) {
-				this.disableNotification('volume');
-				this.unmute();
-			}
+			if(this.playing || bool) {
+				this.callback_stop();
+				this.track_stop();
 
-			this.seek(0);
-			this.disableNotification('pause');
-			this.pause();
-			this.trackReset();
-			this.completed = false;
-			setTimeout(function(){
-				self.playing = false;
-				if(self.hasposter) {
-					self.dom_poster.style.display = 'block';
+				if(this.replaywithsound) {
+					this.disableNotification('volume');
+					this.unmute();
 				}
-				
-				self.dom_bigplay.style.display = 'block';
-				self.reflow();
-			}, 500);
+
+				this.seek(0);
+				this.disableNotification('pause');
+				this.pause();
+				this.trackReset();
+				this.completed = false;
+				setTimeout(function(){
+					self.playing = false;
+					if(self.hasposter) {
+						self.dom_poster.style.display = 'block';
+					}
+					
+					self.dom_bigplay.style.display = 'block';
+					self.reflow();
+				}, 500);
+			}
 		}
 	},
 
@@ -1432,6 +1514,9 @@ VideoPlayer.prototype = {
 		if(!this.restartOnPlay && !this.cfsFlag) {
 			this.cfsFlag = true;
 			this.track_cfs();
+
+			if(this.ismobile && !this.chromeless)
+				this.proxy.controls = this.controlbar ? true : false;
 		}
 
 		this.disableNotification('volume');
@@ -1442,7 +1527,7 @@ VideoPlayer.prototype = {
 		}, 50);
 
 		if(bool && !this.ismobile) {
-			this.dom_controller.style.display = 'block';
+			this.dom_controller.style.display = this.controlbar ? 'block':'none';
 		}
 
 		this.enableNotifications();

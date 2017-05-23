@@ -1,6 +1,6 @@
 # HTML Video "class"
 
-#### [Codepen Demo](http://codepen.io/nargalzius/full/WvKOBv)
+#### [Codepen Demo](http://codepen.io/nargalzius/pen/KmbROq)
 
 Minified version can be found in the `demo/public_html` folder
 

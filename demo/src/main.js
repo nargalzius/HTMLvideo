@@ -19,7 +19,7 @@ function init(){
     video.debug = true;
     // video.help();
 
-    video.checkForMobile();
+    // video.checkForMobile();
     video.progressive = false;
     
     video.track_mute = function(){
