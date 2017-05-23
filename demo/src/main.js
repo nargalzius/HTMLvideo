@@ -6,20 +6,18 @@ var multiSource = [
     'https://joystick.cachefly.net/resources/video/video.webm',
     'https://joystick.cachefly.net/resources/video/video.ogv'];
 var poster = 'https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg';
-    // poster = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMbLEGXk2ADDBlqJxM9RtalzYamN_z1-WoB-49QYugyEl1JHzCAQ';
 var singleSource = 'https://joystick.cachefly.net/JMC/v/vid_become_legend.mp4';
 var resetVars;
+var inlinePossible = ('playsInline' in document.createElement('video'));
 
 $( document ).ready(init);
 
 function init(){
-
     video = new VideoPlayer();
     video.dom_debug = document.getElementById('debugField');
     video.debug = true;
-    // video.help();
 
-    // video.checkForMobile();
+    video.checkForMobile();
     video.progressive = false;
     
     video.track_mute = function(){
@@ -36,7 +34,6 @@ function init(){
         $('#play').removeClass('active');
         $('#pause').addClass('active');
         $('#replay').addClass('active');
-        $('#stop').addClass('active');
         video.trace('callback_play');
     };
     
@@ -93,6 +90,8 @@ function init(){
         ismobile: video.ismobile,
         playonseek: video.playonseek,
         elementtrigger: video.elementtrigger,
+                elementplayback: video.elementplayback,
+                controlbar: video.controlbar,
         chromeless: video.chromeless,
         loop: video.loop,
         debug: video.debug,
@@ -120,7 +119,9 @@ function init(){
             $(this).attr('id') === 'progressive' ||
             $(this).attr('id') === 'preview' ||
             $(this).attr('id') === 'elementtrigger' ||
-            $(this).attr('id') === 'inline'
+            $(this).attr('id') === 'elementplayback' || 
+                        $(this).attr('id') === 'controlbar' || 
+                        $(this).attr('id') === 'inline' 
             ) )
         {
             quickReset(100);
@@ -332,11 +333,11 @@ function quickReset(num) {
     $('#destroy').addClass('active');
     $('#play').addClass('active');
     $('#stop').removeClass('active');
+        $('#initialize').removeClass('active');
     $('#pause').removeClass('active');
     $('#unmute').removeClass('active');
     $('#mute').removeClass('active');
     $('#replay').removeClass('active');
-    $('#initialize').removeClass('active');
 }
 
 function ppMulti()
@@ -394,6 +395,8 @@ function resetVariables() {
     video.playonseek = resetVars.playonseek;
     video.chromeless = resetVars.chromeless;
     video.elementtrigger = resetVars.elementtrigger;
+        video.elementplayback = resetVars.elementplayback;
+        video.controlbar = resetVars.controlbar;
     video.loop = resetVars.loop;
     video.debug = resetVars.debug;
     video.progressive = resetVars.progressive;
@@ -419,6 +422,16 @@ function setExceptions() {
         $('#prevTime').removeClass('hide');
 
     } 
+    
+        if(!inlinePossible) {
+            $('#inline').parent().addClass('inactive');
+            
+            if(video.ismobile) {
+                $('#autoplay').parent().addClass('inactive');
+                $('#preview').parent().addClass('inactive');
+                alert("Browser does not support playsInline attribute. Disabling all flags related to autoplay");
+            }
+        }
 
 
     if(video.preview == 0) {
@@ -428,21 +441,33 @@ function setExceptions() {
 
     if(video.ismobile)
     {
-        video.preview = 0;
-        video.autoplay = false;
-        video.startmuted = false;
-        $('#autoplay').parent().addClass('inactive');
-        $('#startmuted').parent().addClass('inactive');
+        //video.preview = 0;
+        //video.autoplay = false;
+        //video.startmuted = false;
+        // $('#autoplay').parent().addClass('inactive');
+        // $('#startmuted').parent().addClass('inactive');
         $('#allowfullscreen').parent().addClass('inactive');
         $('#playonseek').parent().addClass('inactive');
         $('#replaywithsound').parent().addClass('inactive');
-        $('#preview').parent().addClass('inactive');
+        // $('#preview').parent().addClass('inactive');
     }
 
     if(!video.autoplay) {
         video.startmuted = false;
         $('#startmuted').parent().addClass('inactive');
-    }
+    } else {
+            // IF AUTOPLAY IS SET
+            if(video.ismobile) {
+                if(inlinePossible) {
+                    video.inline = true;
+            video.startmuted = true;
+                } else {
+                    video.autoplay = false;
+                    video.startmuted = false;
+            $('#startmuted').parent().addClass('inactive');
+                }
+            }
+        }
 
     if(video.loop) {
         $('#replaywithsound').parent().addClass('inactive');
@@ -465,12 +490,17 @@ function setCheckboxes() {
 function loadSecondaryVideo()
 {
     video2 = new VideoPlayer();
+    video2.init('videoPlayer2');
     video2.autoplay = true;
     video2.startmuted = true;
-    video2.init('videoPlayer2');
     video2.load([
         'http://joystick.cachefly.net/JMC/v/vid_become_legend.mp4',
         'http://joystick.cachefly.net/JMC/v/vid_become_legend.ogv',
         'http://joystick.cachefly.net/JMC/v/vid_become_legend.webm'
     ]);
 }
+
+// $('#tempBTN').click(function(){
+//     $('#videoPlayer').detach().appendTo('#videoPlayer2');
+//     video.play();
+// })

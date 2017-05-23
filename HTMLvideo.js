@@ -557,29 +557,29 @@ VideoPlayer.prototype = {
 	},
 	mClick: function() {
 
-		if( this.elementtrigger && !this.isPlaying() )
-		{
-			this.play(true);
-		} else 
+		if(this.elementtrigger) {
+			if( !this.isPlaying() )
+			{
+				this.play(true);
+			} 
 
-		if( ( this.dom_bigplay.style.display === 'block' ||
-			this.dom_replay.style.display === 'block' ) &&
-			( this.elementtrigger ) ) {
-			this.play(true);
-		
-		} else 
+			if( this.dom_bigplay.style.display === 'block' ||
+				this.dom_replay.style.display === 'block' || 
+				this.dom_preview.style.display === 'block' ) {
+				this.play(true);
+			
+			} 
 
-		if( this.dom_bigsound.style.display === 'block' &&
-			this.elementtrigger ) {
-			this.cfs(true);
+			if( this.dom_bigsound.style.display === 'block' ) {
+				this.cfs(true);
+			
+			}
 		
-		} else {
-			// PREVEW?
-			this.play(true);
 		}
 
 		
 
+		
 	},
 	barSeek: function(e) {
 		var ro = (e.pageX - this.dom_pbar.getBoundingClientRect().left);
