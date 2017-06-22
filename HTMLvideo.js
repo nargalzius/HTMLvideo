@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.0
+ *  4.1
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -132,6 +132,9 @@ VideoPlayer.prototype = {
 		play: true,
 		pause: true
 	},
+
+	loadDelay: 500,
+	
 	disableNotification: function(str) {
 		this.notifications[str] = false;
 	},	
@@ -247,14 +250,15 @@ VideoPlayer.prototype = {
 
 			// GET Z-INDEX
 
-			if( document.defaultView && document.defaultView.getComputedStyle ) {
+			if( !this.zindex && document.defaultView && document.defaultView.getComputedStyle ) {
 				var s = document.defaultView.getComputedStyle( this.dom_container, '' );
 				this.zindex = parseInt( s.getPropertyValue('z-index'), 10 );
-			} else if( this.dom_container.currentStyle ) {
+			} else 
+			if( !this.zindex && this.dom_container.currentStyle ) {
 				this.zindex = parseInt( this.dom_container.currentStyle.zIndex, 10 );
 			}
 
-			if(!this.zindex) {
+			if( !this.zindex ) {
 				this.zindex = 0;
 				this.trace("z-index for video container element not detected, make sure position property is set.\nzIndex set to 0");
 			}
@@ -312,7 +316,7 @@ VideoPlayer.prototype = {
 
 			this.dom_poster = document.createElement('div');
 			this.dom_poster.className = 'poster';
-			this.dom_poster.style.zIndex = this.zindex + 2;
+			this.dom_poster.style.zIndex = this.zindex + 1;
 			this.dom_poster.style.position = 'absolute';
 			this.dom_poster.style.backgroundColor = '#000';
 			this.dom_poster.style.display = 'block';
@@ -330,7 +334,8 @@ VideoPlayer.prototype = {
 
 			this.dom_controller = document.createElement('div');
 			this.dom_controller.style.display = this.controlbar ? 'block':'none';
-			this.dom_controller.style.zIndex = this.zindex+1;
+			// this.dom_controller.style.zIndex = this.zindex + 1;
+			this.dom_controller.style.zIndex = this.zindex;
 			this.dom_controller.style.position = 'relative';
 			this.dom_controller.style.height = this.barsize + 'px';
 			this.dom_controller.style.width = '100%';
@@ -459,7 +464,7 @@ VideoPlayer.prototype = {
 			this.addClass(this.dom_bigplay, 'cbtn');
 			this.addClass(this.dom_bigplay, 'v_controls_bb');
 			this.addClass(this.dom_bigplay, 'play');
-			this.dom_bigplay.style.zIndex = this.zindex + 3;
+			this.dom_bigplay.style.zIndex = this.zindex + 2;
 			this.dom_bigplay.style.display = 'block';
 			this.dom_bigplay.style.position = 'absolute';
 			this.dom_bigplay.style.cursor = 'pointer';
@@ -474,7 +479,7 @@ VideoPlayer.prototype = {
 			this.addClass(this.dom_preview, 'cbtn');
 			this.addClass(this.dom_preview, 'v_controls_bb');
 			this.addClass(this.dom_preview, 'play');
-			this.dom_preview.style.zIndex = this.zindex + 3;
+			this.dom_preview.style.zIndex = this.zindex + 2;
 			this.dom_preview.style.display = 'block';
 			this.dom_preview.style.position = 'absolute';
 			this.dom_preview.style.cursor = 'pointer';
@@ -493,7 +498,7 @@ VideoPlayer.prototype = {
 			this.addClass(this.dom_replay, 'cbtn');
 			this.addClass(this.dom_replay, 'v_controls_bb');
 			this.addClass(this.dom_replay, 'replay');
-			this.dom_replay.style.zIndex = this.zindex + 3;
+			this.dom_replay.style.zIndex = this.zindex + 2;
 			this.dom_replay.style.display = 'block';
 			this.dom_replay.style.position = 'absolute';
 			this.dom_replay.style.cursor = 'pointer';
@@ -507,7 +512,7 @@ VideoPlayer.prototype = {
 			this.addClass(this.dom_bigsound, 'cbtn');
 			this.addClass(this.dom_bigsound, 'v_controls_bb');
 			this.addClass(this.dom_bigsound, 'sound');
-			this.dom_bigsound.style.zIndex = this.zindex + 3;
+			this.dom_bigsound.style.zIndex = this.zindex + 2;
 			this.dom_bigsound.style.display = 'block';
 			this.dom_bigsound.style.position = 'absolute';
 			this.dom_bigsound.style.cursor = 'pointer';
@@ -521,7 +526,7 @@ VideoPlayer.prototype = {
 			this.addClass(this.dom_spinner, 'cbtn');
 			this.addClass(this.dom_spinner, 'v_controls_bb');
 			this.addClass(this.dom_spinner, 'wait');
-			this.dom_spinner.style.zIndex = this.zindex + 3;
+			this.dom_spinner.style.zIndex = this.zindex + 2;
 			this.dom_spinner.style.display = 'block';
 			this.dom_spinner.style.position = 'absolute';
 			this.dom_container.appendChild(this.dom_spinner);
@@ -572,7 +577,6 @@ VideoPlayer.prototype = {
 
 			if( this.dom_bigsound.style.display === 'block' ) {
 				this.cfs(true);
-			
 			}
 		
 		}
@@ -718,7 +722,7 @@ VideoPlayer.prototype = {
 
 				self.reflow(true);
 
-			}, 500);
+			}, this.loadDelay);
 		}
 		else {
 			this.trace('initialize video first');

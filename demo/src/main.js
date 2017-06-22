@@ -16,6 +16,7 @@ function init(){
     video = new VideoPlayer();
     video.dom_debug = document.getElementById('debugField');
     video.debug = true;
+    // video.loadDelay = 0;
 
     video.checkForMobile();
     video.progressive = false;
