@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.1
+ *  4.2
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -627,6 +627,10 @@ VideoPlayer.prototype = {
 				var tve = document.createElement('video');
 					tve.width = self.dom_container.offsetWidth;
 					tve.height = self.dom_container.offsetHeight;
+
+				if(vp) {
+					tve.poster = vp;
+				}
 
 				if(self.elementtrigger) {
 					tve.style.cursor = 'pointer';
