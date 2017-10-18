@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.2
+ *  4.4
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -54,6 +54,10 @@ VideoPlayer.prototype = {
 	desktopAgents: [
 		'desktop'
 	],
+
+	isSafari: function() {
+		return !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
+	},
 
 	checkForMobile: function() {
 
@@ -640,7 +644,7 @@ VideoPlayer.prototype = {
 					tve.muted = true;
 				}
 
-				if(self.autoplay) {
+				if( self.autoplay || ( !self.ismobile  && self.isSafari() ) ) {
 
 					if( 'autoplay' in tve )
 						tve.autoplay = true;
@@ -1045,9 +1049,9 @@ VideoPlayer.prototype = {
 		this.dom_pause.style.display = 'block';
 		this.dom_play.style.display = 'none';
 
-		if( this.startmuted && this.autoplay && !this.ismobile && this.firsttime ) {
-			// this.proxy.muted = true;
-		}
+		// if( this.startmuted && this.autoplay && !this.ismobile && this.firsttime ) {
+		// 	this.proxy.muted = true;
+		// }
 
 		this.callback_play();
 
@@ -1296,6 +1300,9 @@ VideoPlayer.prototype = {
 	callback_play: function() {
 		this.trace('Video Play');
 	},
+	callback_playerror: function() {
+		this.trace('Video Play Error (EXCEPTION)');
+	},
 	callback_stop: function() {
 		this.trace('Video Stopped (Manually)');
 	},
@@ -1432,11 +1439,27 @@ VideoPlayer.prototype = {
 	},
 
 	play: function(bool) {
-		if(this.proxy) {
-			this.proxy.play();
 
-			if(bool && !this.ismobile) {
-				this.dom_controller.style.display = this.controlbar ? 'block':'none';
+		var self = this;
+		var autoplayhack = ( this.isSafari() && !this.ismobile && !this.startmuted && this.firsttime ) ? true : false;
+
+		if(this.proxy) {
+
+			if(autoplayhack) this.proxy.volume = 0;
+
+			var promise = this.proxy.play();
+				
+			if ( promise !== undefined ) {
+			    promise.catch( function() {
+			        self.callback_playerror();
+			    }).then( function() {
+			    	
+			        if(bool && !this.ismobile) {
+						this.dom_controller.style.display = this.controlbar ? 'block':'none';
+					}
+
+					if(autoplayhack) self.proxy.volume = 1;
+			    });
 			}
 		}
 	},
