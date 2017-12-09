@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.4
+ *  4.5
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -640,19 +640,20 @@ VideoPlayer.prototype = {
 					tve.style.cursor = 'pointer';
 				}
 
-				if(self.startmuted) {
-					tve.muted = true;
-				}
-
-				if( self.autoplay || ( !self.ismobile  && self.isSafari() ) ) {
+				if( self.autoplay ) {
 
 					if( 'autoplay' in tve )
 						tve.autoplay = true;
-					
-					if( self.ismobile ) {
+
+					if( self.ismobile || self.isSafari() ) {
+						
 						self.inline = true;
 						self.startmuted = true;
 					}
+				}
+
+				if(self.startmuted) {
+					tve.muted = true;
 				}
 
 				if(self.inline) {
@@ -660,7 +661,6 @@ VideoPlayer.prototype = {
 					if( "playsInline" in document.createElement('video') ) {
 						tve.playsInline = true;
 					} else {
-						
 						self.inline = false;
 
 						if(self.ismobile) {
@@ -1441,11 +1441,8 @@ VideoPlayer.prototype = {
 	play: function(bool) {
 
 		var self = this;
-		var autoplayhack = ( this.isSafari() && !this.ismobile && !this.startmuted && this.firsttime ) ? true : false;
 
 		if(this.proxy) {
-
-			if(autoplayhack) this.proxy.volume = 0;
 
 			var promise = this.proxy.play();
 				
@@ -1457,8 +1454,7 @@ VideoPlayer.prototype = {
 			        if(bool && !this.ismobile) {
 						this.dom_controller.style.display = this.controlbar ? 'block':'none';
 					}
-
-					if(autoplayhack) self.proxy.volume = 1;
+					
 			    });
 			}
 		}
