@@ -1466,7 +1466,7 @@ VideoPlayer.prototype = {
 			    }).then( function() {
 			    	
 			        if(bool && !this.ismobile) {
-						this.dom_controller.style.display = this.controlbar ? 'block':'none';
+						self.dom_controller.style.display = self.controlbar ? 'block':'none';
 					}
 					
 			    });
