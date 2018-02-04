@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.5
+ *  4.6
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -346,6 +346,7 @@ VideoPlayer.prototype = {
 			this.dom_controller.style.top = ( this.dom_container.offsetHeight - this.barsize ) + 'px';
 			this.dom_controller.style.left = 0;
 			this.dom_controller.style.display = 'none';
+			this.dom_controller.className = 'v_control_bar';
 
 			if(!this.chromeless) {
 				this.dom_container.appendChild(this.dom_controller);
@@ -368,11 +369,14 @@ VideoPlayer.prototype = {
 				tcppc.style.float = 'left';
 				tcppc.style.top = 1 + 'px';
 				tcppc.style.marginLeft = 5 + 'px';
+				tcppc.className = 'v_control_pp';
 
 			this.dom_controller.appendChild(tcppc);
 
 			this.dom_template_play();
 			this.addClass(this.dom_play, 'cbtn');
+			this.addClass(this.dom_play, 'v_control_sb');
+			this.addClass(this.dom_play, 'play');
 			this.dom_play.style.display = 'block';
 			this.dom_play.style.position = 'absolute';
 			this.dom_play.style.cursor = 'pointer';
@@ -380,6 +384,8 @@ VideoPlayer.prototype = {
 
 			this.dom_template_pause();
 			this.addClass(this.dom_pause, 'cbtn');
+			this.addClass(this.dom_pause, 'v_control_sb');
+			this.addClass(this.dom_pause, 'pause');
 			this.dom_pause.style.display = 'block';
 			this.dom_pause.style.position = 'absolute';
 			this.dom_pause.style.cursor = 'pointer';
@@ -393,6 +399,8 @@ VideoPlayer.prototype = {
 			{
 				this.dom_template_fs();
 				this.addClass(this.dom_fs, 'cbtn');
+				this.addClass(this.dom_fs, 'v_control_sb');
+				this.addClass(this.dom_fs, 'fs');
 				this.dom_fs.style.position = 'absolute';
 				this.dom_fs.style.display = 'block';
 				this.dom_fs.style.top = 5 + 'px';
@@ -405,9 +413,8 @@ VideoPlayer.prototype = {
 
 			var tcmmc = document.createElement('div');
 				tcmmc.style.position = 'absolute';
-				tcmmc.style.top = 1 + 'px';
-				// tcmmc.style.height = 15 + 'px';
-				// tcmmc.style.width = 15 + 'px';
+				tcmmc.style.top = 0 + 'px';
+				tcmmc.className = 'v_control_mu';
 				tcmmc.style.textAlign = 'left';
 				if(this.allowfullscreen) {
 					tcmmc.style.right = 58 + 'px';
@@ -419,6 +426,8 @@ VideoPlayer.prototype = {
 
 			this.dom_template_mute();
 			this.addClass(this.dom_mute, 'cbtn');
+			this.addClass(this.dom_mute, 'v_control_sb');
+			this.addClass(this.dom_mute, 'mute');
 			this.dom_mute.style.display = 'block';
 			this.dom_mute.style.position = 'absolute';
 			this.dom_mute.style.cursor = 'pointer';
@@ -426,6 +435,8 @@ VideoPlayer.prototype = {
 
 			this.dom_template_unmute();
 			this.addClass(this.dom_unmute, 'cbtn');
+			this.addClass(this.dom_unmute, 'v_control_sb');
+			this.addClass(this.dom_unmute, 'unmute');
 			this.dom_unmute.style.display = 'block';
 			this.dom_unmute.style.position = 'absolute';
 			this.dom_unmute.style.cursor = 'pointer';
@@ -442,6 +453,7 @@ VideoPlayer.prototype = {
 				ts.style.top = -4 + 'px';
 				ts.style.cursor = 'pointer';
 				ts.style.backgroundColor = this.colors_scrubber_bg;
+				ts.className = 'scrubber';
 			this.dom_controller.appendChild(ts);
 
 			this.dom_pbar = document.createElement('div');
@@ -451,6 +463,7 @@ VideoPlayer.prototype = {
 			this.dom_pbar.style.width = 0;
 			this.dom_pbar.style.top = 0;
 			this.dom_pbar.style.backgroundColor = this.colors_scrubber_progress;
+			this.dom_pbar.className = 'playbar';
 			ts.appendChild(this.dom_pbar);
 
 			this.dom_phead = document.createElement('div');
@@ -460,13 +473,14 @@ VideoPlayer.prototype = {
 			this.dom_phead.style.width = 0;
 			this.dom_phead.style.top = 0;
 			this.dom_phead.style.backgroundColor = this.colors_scrubber_playback;
+			this.dom_phead.className = 'playhead';
 			ts.appendChild(this.dom_phead);
 
 			// BIG BUTTONS
 
 			this.dom_template_bigplay();
 			this.addClass(this.dom_bigplay, 'cbtn');
-			this.addClass(this.dom_bigplay, 'v_controls_bb');
+			this.addClass(this.dom_bigplay, 'v_control_bb');
 			this.addClass(this.dom_bigplay, 'play');
 			this.dom_bigplay.style.zIndex = this.zindex + 2;
 			this.dom_bigplay.style.display = 'block';
@@ -481,7 +495,7 @@ VideoPlayer.prototype = {
 
 			this.dom_preview = this.dom_bigplay.cloneNode(true);
 			this.addClass(this.dom_preview, 'cbtn');
-			this.addClass(this.dom_preview, 'v_controls_bb');
+			this.addClass(this.dom_preview, 'v_control_bb');
 			this.addClass(this.dom_preview, 'play');
 			this.dom_preview.style.zIndex = this.zindex + 2;
 			this.dom_preview.style.display = 'block';
@@ -500,7 +514,7 @@ VideoPlayer.prototype = {
 				this.removeClass(this.dom_replay, 'play');
 			}
 			this.addClass(this.dom_replay, 'cbtn');
-			this.addClass(this.dom_replay, 'v_controls_bb');
+			this.addClass(this.dom_replay, 'v_control_bb');
 			this.addClass(this.dom_replay, 'replay');
 			this.dom_replay.style.zIndex = this.zindex + 2;
 			this.dom_replay.style.display = 'block';
@@ -514,7 +528,7 @@ VideoPlayer.prototype = {
 
 			this.dom_template_bigsound();
 			this.addClass(this.dom_bigsound, 'cbtn');
-			this.addClass(this.dom_bigsound, 'v_controls_bb');
+			this.addClass(this.dom_bigsound, 'v_control_bb');
 			this.addClass(this.dom_bigsound, 'sound');
 			this.dom_bigsound.style.zIndex = this.zindex + 2;
 			this.dom_bigsound.style.display = 'block';
@@ -528,7 +542,7 @@ VideoPlayer.prototype = {
 
 			this.dom_template_spinner();
 			this.addClass(this.dom_spinner, 'cbtn');
-			this.addClass(this.dom_spinner, 'v_controls_bb');
+			this.addClass(this.dom_spinner, 'v_control_bb');
 			this.addClass(this.dom_spinner, 'wait');
 			this.dom_spinner.style.zIndex = this.zindex + 2;
 			this.dom_spinner.style.display = 'block';

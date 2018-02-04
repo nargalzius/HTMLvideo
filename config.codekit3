@@ -7,7 +7,7 @@
 		"uuidString": "433ECC73-5514-40A9-B6C8-7019A5FFA6DA"
 		}
 	],
-"creatorBuild": "26148",
+"creatorBuild": "26261",
 "files": {
 	"\/demo\/public_html\/HTMLvideo-min.js": {
 		"ft": 64,
@@ -738,6 +738,10 @@
 		"id-match": {
 			"active": 0,
 			"optionString": "'^[a-z]+([A-Z][a-z]+)*$', {'properties': false, 'onlyDeclarations': true}"
+			},
+		"implicit-arrow-linebreak": {
+			"active": 0,
+			"optionString": "'beside'"
 			},
 		"indent": {
 			"active": 0,
