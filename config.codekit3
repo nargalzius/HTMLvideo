@@ -7,7 +7,7 @@
 		"uuidString": "433ECC73-5514-40A9-B6C8-7019A5FFA6DA"
 		}
 	],
-"creatorBuild": "26261",
+"creatorBuild": "26268",
 "files": {
 	"\/demo\/public_html\/HTMLvideo-min.js": {
 		"ft": 64,
@@ -122,7 +122,7 @@
 		"oAP": "\/demo\/public_html\/HTMLvideo-min.js",
 		"oF": 2,
 		"sC": 0,
-		"tS": 0
+		"tS": 1
 		},
 	"\/project.sublime-project": {
 		"cB": 0,
@@ -175,6 +175,7 @@
 	"animateCSSInjections": 1,
 	"autoBuildNewItems": 1,
 	"autoprefixerBrowserString": "> 1%",
+	"autoprefixerEnableIEGrid": 0,
 	"babelAuxiliaryCommentAfter": "",
 	"babelAuxiliaryCommentBefore": "",
 	"babelConfigFileHandlingType": 0,
