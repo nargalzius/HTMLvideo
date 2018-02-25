@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.7
+ *  4.8
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -51,36 +51,40 @@ VideoPlayer.prototype = {
 		'webm': 'video/webm'
 	},
 
-	desktopAgents: [
-		'desktop'
-	],
-
-	isSafari: function() {
+	isSafari() {
 		return !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
 	},
 
-	checkForMobile: function() {
-
+	checkForMobile() {
 		const SELF = this;
+		const DESKTOP_AGENTS = [
+	        'desktop'
+	    ];
 
-		let mobileFlag = true;
+	    let mobileFlag = true;
 
-		for (let i = 0; i < SELF.desktopAgents.length; i++) {
-			let regex;
-				regex = new RegExp(SELF.desktopAgents[i], "i");
+	    if(typeof device !== 'undefined') {
+	        // USE DEVICEJS IF AVAILABLE
+	        for (let i = 0; i < DESKTOP_AGENTS.length; i++) {
+	            let regex;
+	                regex = new RegExp(DESKTOP_AGENTS[i], 'i');
 
-			if( window.document.documentElement.className.match(regex) ) {
-				mobileFlag = false;
-			}
-		}
+	            if( window.document.documentElement.className.match(regex) ) {
+	                mobileFlag = false;
+	            }
+	        }
+	    } else {
+	        // BACKUP [RUDIMENTARY] DETECTION
+	        mobileFlag = 'ontouchstart' in window;
+	    }
 
-		if( mobileFlag ) {
-			SELF.ismobile = true;
-			SELF.trace("mobile browser detected");
-		} else {
-			SELF.ismobile = false;
-			SELF.trace("desktop browser detected");
-		}
+	    if( mobileFlag ) {
+	        SELF.ismobile = true;
+	        SELF.trace("mobile browser detected");
+	    } else {
+	        SELF.ismobile = false;
+	        SELF.trace("desktop browser detected");
+	    }
 	},
 
 	svg: {
@@ -140,12 +144,12 @@ VideoPlayer.prototype = {
 
 	loadDelay: 500,
 	
-	disableNotification: function(str) {
+	disableNotification(str) {
 		const SELF = this;
 
 		SELF.notifications[str] = false;
 	},	
-	enableNotifications: function() {
+	enableNotifications() {
 		
 		const SELF = this;
 		let n = SELF.notifications;
@@ -154,7 +158,7 @@ VideoPlayer.prototype = {
 			for(let p in n) { n[p] = true; }
 		}, 100);
 	},
-	dom_template_bigplay: function() {
+	dom_template_bigplay() {
 		const SELF = this;
 
 		SELF.dom_bigplay = document.createElement('div');
@@ -164,7 +168,7 @@ VideoPlayer.prototype = {
 		SELF.dom_bigplay.getElementsByTagName('path')[0].style.fill = SELF.colors_bigplay;
 		
 	},
-	dom_template_bigsound: function() {
+	dom_template_bigsound() {
 		const SELF = this;
 
 		SELF.dom_bigsound = document.createElement('div');
@@ -173,7 +177,7 @@ VideoPlayer.prototype = {
 		SELF.dom_bigsound.innerHTML = SELF.svg.bigsound;
 		SELF.dom_bigsound.getElementsByTagName('path')[0].style.fill = SELF.colors_bigsound;
 	},
-	dom_template_replay: function() {
+	dom_template_replay() {
 		const SELF = this;
 
 		SELF.dom_replay = document.createElement('div');
@@ -183,7 +187,7 @@ VideoPlayer.prototype = {
 		SELF.dom_replay.getElementsByTagName('path')[0].style.fill = SELF.colors_replay;
 		SELF.dom_replay.getElementsByTagName('svg')[0].style.marginTop = '-5px';
 	},
-	dom_template_spinner: function() {
+	dom_template_spinner() {
 		const SELF = this;
 
 		SELF.dom_spinner = document.createElement('div');
@@ -196,7 +200,7 @@ VideoPlayer.prototype = {
 		SELF.dom_spinner.getElementsByTagName('path')[0].style.fill = SELF.colors_spinner;
 
 	},
-	dom_template_play: function() {
+	dom_template_play() {
 		const SELF = this;
 
 		SELF.dom_play = document.createElement('span');
@@ -204,28 +208,28 @@ VideoPlayer.prototype = {
 		SELF.dom_play.getElementsByTagName('path')[0].style.fill = SELF.colors_play_pause;
 
 	},
-	dom_template_pause: function() {
+	dom_template_pause() {
 		const SELF = this;
 
 		SELF.dom_pause = document.createElement('span');
 		SELF.dom_pause.innerHTML = SELF.svg.pause;
 		SELF.dom_pause.getElementsByTagName('path')[0].style.fill = SELF.colors_play_pause;
 	},
-	dom_template_mute: function() {
+	dom_template_mute() {
 		const SELF = this;
 
 		SELF.dom_mute = document.createElement('span');
 		SELF.dom_mute.innerHTML = SELF.svg.mute;
 		SELF.dom_mute.getElementsByTagName('path')[0].style.fill = SELF.colors_mute_unmute;
 	},
-	dom_template_unmute: function() {
+	dom_template_unmute() {
 		const SELF = this;
 
 		SELF.dom_unmute = document.createElement('span');
 		SELF.dom_unmute.innerHTML = SELF.svg.unmute;
 		SELF.dom_unmute.getElementsByTagName('path')[0].style.fill = SELF.colors_mute_unmute;
 	},
-	dom_template_fs: function() {
+	dom_template_fs() {
 		const SELF = this;
 
 		SELF.dom_fs = document.createElement('span');
@@ -233,7 +237,7 @@ VideoPlayer.prototype = {
 		SELF.dom_fs.getElementsByTagName('path')[0].style.fill = SELF.colors_fs;
 	},
 
-	init: function(vc) {
+	init(vc) {
 
 		const SELF = this;
 
@@ -570,7 +574,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	mEnter: function() {
+	mEnter() {
 		const SELF = this;
 
 		if(
@@ -585,12 +589,12 @@ VideoPlayer.prototype = {
 			SELF.dom_controller.style.display = SELF.controlbar ? 'block':'none';
 		}
 	},
-	mLeave: function() {
+	mLeave() {
 		const SELF = this;
 
 		SELF.dom_controller.style.display = 'none';
 	},
-	mClick: function() {
+	mClick() {
 		const SELF = this;
 
 		if(SELF.elementtrigger) {
@@ -613,7 +617,7 @@ VideoPlayer.prototype = {
 		}
 		
 	},
-	barSeek: function(e) {
+	barSeek(e) {
 		const SELF = this;
 
 		let ro = (e.pageX - SELF.dom_pbar.getBoundingClientRect().left);
@@ -625,13 +629,13 @@ VideoPlayer.prototype = {
 			SELF.proxy.play();
 		}
 	},
-	seek: function(num) {
+	seek(num) {
 		const SELF = this;
 
 		SELF.proxy.currentTime = num;
 	},
 
-	load: function(vf, vp) {
+	load(vf, vp) {
 
 		const SELF = this;
 
@@ -765,7 +769,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	setPoster: function(str) {
+	setPoster(str) {
 
 		const SELF = this;
 
@@ -793,7 +797,7 @@ VideoPlayer.prototype = {
 			newImg.src = str;
 	},
 
-	unload: function(bool) {
+	unload(bool) {
 
 		const SELF = this;
 
@@ -841,7 +845,7 @@ VideoPlayer.prototype = {
 		SELF.trackReset();
 	},
 
-	destroy: function() {
+	destroy() {
 
 		const SELF = this;
 		
@@ -856,7 +860,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	setListeners: function() {
+	setListeners() {
 
 		const SELF = this;
 
@@ -942,7 +946,7 @@ VideoPlayer.prototype = {
 		});
 	},
 
-	removeListeners: function() {
+	removeListeners() {
 
 		const SELF = this;
 
@@ -1013,7 +1017,7 @@ VideoPlayer.prototype = {
 		});
 	},
 
-	dlEnded: function() {
+	dlEnded() {
 
 		const SELF = this;
 
@@ -1067,7 +1071,7 @@ VideoPlayer.prototype = {
 		SELF.reflow(true);
 	},
 
-	dlPlay: function() {
+	dlPlay() {
 
 		const SELF = this;
 
@@ -1141,7 +1145,7 @@ VideoPlayer.prototype = {
 
 	},
 
-	dlPause: function() {
+	dlPause() {
 		const SELF = this;
 
 			SELF.dom_pause.style.display = 'none';
@@ -1170,7 +1174,7 @@ VideoPlayer.prototype = {
 			}
 		}
 	},
-	dlVolumeChange: function() {
+	dlVolumeChange() {
 		const SELF = this;
 
 		if(SELF.proxy.muted) {
@@ -1192,7 +1196,7 @@ VideoPlayer.prototype = {
 		SELF.callback_volume();
 	},
 
-	dlProgress: function() {
+	dlProgress() {
 		const SELF = this;
 
 		if(SELF.proxy) {
@@ -1206,7 +1210,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	dlTimeUpdate: function() {
+	dlTimeUpdate() {
 		const SELF = this;
 			SELF.playing = true;
 
@@ -1286,7 +1290,7 @@ VideoPlayer.prototype = {
 
 	},
 
-	dlCanPlay: function() {
+	dlCanPlay() {
 
 		const SELF = this;
 
@@ -1332,28 +1336,29 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	callback_end: function() {
+	callback_end() {
 		const SELF = this;
-			SELF.trace('Video Ended');
+			  SELF.trace('------------------ callback_end');
 	},
-	callback_play: function() {
+	callback_play() {
 		const SELF = this;
-			SELF.trace('Video Play');
+			  SELF.trace('------------------ callback_play');
 	},
-	callback_playerror: function() {
+	callback_playerror() {
 		const SELF = this;
-			SELF.trace('Video Play Error (EXCEPTION)');
+			  SELF.trace('------------------ callback_playerror');
 	},
-	callback_stop: function() {
+	callback_stop() {
 		const SELF = this;
-			SELF.trace('Video Stopped (Manually)');
+			  SELF.trace('------------------ callback_stop');
 	},
-	callback_pause: function() {
+	callback_pause() {
 		const SELF = this;
-			SELF.trace('Video Paused');
+			  SELF.trace('------------------ callback_pause');
 	},
-	callback_volume: function() {
+	callback_volume() {
 		const SELF = this;
+			  SELF.trace('------------------ callback_volume');
 
 		if(SELF.proxy.muted) {
 			if(SELF.notifications.volume) { SELF.trace('Video Muted'); }
@@ -1362,17 +1367,17 @@ VideoPlayer.prototype = {
 			if(SELF.notifications.volume) { SELF.trace('Video Unmuted'); }
 		}
 	},
-	callback_loading: function() {
+	callback_loading() {
 		const SELF = this;
-			// SELF.trace('Video data downloading');
+			  SELF.trace('------------------ callback_loading');
 	},
-	callback_progress: function() {
+	callback_progress() {
 		const SELF = this;
-			// SELF.trace('Video Time Update');
+			  SELF.trace('------------------ callback_progress');
 	},
-	callback_ready: function() {
+	callback_ready() {
 		const SELF = this;
-			SELF.trace('Video Ready');
+			  SELF.trace('------------------ callback_ready');
 	},
 
 	// TRACKING
@@ -1384,33 +1389,33 @@ VideoPlayer.prototype = {
 		q75: false
 	},
 
-	trackReset: function() {
+	trackReset() {
 		const SELF = this;
-			SELF.playhead = 0;
-			SELF.track.started = false;
-			SELF.track.q25 = false;
-			SELF.track.q50 = false;
-			SELF.track.q75 = false;
+			  SELF.playhead = 0;
+			  SELF.track.started = false;
+			  SELF.track.q25 = false;
+			  SELF.track.q50 = false;
+			  SELF.track.q75 = false;
 	},
 
-	track_start: function() { this.trace('TRACK: Start'); },
-	track_end: function() { this.trace('TRACK: End'); },
-	track_preview_start: function() { this.trace('TRACK: Preview Start'); },
-	track_preview_end: function() { this.trace('TRACK: Preview End'); },
-	track_play: function() { this.trace('TRACK: Play'); },
-	track_pause: function() { this.trace('TRACK: Pause'); },
-	track_stop: function() { this.trace('TRACK: Stop'); },
-	track_replay: function() { this.trace('TRACK: Replay'); },
-	track_mute: function() { this.trace('TRACK: Mute'); },
-	track_unmute: function() { this.trace('TRACK: Unmute'); },
-	track_q25: function() { this.trace('TRACK: 1st Quartile'); },
-	track_q50: function() { this.trace('TRACK: Midpoint'); },
-	track_q75: function() { this.trace('TRACK: 3rd Quartile'); },
-	track_enterfs: function() { this.trace('TRACK: Enter Fullscreen'); },
-	track_exitfs: function() { this.trace('TRACK: Exit Fullscreen'); },
-	track_cfs: function() { this.trace('TRACK: Click for Sound'); },
+	track_start() { 		this.trace('------------------ track_start'); },
+	track_end() { 			this.trace('------------------ track_end'); },
+	track_preview_start() { this.trace('------------------ track_preview_start'); },
+	track_preview_end() { 	this.trace('------------------ track_preview_end'); },
+	track_play() { 			this.trace('------------------ track_play'); },
+	track_pause() { 		this.trace('------------------ track_pause'); },
+	track_stop() { 			this.trace('------------------ track_stop'); },
+	track_replay() { 		this.trace('------------------ track_replay'); },
+	track_mute() { 			this.trace('------------------ track_mute'); },
+	track_unmute() { 		this.trace('------------------ track_unmute'); },
+	track_q25() { 			this.trace('------------------ track_q25'); },
+	track_q50() { 			this.trace('------------------ track_q50'); },
+	track_q75() { 			this.trace('------------------ track_q75'); },
+	track_enterfs() { 		this.trace('------------------ track_enterfs'); },
+	track_exitfs() { 		this.trace('------------------ track_exitfs'); },
+	track_cfs() { 			this.trace('------------------ track_cfs'); },
 
-	controlHandler: function(e) {
+	controlHandler(e) {
 		const SELF = this;
 
 		switch(e.currentTarget)
@@ -1486,7 +1491,7 @@ VideoPlayer.prototype = {
 
 	},
 
-	play: function(bool) {
+	play(bool) {
 
 		const SELF = this;
 
@@ -1508,7 +1513,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	pause: function() {
+	pause() {
 		const SELF = this;
 
 		if(SELF.proxy) {
@@ -1516,7 +1521,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	stop: function(bool) {
+	stop(bool) {
 
 		const SELF = this;
 
@@ -1550,7 +1555,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	replay: function() {
+	replay() {
 		const SELF = this;
 
 		SELF.dom_spinner.style.display = 'block';
@@ -1567,32 +1572,32 @@ VideoPlayer.prototype = {
 
 	},
 
-	mute: function() {
+	mute() {
 		const SELF = this;
 
 		SELF.proxy.muted = true;
 	},
 
-	unmute: function() {
+	unmute() {
 		const SELF = this;
 
 		SELF.proxy.muted = false;
 	},
 
-	isMuted: function() {
+	isMuted() {
 		const SELF = this;
 
 		return SELF.proxy.muted;
 	},
 
-	isPlaying: function() {
+	isPlaying() {
 		const SELF = this;
 
 		return SELF.playing;
 	},
 
 	cfsFlag: false,
-	cfs: function(bool) {
+	cfs(bool) {
 		const SELF = this;
 		
 		SELF.proxy.muted = false;
@@ -1619,7 +1624,7 @@ VideoPlayer.prototype = {
 
 		SELF.enableNotifications();
 	},
-	goFS: function() {
+	goFS() {
 		const SELF = this;
 
 		if (SELF.proxy.requestFullscreen)
@@ -1630,13 +1635,13 @@ VideoPlayer.prototype = {
 			SELF.proxy.webkitRequestFullscreen(); // Chrome and Safari
 	},
 
-	getMediaType: function(str) {
+	getMediaType(str) {
 		const SELF = this;
 
 		return SELF.mTypes[str.split('.')[str.split('.').length - 1]];
 	},
 
-	reflow: function(passive) {
+	reflow(passive) {
 		const SELF = this;
 
 		if(SELF.initialized) {
@@ -1667,7 +1672,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	trace: function(str) {
+	trace(str) {
 		const SELF = this;
 
 		if(SELF.debug) {
@@ -1682,7 +1687,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	setVendor: function(element, property, value) {
+	setVendor(element, property, value) {
 		const SELF = this;
 
 		let styles = window.getComputedStyle(element, '');
@@ -1695,7 +1700,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	addClass: function(el, className) {
+	addClass(el, className) {
 		const SELF = this;
 
 		if (el.classList) {
@@ -1705,7 +1710,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	removeClass: function(el, className) {
+	removeClass(el, className) {
 		const SELF = this;
 
 		if (el.classList) {
@@ -1715,7 +1720,7 @@ VideoPlayer.prototype = {
 		}
 	},
 
-	help: function() {
+	help() {
 		window.open('https://github.com/nargalzius/HTMLvideo');
 	}
 };
