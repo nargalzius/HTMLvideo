@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.9
+ *  4.11
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -627,7 +627,7 @@ VideoPlayer.prototype = {
                     if( 'autoplay' in tve )
                         tve.autoplay = true;
 
-                    if( this.ismobile || this.isSafari ) {
+                    if( this.ismobile || this.isSafari() ) {
                         
                         this.inline = true;
                         this.startmuted = true;
@@ -893,7 +893,7 @@ VideoPlayer.prototype = {
                 this.dom_preview.style.display = 'block';
                 this.preview = 0;
                 this.completed = false;
-                this.track_preview_end();
+                this.track_preview_stop();
             } else {
                 this.track_end();
                 this.trackReset();
@@ -982,7 +982,7 @@ VideoPlayer.prototype = {
                 this.restartOnPlay = true;
                 this.trackReset();
                 this.preview = 0;
-                this.track_preview_end();
+                this.track_preview_stop();
             }
             else {
                 this.disableNotification('end');
@@ -1136,7 +1136,7 @@ VideoPlayer.prototype = {
                 }
             } else {
                 // SAFARI FIX FOR NOT AUTO WITH PREVIEW SET
-                if( this.isSafari && this.autoplay ) this.proxy.play();
+                if( this.isSafari() && this.autoplay ) this.proxy.play();
             }
 
             this.reflow(true);
@@ -1182,7 +1182,7 @@ VideoPlayer.prototype = {
     track_start()           { this.trace('------------------ track_start'); },
     track_end()             { this.trace('------------------ track_end'); },
     track_preview_start()   { this.trace('------------------ track_preview_start'); },
-    track_preview_end()     { this.trace('------------------ track_preview_end'); },
+    track_preview_stop()     { this.trace('------------------ track_preview_stop'); },
     track_play()            { this.trace('------------------ track_play'); },
     track_pause()           { this.trace('------------------ track_pause'); },
     track_stop()            { this.trace('------------------ track_stop'); },
@@ -1313,7 +1313,14 @@ VideoPlayer.prototype = {
 
             if(this.playing || bool) {
                 this.callback_stop();
-                this.track_stop();
+                
+                if(this.preview > 0) {
+                    this.preview = 0;
+                    this.completed = false;
+                    this.track_preview_stop();
+                } else {
+                    this.track_stop();
+                }
 
                 if(this.replaywithsound) {
                     this.disableNotification('volume');
