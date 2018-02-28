@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.11
+ *  4.12
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -26,7 +26,7 @@ VideoPlayer.prototype = {
     bigbuttons: true,
     controlbar: true,
     loop: false,
-    progressive: true,
+    preload: false,
     inline: true,
     preview: 0,
 
@@ -658,10 +658,10 @@ VideoPlayer.prototype = {
                     }
                 }
 
-                if(this.progressive) {
-                    tve.preload = "auto";
-                } else {
+                if(this.preload) {
                     tve.preload = "metadata";
+                } else {
+                    tve.preload = "none";
                 }
 
                 if(this.chromeless) {
