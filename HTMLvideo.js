@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.12
+ *  4.13
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -29,6 +29,7 @@ VideoPlayer.prototype = {
     preload: false,
     inline: true,
     preview: 0,
+    continuecfs: false,
 
     initialized: false,
     ismobile: null,
@@ -221,9 +222,15 @@ VideoPlayer.prototype = {
                 this.autoplay = true;
                 this.startmuted = true;
                 
-                if(this.ismobile)
-                    this.inline = true;
+                // if(this.ismobile)
+                //     this.inline = true;
+            } 
+
+            if( this.autoplay && ( this.ismobile || this.isSafari() ) ) {
+                this.inline = true;
+                this.startmuted = true;
             }
+        
 
             if(typeof vc === 'object') {
                 if( typeof(jQuery) === 'undefined' ) { 
@@ -622,21 +629,12 @@ VideoPlayer.prototype = {
                     tve.width = this.dom_container.offsetWidth;
                     tve.height = this.dom_container.offsetHeight;
 
-                if( this.autoplay ) {
-
-                    if( 'autoplay' in tve )
-                        tve.autoplay = true;
-
-                    if( this.ismobile || this.isSafari() ) {
-                        
-                        this.inline = true;
-                        this.startmuted = true;
-                    }
-                }
-
-                if(this.startmuted) {
+                
+                if( this.autoplay && 'autoplay' in tve )
+                    tve.autoplay = true;
+                
+                if(this.startmuted)
                     tve.muted = true;
-                }
 
                 if(this.inline) {
 
@@ -658,16 +656,13 @@ VideoPlayer.prototype = {
                     }
                 }
 
-                if(this.preload) {
-                    tve.preload = "metadata";
-                } else {
-                    tve.preload = "none";
-                }
+                tve.preload = this.preload ? "metadata" : "none";
 
                 if(this.chromeless) {
                     this.dom_controller.style.display = 'none';
                     tve.controls = false;
                 } else {
+
                     if(this.ismobile) {
                         this.dom_controller.style.display = 'none';
 
@@ -889,11 +884,11 @@ VideoPlayer.prototype = {
 
             this.disableNotification('volume');
 
-            if(this.preview && !this.ismobile) {
+            if(this.preview) {
                 this.dom_preview.style.display = 'block';
                 this.preview = 0;
                 this.completed = false;
-                this.track_preview_stop();
+                this.track_preview_end();
             } else {
                 this.track_end();
                 this.trackReset();
@@ -982,7 +977,7 @@ VideoPlayer.prototype = {
                 this.restartOnPlay = true;
                 this.trackReset();
                 this.preview = 0;
-                this.track_preview_stop();
+                this.track_preview_end();
             }
             else {
                 this.disableNotification('end');
@@ -1134,9 +1129,12 @@ VideoPlayer.prototype = {
                     if(!this.chromeless)
                         this.dom_bigplay.style.display = 'block';
                 }
+                
+                if ( this.autoplay ) this.play();
+
             } else {
-                // SAFARI FIX FOR NOT AUTO WITH PREVIEW SET
-                if( this.isSafari() && this.autoplay ) this.proxy.play();
+                // FIX FOR AUTO NOT PLAYING WHEN PREVIEW/MUTED
+                if( ( this.isSafari() || this.startmuted ) && this.autoplay ) this.proxy.play();
             }
 
             this.reflow(true);
@@ -1180,12 +1178,12 @@ VideoPlayer.prototype = {
     },
 
     track_start()           { this.trace('------------------ track_start'); },
+    track_stop()            { this.trace('------------------ track_stop'); },
     track_end()             { this.trace('------------------ track_end'); },
     track_preview_start()   { this.trace('------------------ track_preview_start'); },
-    track_preview_stop()     { this.trace('------------------ track_preview_stop'); },
+    track_preview_end()    { this.trace('------------------ track_preview_end'); },
     track_play()            { this.trace('------------------ track_play'); },
     track_pause()           { this.trace('------------------ track_pause'); },
-    track_stop()            { this.trace('------------------ track_stop'); },
     track_replay()          { this.trace('------------------ track_replay'); },
     track_mute()            { this.trace('------------------ track_mute'); },
     track_unmute()          { this.trace('------------------ track_unmute'); },
@@ -1274,15 +1272,30 @@ VideoPlayer.prototype = {
             let promise = this.proxy.play();
                 
             if ( promise !== undefined ) {
-                      promise.catch( () => {
-                      this.callback_playerror();
-                      }).then( () => {
-                      
-                      if(bool && !this.ismobile) {
+                promise.catch( (e) => {
+                    
+                    // alert(e);
+
+                    this.startmuted = false;
+                    this.autoplay = false;
+                    this.proxy.muted = false;
+                    this.dom_bigplay.style.display = 'block';
+                    this.dom_poster.style.display = 'block';
+                    this.dom_bigsound.style.display = 'none';
+                    this.dom_replay.style.display = 'none';
+                    this.dom_controller.style.display = 'none';
+                    this.dom_spinner.style.display = 'none';
+                    this.reflow();
+
+                    if(ismobile)
+                        this.proxy.controls = true;
+
+                    this.callback_playerror(e);
+                }).then( () => {
+                    if(bool && !this.ismobile) {
                         this.dom_controller.style.display = this.controlbar ? 'block':'none';
                     }
-                    
-                      });
+                });
             }
         }
     },
@@ -1317,7 +1330,7 @@ VideoPlayer.prototype = {
                 if(this.preview > 0) {
                     this.preview = 0;
                     this.completed = false;
-                    this.track_preview_stop();
+                    this.track_preview_end();
                 } else {
                     this.track_stop();
                 }
@@ -1362,7 +1375,8 @@ VideoPlayer.prototype = {
     cfsFlag: false,
     cfs(bool) {
         this.proxy.muted = false;
-        this.seek(0);
+
+        if(!this.continuecfs) this.seek(0);
 
         if(!this.restartOnPlay && !this.cfsFlag) {
             this.cfsFlag = true;
