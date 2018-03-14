@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.13
+ *  4.14
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -1134,7 +1134,7 @@ VideoPlayer.prototype = {
 
             } else {
                 // FIX FOR AUTO NOT PLAYING WHEN PREVIEW/MUTED
-                if( ( this.isSafari() || this.startmuted ) && this.autoplay ) this.proxy.play();
+                if( ( this.isSafari() || this.startmuted ) && this.autoplay ) this.play();
             }
 
             this.reflow(true);
@@ -1268,36 +1268,31 @@ VideoPlayer.prototype = {
 
     play(bool) {
         if(this.proxy) {
-
-            let promise = this.proxy.play();
-                
-            if ( promise !== undefined ) {
-                promise.catch( (e) => {
-                    
-                    // alert(e);
-
-                    this.startmuted = false;
-                    this.autoplay = false;
-                    this.proxy.muted = false;
-                    this.dom_bigplay.style.display = 'block';
-                    this.dom_poster.style.display = 'block';
-                    this.dom_bigsound.style.display = 'none';
-                    this.dom_replay.style.display = 'none';
-                    this.dom_controller.style.display = 'none';
-                    this.dom_spinner.style.display = 'none';
-                    this.reflow();
-
-                    if(ismobile)
-                        this.proxy.controls = true;
-
-                    this.callback_playerror(e);
-                }).then( () => {
-                    if(bool && !this.ismobile) {
+            var promise = this.proxy.play();
+            if (promise !== undefined)
+                promise.then( () => {
+                    if(bool && !this.ismobile)
                         this.dom_controller.style.display = this.controlbar ? 'block':'none';
-                    }
-                });
-            }
+                } ).catch( (e) => {
+                    this.emergencyPlay();
+                    this.callback_playerror(e);
+                } );
         }
+    },
+    emergencyPlay() {
+        this.proxy.muted = false;
+        this.startmuted = false;
+        this.autoplay = false;
+        this.dom_bigplay.style.display = 'block';
+        this.dom_poster.style.display = 'block';
+        this.dom_bigsound.style.display = 'none';
+        this.dom_replay.style.display = 'none';
+        this.dom_controller.style.display = 'none';
+        this.dom_spinner.style.display = 'none';
+        this.reflow();
+
+        if(this.ismobile)
+            this.proxy.controls = true;
     },
 
     pause() { 
