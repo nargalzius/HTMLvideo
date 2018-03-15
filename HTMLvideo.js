@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.14
+ *  4.15
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -142,7 +142,7 @@ VideoPlayer.prototype = {
         pause: true
     },
 
-    loadDelay: 500,
+    loadDelay: 0,
     
     disableNotification(str) {
         this.notifications[str] = false;
@@ -630,31 +630,11 @@ VideoPlayer.prototype = {
                     tve.height = this.dom_container.offsetHeight;
 
                 
-                if( this.autoplay && 'autoplay' in tve )
-                    tve.autoplay = true;
+                // if( this.autoplay && 'autoplay' in tve )
+                //     tve.autoplay = true;
                 
                 if(this.startmuted)
                     tve.muted = true;
-
-                if(this.inline) {
-
-                    if( "playsInline" in document.createElement('video') ) {
-                        tve.playsInline = true;
-                    } else {
-                        this.inline = false;
-
-                        if(this.ismobile) {
-
-                            this.autoplay = false;
-                            this.startmuted = false;
-                            this.preview = 0;
-                            
-                            tve.muted = false;
-                            tve.autoplay = false;
-                            
-                        }
-                    }
-                }
 
                 tve.preload = this.preload ? "metadata" : "none";
 
@@ -699,6 +679,12 @@ VideoPlayer.prototype = {
 
                 this.setListeners(); // COME BACK HERE
 
+                if(this.inline) {
+                    if( "playsInline" in document.createElement('video') ) {
+                        tve.playsInline = true;
+                    }
+                }
+
                 if( !this.hasposter && this.ismobile && !this.autoplay ) {
                     this.dom_spinner.style.display = 'none';
                     this.dom_bigplay.style.display = 'block';
@@ -714,6 +700,8 @@ VideoPlayer.prototype = {
                 });
 
                 this.reflow(true);
+
+                if( this.autoplay ) this.play();
 
             }, this.loadDelay);
         }
@@ -1099,6 +1087,7 @@ VideoPlayer.prototype = {
     },
 
     dlCanPlay() {
+
         if(this.firsttime) { // NOT SURE ABOUT THIS
 
             if(!this.autoplay) {
@@ -1117,7 +1106,6 @@ VideoPlayer.prototype = {
             }
 
             if(this.ismobile) {
-
                 this.dom_controller.style.display = 'none';
 
                 if( this.autoplay ) {
@@ -1129,13 +1117,7 @@ VideoPlayer.prototype = {
                     if(!this.chromeless)
                         this.dom_bigplay.style.display = 'block';
                 }
-                
-                if ( this.autoplay ) this.play();
-
-            } else {
-                // FIX FOR AUTO NOT PLAYING WHEN PREVIEW/MUTED
-                if( ( this.isSafari() || this.startmuted ) && this.autoplay ) this.play();
-            }
+            } 
 
             this.reflow(true);
             this.ready = true;
@@ -1280,9 +1262,9 @@ VideoPlayer.prototype = {
         }
     },
     emergencyPlay() {
-        this.proxy.muted = false;
         this.startmuted = false;
         this.autoplay = false;
+        this.preview = 0;
         this.dom_bigplay.style.display = 'block';
         this.dom_poster.style.display = 'block';
         this.dom_bigsound.style.display = 'none';
@@ -1291,8 +1273,12 @@ VideoPlayer.prototype = {
         this.dom_spinner.style.display = 'none';
         this.reflow();
 
-        if(this.ismobile)
-            this.proxy.controls = true;
+        if(this.proxy) {
+            this.proxy.muted = false;
+            
+            if(this.ismobile) 
+                this.proxy.controls = true;
+        }
     },
 
     pause() { 

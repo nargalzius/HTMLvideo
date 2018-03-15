@@ -8,7 +8,7 @@ var multiSource = [
 var poster = 'https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg';
 var singleSource = 'https://joystick.cachefly.net/JMC/v/vid_become_legend.mp4';
 var resetVars;
-var inlinePossible = ('playsInline' in document.createElement('video'));
+// var inlinePossible = ('playsInline' in document.createElement('video'));
 
 $( document ).ready(init);
 
@@ -424,15 +424,15 @@ function setExceptions() {
 
     } 
     
-        if(!inlinePossible) {
-            $('#inline').parent().addClass('inactive');
+        // if(!inlinePossible) {
+        //     $('#inline').parent().addClass('inactive');
             
-            if(video.ismobile) {
-                $('#autoplay').parent().addClass('inactive');
-                $('#preview').parent().addClass('inactive');
-                alert("Browser does not support playsInline attribute. Disabling all flags related to autoplay");
-            }
-        }
+        //     if(video.ismobile) {
+        //         $('#autoplay').parent().addClass('inactive');
+        //         $('#preview').parent().addClass('inactive');
+        //         alert("Browser does not support playsInline attribute. Disabling all flags related to autoplay");
+        //     }
+        // }
 
 
     if(video.preview == 0) {
@@ -459,14 +459,14 @@ function setExceptions() {
     } else {
             // IF AUTOPLAY IS SET
             if(video.ismobile) {
-                if(inlinePossible) {
+                // if(inlinePossible) {
                     video.inline = true;
-            video.startmuted = true;
-                } else {
-                    video.autoplay = false;
-                    video.startmuted = false;
-            $('#startmuted').parent().addClass('inactive');
-                }
+                    video.startmuted = true;
+                // } else {
+                //     video.autoplay = false;
+                //     video.startmuted = false;
+                //     $('#startmuted').parent().addClass('inactive');
+                // }
             }
         }
 

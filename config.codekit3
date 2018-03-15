@@ -7,7 +7,7 @@
 		"uuidString": "433ECC73-5514-40A9-B6C8-7019A5FFA6DA"
 		}
 	],
-"creatorBuild": "26268",
+"creatorBuild": "26330",
 "files": {
 	"\/demo\/public_html\/HTMLvideo-min.js": {
 		"ft": 64,
@@ -60,6 +60,15 @@
 		"uL": 1
 		},
 	"\/demo\/src\/index.jade": {
+		"cB": 0,
+		"cOD": 1,
+		"ft": 512,
+		"oA": 0,
+		"oAP": "\/demo\/public_html\/index.html",
+		"oF": 2,
+		"oS": 0
+		},
+	"\/demo\/src\/index2.jade": {
 		"cB": 0,
 		"cOD": 1,
 		"ft": 512,
