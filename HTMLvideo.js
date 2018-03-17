@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.15
+ *  4.16
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -570,12 +570,8 @@ VideoPlayer.prototype = {
     },
     mClick() {
         if(this.elementtrigger) {
-            if( !this.isPlaying() )
-            {
-                this.play(true);
-            } 
-
-            if( this.dom_bigplay.style.display === 'block' ||
+            if( !this.isPlaying() ||
+                this.dom_bigplay.style.display === 'block' ||
                 this.dom_replay.style.display === 'block' || 
                 this.dom_preview.style.display === 'block' ) {
                 this.play(true);
@@ -596,7 +592,7 @@ VideoPlayer.prototype = {
         this.seek( this.duration * tp );
 
         if( this.dom_play.style.display === 'block' && this.playonseek ) {
-            this.proxy.play();
+            this.play();
         }
     },
     seek(num) {
@@ -763,7 +759,7 @@ VideoPlayer.prototype = {
 
             // THOROUGHNESS ;P
 
-            this.proxy.pause();
+            this.pause();
             this.proxy.src = "";
             this.proxy.load();
             this.proxy.parentNode.removeChild(this.proxy);
@@ -970,14 +966,16 @@ VideoPlayer.prototype = {
             else {
                 this.disableNotification('end');
                 this.disableNotification('preview_end');
-                if(this.notifications.pause) {
+                if(this.notifications.pause && 
+                  (this.playhead !== this.duration) 
+                ) {
                     this.track_pause(); 
                 }
             }
         }
     },
     dlVolumeChange() {
-        if(this.proxy.muted) {
+        if(this.isMuted()) {
             this.dom_mute.style.display = 'none';
             this.dom_unmute.style.display = 'block';
 
@@ -1015,8 +1013,7 @@ VideoPlayer.prototype = {
             this.started = true;
 
             if( this.startmuted && this.autoplay ) {
-                // this.proxy.muted = true;
-
+            
                 this.dom_bigsound.style.display = 'block';
                 this.dom_controller.style.display = 'none';
                 this.playing = false;
@@ -1130,11 +1127,11 @@ VideoPlayer.prototype = {
     callback_ready()        { this.trace('------------------ callback_ready'); },
     callback_end()          { this.trace('------------------ callback_end'); },
     callback_play()         { this.trace('------------------ callback_play'); },
-    callback_playerror()    { this.trace('------------------ callback_playerror'); },
+    callback_error()    { this.trace('------------------ callback_error'); },
     callback_stop()         { this.trace('------------------ callback_stop'); },
     callback_pause()        { this.trace('------------------ callback_pause'); },
     callback_volume()       { this.trace('------------------ callback_volume');
-        if(this.proxy.muted) {
+        if(this.isMuted()) {
             if(this.notifications.volume) { this.trace('Video Muted'); }
         }
         else {
@@ -1163,7 +1160,7 @@ VideoPlayer.prototype = {
     track_stop()            { this.trace('------------------ track_stop'); },
     track_end()             { this.trace('------------------ track_end'); },
     track_preview_start()   { this.trace('------------------ track_preview_start'); },
-    track_preview_end()    { this.trace('------------------ track_preview_end'); },
+    track_preview_end()     { this.trace('------------------ track_preview_end'); },
     track_play()            { this.trace('------------------ track_play'); },
     track_pause()           { this.trace('------------------ track_pause'); },
     track_replay()          { this.trace('------------------ track_replay'); },
@@ -1179,22 +1176,22 @@ VideoPlayer.prototype = {
     controlHandler(e) {
         switch(e.currentTarget) {
             case this.dom_play:
-                this.proxy.play();
+                this.play();
             break;
             case this.dom_pause:
-                this.proxy.pause();
+                this.pause();
             break;
             case this.dom_mute:
-                this.proxy.muted = true;
+                this.mute();
             break;
             case this.dom_unmute:
-                this.proxy.muted = false;
+                this.unmute();
             break;
             case this.dom_fs:
                 this.goFS();
             break;
             case this.dom_bigplay:
-                this.proxy.play();
+                this.play();
                 this.dom_spinner.style.display = 'block';
                 this.dom_bigplay.style.display = 'none';
                 this.reflow(true);
@@ -1205,7 +1202,7 @@ VideoPlayer.prototype = {
 
                 if(this.replaywithsound || this.ismobile) {
                     this.disableNotification('volume');
-                    this.proxy.muted = false;
+                    this.unmute();
                 }
 
                 if(!this.ismobile) {
@@ -1218,7 +1215,7 @@ VideoPlayer.prototype = {
 
             break;
             case this.dom_preview: 
-                this.proxy.play();
+                this.play();
             break;
             case this.dom_bigsound:
                 this.cfs(true);
@@ -1247,18 +1244,15 @@ VideoPlayer.prototype = {
             break;
         }
     },
-
     play(bool) {
         if(this.proxy) {
-            var promise = this.proxy.play();
-            if (promise !== undefined)
-                promise.then( () => {
-                    if(bool && !this.ismobile)
-                        this.dom_controller.style.display = this.controlbar ? 'block':'none';
-                } ).catch( (e) => {
-                    this.emergencyPlay();
-                    this.callback_playerror(e);
-                } );
+            this.proxy.play().then( () => {
+                if(bool && !this.ismobile)
+                    this.dom_controller.style.display = this.controlbar ? 'block':'none';
+            } ).catch( (e) => {
+                this.emergencyPlay();
+                this.callback_error(e);
+            } );
         }
     },
     emergencyPlay() {
@@ -1274,7 +1268,7 @@ VideoPlayer.prototype = {
         this.reflow();
 
         if(this.proxy) {
-            this.proxy.muted = false;
+            this.unmute();
             
             if(this.ismobile) 
                 this.proxy.controls = true;
@@ -1349,13 +1343,13 @@ VideoPlayer.prototype = {
             this.unmute();
         }
 
-        this.proxy.play();
+        this.play();
         this.seek(0);
     },
 
     cfsFlag: false,
     cfs(bool) {
-        this.proxy.muted = false;
+        this.unmute();
 
         if(!this.continuecfs) this.seek(0);
 
