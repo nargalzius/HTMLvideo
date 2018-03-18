@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.16
+ *  4.17
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -292,6 +292,19 @@ VideoPlayer.prototype = {
                 this.trace("fullscreen: "+document.webkitIsFullScreen);
 
                 if(document.webkitIsFullScreen) {
+                    this.track_enterfs();
+                    this.isfs = true;
+                }
+                else {
+                    this.track_exitfs();
+                    this.isfs = false;
+                }
+
+            }, false);
+            document.addEventListener("MSFullscreenChange", () => {
+                this.trace("fullscreen: "+document.msFullscreenElement);
+
+                if(document.msFullscreenElement) {
                     this.track_enterfs();
                     this.isfs = true;
                 }
@@ -1246,13 +1259,18 @@ VideoPlayer.prototype = {
     },
     play(bool) {
         if(this.proxy) {
-            this.proxy.play().then( () => {
-                if(bool && !this.ismobile)
-                    this.dom_controller.style.display = this.controlbar ? 'block':'none';
-            } ).catch( (e) => {
-                this.emergencyPlay();
-                this.callback_error(e);
-            } );
+            
+            var promise = this.proxy.play();
+
+            if(promise !== undefined) {
+                promise.then( () => {
+                    if(bool && !this.ismobile)
+                        this.dom_controller.style.display = this.controlbar ? 'block':'none';
+                } ).catch( (e) => {
+                    this.emergencyPlay();
+                    this.callback_error(e);
+                } );
+            }
         }
     },
     emergencyPlay() {
@@ -1381,6 +1399,8 @@ VideoPlayer.prototype = {
             this.proxy.mozRequestFullScreen(); // Firefox
         else if (this.proxy.webkitRequestFullscreen)
             this.proxy.webkitRequestFullscreen(); // Chrome and Safari
+        else if (this.proxy.msRequestFullscreen)
+            this.proxy.msRequestFullscreen(); // IE
     },
 
     getMediaType(str) {
