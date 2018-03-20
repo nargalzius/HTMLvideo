@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.17
+ *  4.18
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -13,6 +13,7 @@
 function VideoPlayer(){}
 
 VideoPlayer.prototype = {
+    // USER ACCESSIBLE
     debug: false,
     autoplay: false,
     startmuted: false,
@@ -31,6 +32,7 @@ VideoPlayer.prototype = {
     preview: 0,
     continuecfs: false,
 
+    // DON'T MESS WITH THESE UNLESS YOU REALLY KNOW WHAT YOU'RE DOING
     initialized: false,
     ismobile: null,
     isfs: false,
@@ -46,6 +48,7 @@ VideoPlayer.prototype = {
     started: false,
     completed: false,
     restartOnPlay: false,
+    cfsFlag: false,
     mTypes: {
         'mp4': 'video/mp4',
         'ogv': 'video/ogg',
@@ -160,7 +163,6 @@ VideoPlayer.prototype = {
         this.setVendor(this.dom_bigplay, 'borderRadius', '32px');
         this.dom_bigplay.innerHTML = this.svg.bigplay;
         this.dom_bigplay.getElementsByTagName('path')[0].style.fill = this.colors_bigplay;
-        
     },
     dom_template_bigsound() {
         this.dom_bigsound = document.createElement('div');
@@ -583,7 +585,7 @@ VideoPlayer.prototype = {
     },
     mClick() {
         if(this.elementtrigger) {
-            if( !this.isPlaying() ||
+            if( !this.playing ||
                 this.dom_bigplay.style.display === 'block' ||
                 this.dom_replay.style.display === 'block' || 
                 this.dom_preview.style.display === 'block' ) {
@@ -632,87 +634,79 @@ VideoPlayer.prototype = {
 
             this.reflow(true);
 
-            setTimeout( () => {
+            let tve = document.createElement('video');
+                tve.width = this.dom_container.offsetWidth;
+                tve.height = this.dom_container.offsetHeight;
+            
+            if(this.startmuted)
+                tve.muted = true;
 
-                let tve = document.createElement('video');
-                    tve.width = this.dom_container.offsetWidth;
-                    tve.height = this.dom_container.offsetHeight;
+            tve.preload = this.preload ? "metadata" : "none";
 
-                
-                // if( this.autoplay && 'autoplay' in tve )
-                //     tve.autoplay = true;
-                
-                if(this.startmuted)
-                    tve.muted = true;
+            if(this.chromeless) {
+                this.dom_controller.style.display = 'none';
+                tve.controls = false;
+            } else {
 
-                tve.preload = this.preload ? "metadata" : "none";
-
-                if(this.chromeless) {
+                if(this.ismobile) {
                     this.dom_controller.style.display = 'none';
-                    tve.controls = false;
-                } else {
 
-                    if(this.ismobile) {
-                        this.dom_controller.style.display = 'none';
+                    if(!this.autoplay)
+                        tve.controls = this.controlbar ? true : false;
+                }                   
+            }
 
-                        if(!this.autoplay)
-                            tve.controls = this.controlbar ? true : false;
-                    }                   
-                }
-
-                if(typeof vf === 'object') {
-                    vf.forEach( (e) => {
-                        let tvs = document.createElement('source');
-                            tvs.src = e;
-                            tvs.type = this.getMediaType(e);
-                        tve.appendChild(tvs);
-                    });
-                } else {
+            if(typeof vf === 'object') {
+                vf.forEach( (e) => {
                     let tvs = document.createElement('source');
-                        tvs.src = vf;
-                        tvs.type = this.getMediaType(vf);
+                        tvs.src = e;
+                        tvs.type = this.getMediaType(e);
                     tve.appendChild(tvs);
-                }
-
-                if(vp) {
-                    tve.poster = vp;
-                }
-
-                if(this.elementtrigger) {
-                    tve.style.cursor = 'pointer';
-                }
-
-                this.dom_frame.appendChild(tve);
-
-                this.proxy = tve;
-
-                this.setListeners(); // COME BACK HERE
-
-                if(this.inline) {
-                    if( "playsInline" in document.createElement('video') ) {
-                        tve.playsInline = true;
-                    }
-                }
-
-                if( !this.hasposter && this.ismobile && !this.autoplay ) {
-                    this.dom_spinner.style.display = 'none';
-                    this.dom_bigplay.style.display = 'block';
-                }
-
-                if( this.ismobile && this.autoplay )
-                    this.proxy.style.display = 'block';
-                else
-                    this.proxy.style.display = 'none';
-
-                this.proxy.addEventListener('click', (e) => {
-                    this.controlHandler(e);
                 });
+            } else {
+                let tvs = document.createElement('source');
+                    tvs.src = vf;
+                    tvs.type = this.getMediaType(vf);
+                tve.appendChild(tvs);
+            }
 
-                this.reflow(true);
+            if(vp) {
+                tve.poster = vp;
+            }
 
-                if( this.autoplay ) this.play();
+            if(this.elementtrigger) {
+                tve.style.cursor = 'pointer';
+            }
 
-            }, this.loadDelay);
+            this.dom_frame.appendChild(tve);
+
+            this.proxy = tve;
+
+            this.setListeners(); // COME BACK HERE
+
+            if(this.inline) {
+                if( "playsInline" in document.createElement('video') ) {
+                    tve.playsInline = true;
+                }
+            }
+
+            if( !this.hasposter && this.ismobile && !this.autoplay ) {
+                this.dom_spinner.style.display = 'none';
+                this.dom_bigplay.style.display = 'block';
+            }
+
+            if( this.ismobile && this.autoplay )
+                this.proxy.style.display = 'block';
+            else
+                this.proxy.style.display = 'none';
+
+            this.proxy.addEventListener('click', (e) => {
+                this.controlHandler(e);
+            });
+
+            this.reflow(true);
+
+            if( this.autoplay ) this.play();
         }
         else {
             this.trace('initialize video first');
@@ -1321,32 +1315,38 @@ VideoPlayer.prototype = {
                 this.callback_stop();
                 
                 if(this.preview > 0) {
+                    // PREVIEW END
                     this.preview = 0;
                     this.completed = false;
                     this.track_preview_end();
                 } else {
+                    // REGULAR STOP
                     this.track_stop();
                 }
 
+                // SILENTLY ENABLE SOUND
                 if(this.replaywithsound) {
                     this.disableNotification('volume');
                     this.unmute();
                 }
 
+                // RESET "STATE"
                 this.seek(0);
                 this.disableNotification('pause');
                 this.pause();
                 this.trackReset();
                 this.completed = false;
-                setTimeout( () => {
-                    this.playing = false;
-                    if(this.hasposter) {
-                        this.dom_poster.style.display = 'block';
-                    }
-                    
-                    this.dom_bigplay.style.display = 'block';
-                    this.reflow();
-                }, 500);
+                this.playing = false;
+
+                // SHOW POSTER
+                if(this.hasposter) {
+                    this.dom_poster.style.display = 'block';
+                }
+                
+                // SHOW PLAY BUTTON
+                this.dom_bigplay.style.display = 'block';
+
+                this.reflow();
             }
         }
     },
@@ -1365,8 +1365,8 @@ VideoPlayer.prototype = {
         this.seek(0);
     },
 
-    cfsFlag: false,
     cfs(bool) {
+        this.disableNotification('volume');
         this.unmute();
 
         if(!this.continuecfs) this.seek(0);
@@ -1379,12 +1379,8 @@ VideoPlayer.prototype = {
                 this.proxy.controls = this.controlbar ? true : false;
         }
 
-        this.disableNotification('volume');
-
-        setTimeout( () => {
-            this.preview = 0;
-            this.restartOnPlay = false;
-        }, 50);
+        this.preview = 0;
+        this.restartOnPlay = false;
 
         if(bool && !this.ismobile) {
             this.dom_controller.style.display = this.controlbar ? 'block':'none';
