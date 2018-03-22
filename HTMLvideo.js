@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  4.19
+ *  5.0
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -66,7 +66,7 @@ VideoPlayer.prototype = {
 
         let mobileFlag = true;
 
-        if(typeof device !== 'undefined') {
+        if( window['device'] ) {
             // USE DEVICEJS IF AVAILABLE
             for (let i = 0; i < DESKTOP_AGENTS.length; i++) {
                 let regex;
@@ -614,7 +614,7 @@ VideoPlayer.prototype = {
         this.proxy.currentTime = num;
     },
 
-    load(vf, vp) {
+    load(vf, vp, forceManualPlay) {
         this.trackReset();
 
         if(this.initialized) {
@@ -625,13 +625,8 @@ VideoPlayer.prototype = {
 
             this.dom_spinner.style.display = 'block';
 
-            if(vp) {
-                this.hasposter = true;
-                this.setPoster(vp);
-            } else {
-                this.hasposter = false;
-            }
-
+            if(vp) this.setPoster(vp);
+            
             this.reflow(true);
 
             let tve = document.createElement('video');
@@ -706,7 +701,9 @@ VideoPlayer.prototype = {
 
             this.reflow(true);
 
-            if( this.autoplay ) this.play();
+            if( this.autoplay || forceManualPlay ) {
+                this.play();
+            }
         }
         else {
             this.trace('initialize video first');
@@ -734,6 +731,8 @@ VideoPlayer.prototype = {
 
             };
             newImg.src = str;
+
+        this.hasposter = true;
     },
 
     unload(bool) {
@@ -751,9 +750,9 @@ VideoPlayer.prototype = {
         this.buffered = 0;
 
         if( this.proxy ) {
-            if(!bool) {
-                this.trace('unloading player');
-            }
+            
+            // AVOID FIRING DURING DESTROY
+            if(!bool) this.trace('unloading player');
 
             this.removeListeners();
 
