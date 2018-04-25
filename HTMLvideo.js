@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  5.0
+ *  5.1
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -31,6 +31,7 @@ VideoPlayer.prototype = {
     inline: true,
     preview: 0,
     continuecfs: false,
+    endfreeze: false,
 
     // DON'T MESS WITH THESE UNLESS YOU REALLY KNOW WHAT YOU'RE DOING
     initialized: false,
@@ -49,6 +50,7 @@ VideoPlayer.prototype = {
     completed: false,
     restartOnPlay: false,
     cfsFlag: false,
+    nonce: true,
     mTypes: {
         'mp4': 'video/mp4',
         'ogv': 'video/ogg',
@@ -633,6 +635,9 @@ VideoPlayer.prototype = {
                 tve.width = this.dom_container.offsetWidth;
                 tve.height = this.dom_container.offsetHeight;
             
+            if( this.autoplay && 'autoplay' in tve )
+                tve.autoplay = true;
+
             if(this.startmuted)
                 tve.muted = true;
 
@@ -745,7 +750,6 @@ VideoPlayer.prototype = {
         this.completed = false;
         this.restartOnPlay = false;
         this.hasposter = false;
-        this.playhead = 0;
         this.duration = 0;
         this.buffered = 0;
 
@@ -842,6 +846,7 @@ VideoPlayer.prototype = {
 
     dlEnded() {
         this.completed = true;
+        if( !this.loop ) this.nonce = true;
         this.callback_end();
 
         if(this.loop) {
@@ -856,9 +861,10 @@ VideoPlayer.prototype = {
                 this.unmute();
             }
 
-            if(this.hasposter) {
+            if(this.hasposter && !this.endfreeze) {
+
                 this.dom_poster.style.display = 'block';
-                
+
             } else {
                 if(!this.ismobile) {
                     this.dom_controller.style.display = 'none';
@@ -869,7 +875,8 @@ VideoPlayer.prototype = {
                 this.dom_replay.style.display = 'block';
             }
 
-            this.proxy.style.display = 'none';
+            if(!this.endfreeze)
+                this.proxy.style.display = 'none';
             this.dom_bigsound.style.display = 'none';
 
             this.disableNotification('volume');
@@ -1013,7 +1020,9 @@ VideoPlayer.prototype = {
     },
 
     dlTimeUpdate() {
+        
         this.playing = true;
+
         if(this.proxy && this.firsttime) {
             this.firsttime = false;
             this.started = true;
@@ -1066,22 +1075,28 @@ VideoPlayer.prototype = {
         this.dom_phead.style.width = phpercentage+'%';
 
         // QUARTILES
-        if(!this.preview && !this.track.q25 && phpercentage >= 25) {
+
+        if(!this.preview && this.track.q25 !== true && phpercentage >= 25) {
             this.track.q25 = true;
             this.track_q25();
         }
 
-        if(!this.preview && !this.track.q50 && phpercentage >= 50) {
+        if(!this.preview && this.track.q50 !== true && phpercentage >= 50) {
             this.track.q50 = true;
             this.track_q50();
         }
 
-        if(!this.preview && !this.track.q75 && phpercentage >= 75) {
+        if(!this.preview && this.track.q75 !== true && phpercentage >= 75) {
             this.track.q75 = true;
             this.track_q75();
         }
 
         this.callback_progress();
+
+        if( this.nonce && this.playhead > 0 ) {
+            this.nonce = false;
+            this.callback_show();
+        }
 
         if(this.preview && ( this.playhead > this.preview ) ) {
             this.pause();
@@ -1133,9 +1148,10 @@ VideoPlayer.prototype = {
     callback_ready()        { this.trace('------------------ callback_ready'); },
     callback_end()          { this.trace('------------------ callback_end'); },
     callback_play()         { this.trace('------------------ callback_play'); },
-    callback_error()    { this.trace('------------------ callback_error'); },
+    callback_error()        { this.trace('------------------ callback_error'); },
     callback_stop()         { this.trace('------------------ callback_stop'); },
     callback_pause()        { this.trace('------------------ callback_pause'); },
+    callback_show()         { this.trace('------------------ callback_show'); },
     callback_volume()       { this.trace('------------------ callback_volume');
         if(this.isMuted()) {
             if(this.notifications.volume) { this.trace('Video Muted'); }
@@ -1151,7 +1167,7 @@ VideoPlayer.prototype = {
         started: false,
         q25: false,
         q50: false,
-        q75: false
+        q75: false,
     },
 
     trackReset() {
@@ -1247,6 +1263,12 @@ VideoPlayer.prototype = {
                     if(!this.ismobile || ( this.ismobile && this.inline && !this.controlbar ) ) 
                         this.pause();
                 }
+
+                // if( this.ismobile && this.elementtrigger && this.chromeless ) {
+                    
+                // }
+
+                
             break;
         }
     },
@@ -1270,7 +1292,10 @@ VideoPlayer.prototype = {
         this.startmuted = false;
         this.autoplay = false;
         this.preview = 0;
-        this.dom_bigplay.style.display = 'block';
+        if( !this.chromeless )
+            this.dom_bigplay.style.display = 'block';
+        else
+            this.elementtrigger = true;
         this.dom_poster.style.display = 'block';
         this.dom_bigsound.style.display = 'none';
         this.dom_replay.style.display = 'none';
@@ -1281,7 +1306,7 @@ VideoPlayer.prototype = {
         if(this.proxy) {
             this.unmute();
             
-            if(this.ismobile) 
+            if( this.ismobile && !this.chromeless ) 
                 this.proxy.controls = true;
         }
     },
@@ -1307,10 +1332,10 @@ VideoPlayer.prototype = {
         return this.playing; 
     },
 
-    stop(bool) {
+    stop() {
         if(this.proxy) {
 
-            if(this.playing || bool) {
+            if(this.playing) {
                 this.callback_stop();
                 
                 if(this.preview > 0) {
@@ -1341,11 +1366,17 @@ VideoPlayer.prototype = {
                 if(this.hasposter) {
                     this.dom_poster.style.display = 'block';
                 }
-                
+            
                 // SHOW PLAY BUTTON
-                this.dom_bigplay.style.display = 'block';
+                setTimeout(()=>{
+                    if( !this.chromeless ) {
+                        this.dom_bigplay.style.display = 'block';
+                        this.dom_controller.style.display = 'none';
+                    }
+                    this.reflow();
+                }, 10);
 
-                this.reflow();
+                
             }
         }
     },
