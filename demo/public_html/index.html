@@ -27,14 +27,17 @@
       <div class="cboxwrapper autoplay">
         <input id="autoplay" type="checkbox" class="cb"/><span>video.autoplay</span>
       </div>
+      <div class="cboxwrapper loop">
+        <input id="loop" type="checkbox" class="cb"/><span>video.loop</span>
+      </div>
       <div class="cboxwrapper startmuted">
         <input id="startmuted" type="checkbox" class="cb"/><span>video.startmuted</span>
       </div>
+      <div class="cboxwrapper continuecfs">
+        <input id="continuecfs" type="checkbox" class="cb"/><span>video.continuecfs</span><span id="tooltip">Do not restart video on ClickForSound</span>
+      </div>
       <div class="cboxwrapper replaywithsound">
         <input id="replaywithsound" type="checkbox" class="cb"/><span>video.replaywithsound</span><span id="tooltip">Force unmute on replay</span>
-      </div>
-      <div class="cboxwrapper loop">
-        <input id="loop" type="checkbox" class="cb"/><span>video.loop</span>
       </div>
       <div class="cboxwrapper allowfullscreen">
         <input id="allowfullscreen" type="checkbox" class="cb"/><span>video.allowfullscreen</span>
@@ -49,19 +52,22 @@
         <input id="chromeless" type="checkbox" class="cb"/><span>video.chromeless</span><span id="tooltip">Remove all control buttons<br><strong>WARNING:</strong> if you set <code>elementtrigger</code> to <strong>false</strong> as well, you'll have to trigger/control the video programatically.</span>
       </div>
       <div class="cboxwrapper elementtrigger">
-        <input id="elementtrigger" type="checkbox" class="cb"/><span>video.elementtrigger</span><span id="tooltip">Enables playback/pause by clicking the video element (similar to YouTube, etc.) Does not affect regular (visible) controls</span>
+        <input id="elementtrigger" type="checkbox" class="cb"/><span>video.elementtrigger</span><span id="tooltip">Enables starting of video by clicking the video element</span>
       </div>
       <div class="cboxwrapper elementplayback">
-        <input id="elementplayback" type="checkbox" class="cb"/><span>video.elementplayback</span><span id="tooltip">Enables playback/pause by clicking the video element during normal playback </span>
+        <input id="elementplayback" type="checkbox" class="cb"/><span>video.elementplayback</span><span id="tooltip">Enables playback/pause by clicking the video element during normal playback (similar to YouTube, etc.)</span>
       </div>
       <div class="cboxwrapper controlbar">
         <input id="controlbar" type="checkbox" class="cb"/><span>video.controlbar</span><span id="tooltip">Enables/Disables the bottom control bar on playback</span>
       </div>
-      <div class="cboxwrapper progressive">
-        <input id="progressive" type="checkbox" class="cb"/><span>video.progressive</span><span id="tooltip">"Preload" video contents on load</span>
+      <div class="cboxwrapper preload">
+        <input id="preload" type="checkbox" class="cb"/><span>video.preload</span><span id="tooltip">"Preload" video contents on load (metadata or none)</span>
       </div>
       <div class="cboxwrapper inline">
         <input id="inline" type="checkbox" class="cb"/><span>video.inline</span><span id="tooltip">Set <code>playsinline</code> attribute to video element</span>
+      </div>
+      <div class="cboxwrapper endfreeze">
+        <input id="endfreeze" type="checkbox" class="cb"/><span>video.endfreeze</span><span id="tooltip">Leave video element visible on stop (override poster if present)</span>
       </div>
       <div class="cboxwrapper preview">
         <input id="preview" type="checkbox" class="cb"/><span>video.preview</span>

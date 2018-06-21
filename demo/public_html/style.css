@@ -223,3 +223,6 @@ body {
   #resize span {
     margin: 0 1px 0 5px;
     font-size: 20px; }
+
+button {
+  margin-top: 50px; }

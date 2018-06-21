@@ -7,7 +7,7 @@
 		"uuidString": "433ECC73-5514-40A9-B6C8-7019A5FFA6DA"
 		}
 	],
-"creatorBuild": "26330",
+"creatorBuild": "26680",
 "files": {
 	"\/demo\/public_html\/HTMLvideo-min.js": {
 		"ft": 64,
@@ -123,6 +123,19 @@
 		"oS": 0,
 		"uL": 1
 		},
+	"\/demo\/src\/style2.sass": {
+		"aP": 1,
+		"bl": 1,
+		"dP": 10,
+		"dS": 0,
+		"ft": 2,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/demo\/public_html\/style.css",
+		"oF": 2,
+		"oS": 0,
+		"uL": 1
+		},
 	"\/HTMLvideo.js": {
 		"ft": 64,
 		"ma": 0,
@@ -161,7 +174,7 @@
 	},
 "hooks": [
 	{
-		"enabled": 1,
+		"enabled": 0,
 		"name": "Copy to other projects",
 		"predicateDataBase64Encoded": "YnBsaXN0MDDUAQIDBAUGZGVYJHZlcnNpb25YJG9iamVjdHNZJGFyY2hpdmVyVCR0b3ASAAGGoK8QFgcIDxQcJicqMTU6Oz5CRktMT1dbX2FVJG51bGzTCQoLDA0OXxAXTlNDb21wb3VuZFByZWRpY2F0ZVR5cGVfEA9OU1N1YnByZWRpY2F0ZXNWJGNsYXNzEAKAAoAV0hALERNaTlMub2JqZWN0c6ESgAOAFNQLFRYXGBkaG18QEU5TUmlnaHRFeHByZXNzaW9uXxAQTlNMZWZ0RXhwcmVzc2lvbl8QE05TUHJlZGljYXRlT3BlcmF0b3KAE4AOgASAEdUdHh8gCyEiIyQlWU5TT3BlcmFuZF5OU1NlbGVjdG9yTmFtZV8QEE5TRXhwcmVzc2lvblR5cGVbTlNBcmd1bWVudHOABoAFEAOACIANXHZhbHVlRm9yS2V5OtIfCygpEAGAB9IrLC0uWiRjbGFzc25hbWVYJGNsYXNzZXNfEBBOU1NlbGZFeHByZXNzaW9uoy0vMFxOU0V4cHJlc3Npb25YTlNPYmplY3TSEAsyNKEzgAmADNMLHzY3ODlZTlNLZXlQYXRogAsQCoAKXWlucHV0RmlsZW5hbWXSKyw8PV8QHE5TS2V5UGF0aFNwZWNpZmllckV4cHJlc3Npb26jPC8w0issP0BeTlNNdXRhYmxlQXJyYXmjP0EwV05TQXJyYXnSKyxDRF8QE05TS2V5UGF0aEV4cHJlc3Npb26kQ0UvMF8QFE5TRnVuY3Rpb25FeHByZXNzaW9u00cfC0hJSl8QD05TQ29uc3RhbnRWYWx1ZYAPEACAEFxIVE1MdmlkZW8uanPSKyxNTl8QGU5TQ29uc3RhbnRWYWx1ZUV4cHJlc3Npb26jTS8w1QtQUVJTVElVI1ZaTlNNb2RpZmllclhOU05lZ2F0ZVlOU09wdGlvbnNeTlNPcGVyYXRvclR5cGWAEggQBNIrLFhZXxAbTlNFcXVhbGl0eVByZWRpY2F0ZU9wZXJhdG9yo1haMF8QE05TUHJlZGljYXRlT3BlcmF0b3LSKyxcXV8QFU5TQ29tcGFyaXNvblByZWRpY2F0ZaNcXjBbTlNQcmVkaWNhdGXSKyxBYKJBMNIrLGJjXxATTlNDb21wb3VuZFByZWRpY2F0ZaNiXjBfEA9OU0tleWVkQXJjaGl2ZXLRZmdUcm9vdIABAAgAEQAaACMALQAyADcAUABWAF0AdwCJAJAAkgCUAJYAmwCmAKgAqgCsALUAyQDcAPIA9AD2APgA+gEFAQ8BHgExAT0BPwFBAUMBRQFHAVQBWQFbAV0BYgFtAXYBiQGNAZoBowGoAaoBrAGuAbUBvwHBAcMBxQHTAdgB9wH7AgACDwITAhsCIAI2AjsCUgJZAmsCbQJvAnECfgKDAp8CowKuArkCwgLMAtsC3QLeAuAC5QMDAwcDHQMiAzoDPgNKA08DUgNXA20DcQODA4YDiwAAAAAAAAIBAAAAAAAAAGgAAAAAAAAAAAAAAAAAAAON",
 		"runOrder": 0,
@@ -176,7 +189,8 @@
 	"creationDate": 506965977,
 	"displayValue": "HTML Video",
 	"displayValueWasSetByUser": 1,
-	"iconImageName": "meme-soon"
+	"iconImageName": "meme-soon",
+	"iconImageWasSetByUser": 0
 	},
 "projectSettings": {
 	"abortBuildOnError": 1,
@@ -1979,6 +1993,7 @@
 		"autoOutputPathReplace1": "",
 		"autoOutputPathReplace2": "",
 		"autoOutputPathStyle": 0,
+		"outputFormat": 0,
 		"quality": 100
 		},
 	"languageDefaultsJS": {
