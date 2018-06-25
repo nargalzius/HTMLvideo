@@ -85,4 +85,3 @@ function createVideo1(){
 // 	video2.init('videoPlayer2');
 // 	video2.load(singleSource, poster);
 // }
-

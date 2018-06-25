@@ -1,4 +1,4 @@
-// @codekit-prepend "../../device.js"
+// @ codekit-prepend "../../device.js"
 
 var video;
 var multiSource = [
@@ -14,27 +14,29 @@ $( document ).ready(init);
 
 function init(){
     video = new VideoPlayer();
-    video.dom_debug = document.getElementById('debugField');
+    // video.dom_debug = document.getElementById('debugField');
     video.debug = true;
     // video.loadDelay = 0;
+    video.endfreeze = true;
 
     video.checkForMobile();
-    video.progressive = false;
+    video.preload = false;
     
     video.track_mute = function(){
         setMuteState();
-        video.trace('TRACK: Video Mute');
+        video.trace('track_mute');
     };
     
     video.track_unmute = function(){
         setMuteState();
-        video.trace('TRACK: Video Unmute');
+        video.trace('track_unmute');
     };
     
     video.callback_play = function(){
         $('#play').removeClass('active');
         $('#pause').addClass('active');
         $('#replay').addClass('active');
+        $('#stop').addClass('active');
         video.trace('callback_play');
     };
     
@@ -56,22 +58,27 @@ function init(){
     video.track_replay = function(){
         setMuteState();
         $('#stop').addClass('active');
-        video.trace('TRACK: Video Replay');
+        video.trace('track_replay');
+    };
+
+    video.track_cfs = function(){
+        setMuteState();
+        video.trace('track_cfs');
     };
     
     video.track_start = function(){
         setMuteState();
         $('#stop').addClass('active');
-        video.trace('TRACK: Video Start');
+        video.trace('track_start');
     };
 
     video.track_end = function(){
         
-        video.trace('TRACK: Video End');
+        video.trace('track_end');
     };
 
     video.track_preview_start = function() {
-        video.trace('TRACK: Preview Start');
+        video.trace('track_preview_start');
         video.trace('preview: '+video.preview);
         video.trace('autoplay: '+video.autoplay);
         video.trace('startmuted: '+video.startmuted);
@@ -79,7 +86,7 @@ function init(){
 
     video.track_preview_end = function() {
         disablePreview();
-        video.trace('TRACK: Preview End');
+        video.trace('track_preview_end');
     };
 
     resetVars = {
@@ -96,9 +103,11 @@ function init(){
         chromeless: video.chromeless,
         loop: video.loop,
         debug: video.debug,
-        progressive: video.progressive,
+        preload: video.preload,
         inline: video.inline,
-        preview: video.preview
+        preview: video.preview,
+        endfreeze: video.endfreeze,
+        continuecfs: video.continuecfs,
     };
 
 
@@ -117,12 +126,12 @@ function init(){
             $(this).attr('id') === 'startmuted' ||
             $(this).attr('id') === 'chromeless' ||
             $(this).attr('id') === 'uniquereplay' ||
-            $(this).attr('id') === 'progressive' ||
             $(this).attr('id') === 'preview' ||
             $(this).attr('id') === 'elementtrigger' ||
             $(this).attr('id') === 'elementplayback' || 
-                        $(this).attr('id') === 'controlbar' || 
-                        $(this).attr('id') === 'inline' 
+            $(this).attr('id') === 'controlbar' || 
+            $(this).attr('id') === 'inline' ||
+            $(this).attr('id') === 'preload'
             ) )
         {
             quickReset(100);
@@ -142,7 +151,7 @@ function init(){
                     disablePreview();
                 }
             } else {
-                video[name] = bool;
+                video.params[name] = bool;
             }
 
             setExceptions();
@@ -275,9 +284,9 @@ function init(){
             } else {
                 $('#prevTime').removeClass('hide');
                 $('#preview').prop('checked', true);
-                video.autoplay = false;
+                video.params.autoplay = false;
                 $('#autoplay').prop('checked', false).parent().removeClass('inactive');
-                video.startmuted = false;
+                video.params.startmuted = false;
                 // $('#startmuted').prop('checked', false).parent().removeClass('inactive');
             }
 
@@ -296,9 +305,9 @@ function init(){
 function disablePreview() {
     $('#prevTime').addClass('hide');
     $('#preview').prop('checked', false);
-    video.autoplay = false;
+    video.params.autoplay = false;
     $('#autoplay').prop('checked', false).parent().removeClass('inactive');
-    video.startmuted = false;
+    video.params.startmuted = false;
     $('#startmuted').prop('checked', false).parent().addClass('inactive');
 }
 
@@ -313,7 +322,7 @@ function setMuteState() {
 }
 
 function quickReset(num) {
-    
+
     video.destroy();
     
     setTimeout(function(){
@@ -339,6 +348,8 @@ function quickReset(num) {
     $('#unmute').removeClass('active');
     $('#mute').removeClass('active');
     $('#replay').removeClass('active');
+
+    console.log(video);
 }
 
 function ppMulti()
@@ -383,7 +394,7 @@ function loadVid()
 function resetVariables() {
 
     for(var p in resetVars) {
-        video[p] = resetVars[p];
+        video.params[p] = resetVars[p];
 
     }
 
@@ -396,13 +407,15 @@ function resetVariables() {
     video.playonseek = resetVars.playonseek;
     video.chromeless = resetVars.chromeless;
     video.elementtrigger = resetVars.elementtrigger;
-        video.elementplayback = resetVars.elementplayback;
-        video.controlbar = resetVars.controlbar;
+    video.elementplayback = resetVars.elementplayback;
+    video.controlbar = resetVars.controlbar;
     video.loop = resetVars.loop;
     video.debug = resetVars.debug;
-    video.progressive = resetVars.progressive;
+    video.preload = resetVars.preload;
     video.inline = resetVars.inline;
     video.preview = resetVars.preview;
+    video.endfreeze = resetVars.endfreeze;
+    video.continuecfs = resetVars.continuecfs;
 
     setExceptions();
 
@@ -482,8 +495,8 @@ function setExceptions() {
 function setCheckboxes() {
     // console.log('');
     for(var p in resetVars) {
-        // console.log(p+': '+video[p]);
-        $('#'+p).prop('checked', video[p]);
+        // console.log(p+': '+video.params[p]);
+        $('#'+p).prop('checked', video.params[p]);
     }
     // console.log('');
 }

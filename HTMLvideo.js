@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  5.2
+ *  5.3
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -15,27 +15,37 @@ function VideoPlayer(){}
 VideoPlayer.prototype = {
     // USER ACCESSIBLE
     debug: false,
-    autoplay: false,
-    startmuted: false,
-    replaywithsound: true,
-    allowfullscreen: false,
-    playonseek: true,
-    uniquereplay: false,
-    chromeless: false,
-    elementtrigger: true,
-    elementplayback: true,
-    bigbuttons: true,
-    controlbar: true,
-    loop: false,
-    preload: false,
-    inline: true,
-    preview: 0,
-    continuecfs: false,
-    endfreeze: false,
+    params: {},
+    default_params: {
+        id: 'video',
+        src: [
+            'https://joystick.cachefly.net/resources/video/video.mp4',
+            'https://joystick.cachefly.net/resources/video/video.webm',
+            'https://joystick.cachefly.net/resources/video/video.ogv'
+        ],
+        poster: "https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg",
+        autoplay: false,
+        startmuted: false,
+        replaywithsound: true,
+        allowfullscreen: false,
+        playonseek: true,
+        uniquereplay: false,
+        chromeless: false,
+        elementtrigger: true,
+        elementplayback: true,
+        controlbar: true,
+        loop: false,
+        preload: false,
+        inline: true,
+        preview: 0,
+        continuecfs: false,
+        endfreeze: false
+    },
 
     // DON'T MESS WITH THESE UNLESS YOU REALLY KNOW WHAT YOU'RE DOING
     proxy: null,
     ismobile: null,
+    issafari: null,
     zindex: null,
     playhead: 0,
     duration: 0,
@@ -44,8 +54,8 @@ VideoPlayer.prototype = {
     flag_started: false,
     flag_playing: false,
     flag_isfs: false,
-    flag_firsttime: true,
-    flag_initialized: false,
+    flag_first: true,
+    
     flag_restartplay: false,
     flag_hasposter: false,
     flag_cfs: false,
@@ -53,45 +63,15 @@ VideoPlayer.prototype = {
     flag_progress: true,
     flag_completed: false,
     flag_stopped: false,
+
+    api: false,
+    init_int: null,
+    load_int: null,
+
     mTypes: {
         'mp4': 'video/mp4',
         'ogv': 'video/ogg',
         'webm': 'video/webm'
-    },
-
-    isSafari() {
-        return !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
-    },
-
-    checkForMobile() {
-        const DESKTOP_AGENTS = [
-            'desktop'
-        ];
-
-        let mobileFlag = true;
-
-        if( window['device'] ) {
-            // USE DEVICEJS IF AVAILABLE
-            for (let i = 0; i < DESKTOP_AGENTS.length; i++) {
-                let regex;
-                    regex = new RegExp(DESKTOP_AGENTS[i], 'i');
-
-                if( window.document.documentElement.className.match(regex) ) {
-                    mobileFlag = false;
-                }
-            }
-        } else {
-            // BACKUP [RUDIMENTARY] DETECTION
-            mobileFlag = 'ontouchstart' in window;
-        }
-
-        if( mobileFlag ) {
-            this.ismobile = true;
-            this.trace("mobile browser detected");
-        } else {
-            this.ismobile = false;
-            this.trace("desktop browser detected");
-        }
     },
 
     svg: {
@@ -166,6 +146,7 @@ VideoPlayer.prototype = {
         this.dom_bigplay.style.backgroundColor = this.colors_bg;
         this.setVendor(this.dom_bigplay, 'borderRadius', '32px');
         this.dom_bigplay.innerHTML = this.svg.bigplay;
+        this.dom_bigplay.style.pointerEvents = 'none';
         this.dom_bigplay.getElementsByTagName('path')[0].style.fill = this.colors_bigplay;
     },
     dom_template_bigsound() {
@@ -188,6 +169,10 @@ VideoPlayer.prototype = {
         this.dom_spinner.innerHTML = this.svg.spinner;
         this.dom_spinner.style.width = '38px';
         this.dom_spinner.style.height = '38px';
+        // this.dom_spinner.style.marginLeft = '-19px';
+        // this.dom_spinner.style.marginTop = '-19px';
+        // this.dom_spinner.style.left = '50%';
+        // this.dom_spinner.style.top = '50%';
     },
     dom_template_play() {
         this.dom_play = document.createElement('span');
@@ -215,35 +200,76 @@ VideoPlayer.prototype = {
         this.dom_fs.getElementsByTagName('path')[0].style.fill = this.colors_fs;
     },
 
-    init(vc) {
-        if(!this.flag_initialized)
+    evaluate(params) {
+        if(Object.keys(this.params).length === 0)
+            for( let key in this.default_params )
+                this.params[key] = this.default_params[key]
+            
+            // Object.assign(this.params, this.default_params);
+
+        if( params && params.constructor === Object ) {
+            for( let key in params ) {
+                switch(key) {
+                    default:
+                        this.params[key] = params[key];
+                }
+            }
+        } else
+        if( params && params.constructor === String ) {
+            this.params.id = params;
+        } else
+        if( params && params.constructor === Boolean ) {
+
+        } else
+            delete this.params['src'];
+
+
+        // RESOLVE AUTOPLAY
+
+        if( this.params.autoplay ) {
+            if( this.ismobile && !this.params.startmuted) {
+                this.params.autoplay = false;
+            } else 
+            if ( this.issafari && !this.params.startmuted )
+                this.params.autoplay = false;
+        }
+
+        if(this.params.inline) {
+            if( "playsInline" in document.createElement('video') ) {
+                this.params.inline = true;
+            } else {
+                this.params.inline = false;
+                
+                if(this.ismobile) {
+                    this.params.autoplay = false;
+                    this.params.startmuted = false;
+                }
+            }
+        }
+    },
+
+    init(params) {
+        if(!this.api)
         {
             if(this.ismobile === null) { this.checkForMobile(); }
+            if(this.issafari === null) { this.checkForSafari(); }
 
-            if(this.preview) {
-                this.autoplay = true;
-                this.startmuted = true;
+            this.evaluate(params);
+
+            if(this.params.preview) {
+                this.params.autoplay = true;
+                this.params.startmuted = true;
                 
                 // if(this.ismobile)
-                //     this.inline = true;
+                //     this.params.inline = true;
             } 
 
-            if( this.autoplay && ( this.ismobile || this.isSafari() ) ) {
-                this.inline = true;
-                this.startmuted = true;
-            }
-        
-
-            if(typeof vc === 'object') {
-                if( typeof(jQuery) === 'undefined' ) { 
-                    this.dom_playercontainer = vc; 
-                } else {
-                    this.dom_playercontainer = document.getElementById( vc.attr('id') ); 
-                }
-            } else {
-                this.dom_container = document.getElementById( vc );
+            if( this.params.autoplay && ( this.ismobile || this.issafari ) ) {
+                this.params.inline = true;
+                this.params.startmuted = true;
             }
 
+            this.dom_container = document.getElementById( this.params.id );
             this.dom_container.style.backgroundColor = '#000';
             this.dom_container.style.overflow = 'hidden';
 
@@ -337,14 +363,14 @@ VideoPlayer.prototype = {
             this.dom_poster.style.backgroundSize = 'cover';
             this.dom_poster.style.backgroundRepeat = 'no-repeat';
             this.dom_container.appendChild(this.dom_poster);
-            if(this.elementtrigger) {
+            if(this.params.elementtrigger) {
                 this.dom_poster.style.cursor = 'pointer';
             }
 
             // CONTROL
 
             this.dom_controller = document.createElement('div');
-            this.dom_controller.style.display = this.controlbar ? 'block':'none';
+            this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
             this.dom_controller.style.zIndex = this.zindex;
             this.dom_controller.style.position = 'relative';
             this.dom_controller.style.height = this.barsize + 'px';
@@ -354,7 +380,7 @@ VideoPlayer.prototype = {
             this.dom_controller.style.display = 'none';
             this.dom_controller.className = 'v_control_bar';
 
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_controller);
             }
 
@@ -401,7 +427,7 @@ VideoPlayer.prototype = {
 
             // FULL SCREEN
 
-            if(this.allowfullscreen)
+            if(this.params.allowfullscreen)
             {
                 this.dom_template_fs();
                 this.addClass(this.dom_fs, 'cbtn');
@@ -422,7 +448,7 @@ VideoPlayer.prototype = {
                 tcmmc.style.top = 0 + 'px';
                 tcmmc.className = 'v_control_mu';
                 tcmmc.style.textAlign = 'left';
-                if(this.allowfullscreen) {
+                if(this.params.allowfullscreen) {
                     tcmmc.style.right = 58 + 'px';
                 }
                 else {
@@ -493,7 +519,7 @@ VideoPlayer.prototype = {
             this.dom_bigplay.style.position = 'absolute';
             this.dom_bigplay.style.cursor = 'pointer';
             this.dom_bigplay.style.textShadow = this.dom_template_textshadow;
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_bigplay);
             }
             this.dom_bigplay.style.display = 'none';
@@ -507,13 +533,13 @@ VideoPlayer.prototype = {
             this.dom_preview.style.display = 'block';
             this.dom_preview.style.position = 'absolute';
             this.dom_preview.style.cursor = 'pointer';
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_preview);
             }
             this.dom_preview.style.display = 'none';
             this.centered_controls.push(this.dom_preview);
 
-            if(this.uniquereplay) {
+            if(this.params.uniquereplay) {
                 this.dom_template_replay();
             } else {
                 this.dom_replay = this.dom_bigplay.cloneNode(true);
@@ -526,7 +552,7 @@ VideoPlayer.prototype = {
             this.dom_replay.style.display = 'block';
             this.dom_replay.style.position = 'absolute';
             this.dom_replay.style.cursor = 'pointer';
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_replay);
             }
             this.dom_replay.style.display = 'none';
@@ -540,7 +566,7 @@ VideoPlayer.prototype = {
             this.dom_bigsound.style.display = 'block';
             this.dom_bigsound.style.position = 'absolute';
             this.dom_bigsound.style.cursor = 'pointer';
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_bigsound);
             }
             this.dom_bigsound.style.display = 'none';
@@ -559,11 +585,14 @@ VideoPlayer.prototype = {
 
             this.reflow(true);
 
-            this.flag_initialized = true;
-            this.trace('video flag_initialized');
+            this.api = true;
+            this.trace('video api');
+
+            if(this.params.src)
+                this.load(this.params);
         }
         else {
-            this.trace('already flag_initialized');
+            this.trace('already api');
         }
     },
 
@@ -576,18 +605,30 @@ VideoPlayer.prototype = {
             ( this.dom_bigplay.style.display !== 'block' ) &&
             ( this.dom_preview.style.display !== 'block' )
         ) {
-            this.dom_controller.style.display = this.controlbar ? 'block':'none';
+            this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
         }
     },
     mLeave() {
         this.dom_controller.style.display = 'none';
     },
     mClick() {
-        if(this.elementtrigger) {
+
+        this.reflow(true);
+
+        if(this.flag_first) {
+            this.dom_spinner.style.display = 'block';
+            this.dom_replay.style.display = 'none';
+            this.dom_bigplay.style.display = 'none';
+        }
+
+
+        if(this.params.elementtrigger) {
+
             if( !this.flag_playing ||
                 this.dom_bigplay.style.display === 'block' ||
                 this.dom_replay.style.display === 'block' || 
                 this.dom_preview.style.display === 'block' ) {
+
                 this.play(true);
             
             } 
@@ -605,7 +646,7 @@ VideoPlayer.prototype = {
 
         this.seek( this.duration * tp );
 
-        if( this.dom_play.style.display === 'block' && this.playonseek ) {
+        if( this.dom_play.style.display === 'block' && this.params.playonseek ) {
             this.play();
         }
     },
@@ -613,18 +654,21 @@ VideoPlayer.prototype = {
         this.proxy.currentTime = num;
     },
 
-    load(vf, vp, forceManualPlay) {
-        this.trackReset();
+    load(params) {
+        
+        if(this.api) {
 
-        if(this.flag_initialized) {
+            this.trackReset();
 
-            this.flag_firsttime = true;
+            this.evaluate(params);
+
+            this.flag_first = true;
 
             this.unload();
 
             this.dom_spinner.style.display = 'block';
 
-            if(vp) this.setPoster(vp);
+            if(this.params.poster) this.setPoster(this.params.poster);
             
             this.reflow(true);
 
@@ -632,15 +676,15 @@ VideoPlayer.prototype = {
                 tve.width = this.dom_container.offsetWidth;
                 tve.height = this.dom_container.offsetHeight;
             
-            if( this.autoplay && 'autoplay' in tve )
+            if( this.params.autoplay && 'autoplay' in tve )
                 tve.autoplay = true;
 
-            if(this.startmuted)
+            if(this.params.startmuted)
                 tve.muted = true;
 
-            tve.preload = this.preload ? "metadata" : "none";
+            tve.preload = this.params.preload ? "metadata" : "none";
 
-            if(this.chromeless) {
+            if(this.params.chromeless) {
                 this.dom_controller.style.display = 'none';
                 tve.controls = false;
             } else {
@@ -648,13 +692,13 @@ VideoPlayer.prototype = {
                 if(this.ismobile) {
                     this.dom_controller.style.display = 'none';
 
-                    if(!this.autoplay)
-                        tve.controls = this.controlbar ? true : false;
+                    if(!this.params.autoplay)
+                        tve.controls = this.params.controlbar ? true : false;
                 }                   
             }
 
-            if(typeof vf === 'object') {
-                vf.forEach( (e) => {
+            if(typeof this.params.src === 'object') {
+                this.params.src.forEach( (e) => {
                     let tvs = document.createElement('source');
                         tvs.src = e;
                         tvs.type = this.getMediaType(e);
@@ -662,17 +706,21 @@ VideoPlayer.prototype = {
                 });
             } else {
                 let tvs = document.createElement('source');
-                    tvs.src = vf;
-                    tvs.type = this.getMediaType(vf);
+                    tvs.src = this.params.src;
+                    tvs.type = this.getMediaType(this.params.src);
                 tve.appendChild(tvs);
             }
 
-            if(vp) {
-                tve.poster = vp;
+            if(this.params.poster) {
+                tve.poster = this.params.poster;
             }
 
-            if(this.elementtrigger) {
+            if(this.params.elementtrigger) {
                 tve.style.cursor = 'pointer';
+            }
+
+            if(this.params.inline) {
+                tve.playsInline = true;
             }
 
             this.dom_frame.appendChild(tve);
@@ -681,18 +729,12 @@ VideoPlayer.prototype = {
 
             this.setListeners(); // COME BACK HERE
 
-            if(this.inline) {
-                if( "playsInline" in document.createElement('video') ) {
-                    tve.playsInline = true;
-                }
-            }
-
-            if( !this.autoplay ) {
+            if( !this.params.autoplay ) {
                 this.dom_spinner.style.display = 'none';
                 this.dom_bigplay.style.display = 'block';
             }
 
-            if( this.ismobile && this.autoplay )
+            if( this.ismobile && this.params.autoplay )
                 this.proxy.style.display = 'block';
             else
                 this.proxy.style.display = 'none';
@@ -703,12 +745,12 @@ VideoPlayer.prototype = {
 
             this.reflow(true);
 
-            if( this.autoplay || forceManualPlay ) {
+            if( this.params.autoplay ) {
                 this.play();
             }
         }
         else {
-            this.trace('initialize video first');
+            setInterval(()=>{ this.load(params) }, 500);
         }
     },
 
@@ -720,7 +762,7 @@ VideoPlayer.prototype = {
                 this.dom_poster.style.backgroundImage = 'url('+str+')';
                 this.dom_poster.style.display = 'block';
 
-                if(this.autoplay) {
+                if(this.params.autoplay) {
                     this.dom_spinner.style.display = 'block';
                     this.dom_bigplay.style.display = 'none';
                 } else {
@@ -745,7 +787,7 @@ VideoPlayer.prototype = {
         this.flag_isfs = false;
         this.flag_started = false;
         this.flag_playing = false;
-        this.flag_firsttime = true;
+        this.flag_first = true;
         this.flag_completed = false;
         this.flag_hasposter = false;
         this.flag_restartplay = false;
@@ -779,10 +821,10 @@ VideoPlayer.prototype = {
     },
 
     destroy() {
-        if(this.flag_initialized) {
+        if(this.api) {
             this.unload(true);
             this.dom_container.innerHTML = '';
-            this.flag_initialized = false;
+            this.api = false;
             this.trace('destroying player');
         }
         else {
@@ -800,11 +842,11 @@ VideoPlayer.prototype = {
         this.dom_pause.addEventListener(        'click',        (e) => { this.controlHandler(e); });
         this.dom_mute.addEventListener(         'click',        (e) => { this.controlHandler(e); });
         this.dom_unmute.addEventListener(       'click',        (e) => { this.controlHandler(e); });
-        this.dom_bigplay.addEventListener(      'click',        (e) => { this.controlHandler(e); });
+        // this.dom_bigplay.addEventListener(      'click',        (e) => { this.controlHandler(e); });
         this.dom_bigsound.addEventListener(     'click',        (e) => { this.controlHandler(e); });
         this.dom_preview.addEventListener(      'click',        (e) => { this.controlHandler(e); });
         this.dom_replay.addEventListener(       'click',        (e) => { this.controlHandler(e); });
-        if(this.allowfullscreen) {
+        if(this.params.allowfullscreen) {
             this.dom_fs.addEventListener(       'click',        (e) => { this.controlHandler(e); });
         }
         this.proxy.addEventListener(            'ended',        (e) => { this.dlEnded(e); });
@@ -829,7 +871,7 @@ VideoPlayer.prototype = {
         this.dom_bigplay.removeEventListener(   'click',        (e) => { this.controlHandler(e); });
         this.dom_bigsound.removeEventListener(  'click',        (e) => { this.controlHandler(e); });
         this.dom_replay.removeEventListener(    'click',        (e) => { this.controlHandler(e); });
-        if(this.allowfullscreen) {
+        if(this.params.allowfullscreen) {
             this.dom_fs.removeEventListener(    'click',        (e) => { this.controlHandler(e); });
         }
         this.proxy.removeEventListener(         'ended',        (e) => { this.dlEnded(e); });
@@ -844,22 +886,22 @@ VideoPlayer.prototype = {
     dlEnded() {
         this.flag_completed = true;
 
-        if( !this.loop ) this.flag_nonce = true;
+        if( !this.params.loop ) this.flag_nonce = true;
         this.callback_end();
 
-        if(this.loop) {
+        if(this.params.loop) {
 
             this.play();
             this.trace('looping video...');
 
         } else {
 
-            if(this.replaywithsound) {
+            if(this.params.replaywithsound) {
                 this.disableNotification('volume');
                 this.unmute();
             }
 
-            if(this.flag_hasposter && !this.endfreeze) {
+            if(this.flag_hasposter && !this.params.endfreeze) {
                 this.dom_poster.style.display = 'block';
             } else {
                 if(!this.ismobile) {
@@ -867,11 +909,11 @@ VideoPlayer.prototype = {
                 }
             }
 
-            if(!this.chromeless && !this.preview) {
+            if(!this.params.chromeless && !this.params.preview) {
                 this.dom_replay.style.display = 'block';
             }
 
-            if(!this.endfreeze) {
+            if(!this.params.endfreeze) {
                 this.proxy.style.display = 'none';
             }
             
@@ -879,9 +921,9 @@ VideoPlayer.prototype = {
 
             this.disableNotification('volume');
 
-            if(this.preview) {
+            if(this.params.preview) {
                 this.dom_preview.style.display = 'block';
-                this.preview = 0;
+                this.params.preview = 0;
                 this.flag_completed = false;
                 this.track_preview_end();
             } else {
@@ -904,7 +946,7 @@ VideoPlayer.prototype = {
         if(!this.track.started && !this.flag_completed) {
             this.track.started = true;
 
-            if(this.preview) {
+            if(this.params.preview) {
                 // PREVIEW
                 this.disableNotification('start');
                 this.disableNotification('play');
@@ -959,10 +1001,10 @@ VideoPlayer.prototype = {
         this.dom_pause.style.display = 'none';
         this.dom_play.style.display = 'block';
 
-        if( this.preview < this.playhead ) {
+        if( this.params.preview < this.playhead ) {
             this.callback_pause();
             
-            if(this.preview) {
+            if(this.params.preview) {
                 this.dom_bigsound.style.display = 'none';
                 this.dom_preview.style.display = 'block';
                 this.reflow();
@@ -970,7 +1012,7 @@ VideoPlayer.prototype = {
                 this.disableNotification('pause');
                 this.flag_restartplay = true;
                 this.trackReset();
-                this.preview = 0;
+                this.params.preview = 0;
                 this.track_preview_end();
             }
             else {
@@ -1022,11 +1064,11 @@ VideoPlayer.prototype = {
 
             this.flag_playing = true;
 
-            if(this.proxy && this.flag_firsttime) {
-                this.flag_firsttime = false;
+            if(this.proxy && this.flag_first) {
+                this.flag_first = false;
                 this.flag_started = true;
 
-                if( this.startmuted && this.autoplay ) {
+                if( this.params.startmuted && this.params.autoplay ) {
                 
                     this.dom_bigsound.style.display = 'block';
                     this.dom_controller.style.display = 'none';
@@ -1064,7 +1106,7 @@ VideoPlayer.prototype = {
                 if( this.proxy && this.proxy.style.display === 'none') {
                     this.proxy.style.display = 'block';
                 }
-                if( !this.elementplayback && 
+                if( !this.params.elementplayback && 
                     this.dom_bigsound.style.display === 'none' &&
                     this.dom_preview.style.display === 'none'
                 ) {
@@ -1084,7 +1126,7 @@ VideoPlayer.prototype = {
                     if(this.notifications.start) {
                         this.track_start();
                     }
-                    if(this.notifications.replay && !this.loop) {
+                    if(this.notifications.replay && !this.params.loop) {
                         this.track_replay();
                     }
 
@@ -1098,24 +1140,24 @@ VideoPlayer.prototype = {
 
             // QUARTILES
 
-            if(!this.preview && this.track.q25 !== true && phpercentage >= 25) {
+            if(!this.params.preview && this.track.q25 !== true && phpercentage >= 25) {
                 this.track.q25 = true;
                 this.track_q25();
             }
 
-            if(!this.preview && this.track.q50 !== true && phpercentage >= 50) {
+            if(!this.params.preview && this.track.q50 !== true && phpercentage >= 50) {
                 this.track.q50 = true;
                 this.track_q50();
             }
 
-            if(!this.preview && this.track.q75 !== true && phpercentage >= 75) {
+            if(!this.params.preview && this.track.q75 !== true && phpercentage >= 75) {
                 this.track.q75 = true;
                 this.track_q75();
             }
 
             this.callback_progress();
 
-            if(this.preview && ( this.playhead > this.preview ) ) {
+            if(this.params.preview && ( this.playhead > this.params.preview ) ) {
                 this.pause();
             }
         }
@@ -1123,36 +1165,36 @@ VideoPlayer.prototype = {
 
     dlCanPlay() {
 
-        if(this.flag_firsttime) { // NOT SURE ABOUT THIS
+        if(this.flag_first) { // NOT SURE ABOUT THIS
 
-            if(!this.autoplay) {
-                this.dom_spinner.style.display = 'none';
+            // if(!this.params.autoplay) {
+            //     this.dom_spinner.style.display = 'none';
 
-                if(!this.ismobile) {
-                    this.dom_bigplay.style.display = 'block';
-                }
+            //     if(!this.ismobile) {
+            //         this.dom_bigplay.style.display = 'block';
+            //     }
 
-            }
+            // }
 
-            if(!this.flag_hasposter && !this.autoplay && !this.ismobile) {
-                this.trace('no poster');
-                this.dom_bigplay.style.display = 'block';
-                this.dom_controller.style.display = 'none';
-            }
+            // if(!this.flag_hasposter && !this.params.autoplay && !this.ismobile) {
+            //     this.trace('no poster');
+            //     this.dom_bigplay.style.display = 'block';
+            //     this.dom_controller.style.display = 'none';
+            // }
 
-            if(this.ismobile) {
-                this.dom_controller.style.display = 'none';
+            // if(this.ismobile) {
+            //     this.dom_controller.style.display = 'none';
 
-                if( this.autoplay ) {
-                    this.dom_spinner.style.display = 'block';
-                    this.dom_bigplay.style.display = 'none';
-                    this.dom_poster.style.display = 'none';
-                    this.proxy.style.display = 'block';
-                } else {
-                    if(!this.chromeless)
-                        this.dom_bigplay.style.display = 'block';
-                }
-            } 
+            //     if( this.params.autoplay ) {
+            //         this.dom_spinner.style.display = 'block';
+            //         this.dom_bigplay.style.display = 'none';
+            //         this.dom_poster.style.display = 'none';
+            //         this.proxy.style.display = 'block';
+            //     } else {
+            //         if(!this.params.chromeless)
+            //             this.dom_bigplay.style.display = 'block';
+            //     }
+            // }
 
             this.reflow(true);
             // this.ready = true;
@@ -1240,13 +1282,13 @@ VideoPlayer.prototype = {
 
                 this.replay();
 
-                if(this.replaywithsound || this.ismobile) {
+                if(this.params.replaywithsound || this.ismobile) {
                     this.disableNotification('volume');
                     this.unmute();
                 }
 
                 if(!this.ismobile) {
-                    this.dom_controller.style.display = this.controlbar ? 'block':'none';
+                    this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
                 } else {
                     this.dom_controller.style.display = 'none';
                 }
@@ -1264,25 +1306,25 @@ VideoPlayer.prototype = {
 
                 // ELEMENT TRIGGER
                 if(
-                    this.elementtrigger &&
+                    this.params.elementtrigger &&
                     this.dom_play.style.display === 'block' &&
                     this.dom_bigsound.style.display === 'none' &&
-                    this.elementplayback
+                    this.params.elementplayback
                 ) {
-                    if(!this.ismobile || ( this.ismobile && this.inline && !this.controlbar ) )
+                    if(!this.ismobile || ( this.ismobile && this.params.inline && !this.params.controlbar ) )
                         this.play();
                 }
 
-                if( this.elementtrigger &&
+                if( this.params.elementtrigger &&
                     this.dom_pause.style.display === 'block' &&
                     this.dom_bigsound.style.display === 'none' &&
-                    this.elementplayback
+                    this.params.elementplayback
                 ) {
-                    if(!this.ismobile || ( this.ismobile && this.inline && !this.controlbar ) ) 
+                    if(!this.ismobile || ( this.ismobile && this.params.inline && !this.params.controlbar ) ) 
                         this.pause();
                 }
 
-                // if( this.ismobile && this.elementtrigger && this.chromeless ) {
+                // if( this.ismobile && this.params.elementtrigger && this.params.chromeless ) {
                     
                 // }
 
@@ -1304,7 +1346,7 @@ VideoPlayer.prototype = {
             if(promise !== undefined) {
                 promise.then( () => {
                     if(bool && !this.ismobile)
-                        this.dom_controller.style.display = this.controlbar ? 'block':'none';
+                        this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
                 } ).catch( (e) => {
                     this.emergencyPlay();
                     this.callback_error(e);
@@ -1313,13 +1355,13 @@ VideoPlayer.prototype = {
         }
     },
     emergencyPlay() {
-        this.startmuted = false;
-        this.autoplay = false;
-        this.preview = 0;
-        if( !this.chromeless )
+        this.params.startmuted = false;
+        this.params.autoplay = false;
+        this.params.preview = 0;
+        if( !this.params.chromeless )
             this.dom_bigplay.style.display = 'block';
         else
-            this.elementtrigger = true;
+            this.params.elementtrigger = true;
         this.dom_poster.style.display = 'block';
         this.dom_bigsound.style.display = 'none';
         this.dom_replay.style.display = 'none';
@@ -1330,7 +1372,7 @@ VideoPlayer.prototype = {
         if(this.proxy) {
             this.unmute();
             
-            if( this.ismobile && !this.chromeless ) 
+            if( this.ismobile && !this.params.chromeless ) 
                 this.proxy.controls = true;
         }
     },
@@ -1357,7 +1399,7 @@ VideoPlayer.prototype = {
     },
 
     stopSet() {
-        if(!this.endfreeze)
+        if(!this.params.endfreeze)
             this.trackReset();
         this.flag_completed = false;
         this.flag_playing = false;
@@ -1375,9 +1417,9 @@ VideoPlayer.prototype = {
 
                 this.flag_stopped = true;
                 
-                if(this.preview > 0) {
+                if(this.params.preview > 0) {
                     // PREVIEW END
-                    this.preview = 0;
+                    this.params.preview = 0;
                     this.flag_completed = false;
                     this.track_preview_end();
                 } else {
@@ -1386,13 +1428,13 @@ VideoPlayer.prototype = {
                 }
 
                 // SILENTLY ENABLE SOUND
-                if(this.replaywithsound) {
+                if(this.params.replaywithsound) {
                     this.disableNotification('volume');
                     this.unmute();
                 }
 
                 // RESET "STATE"
-                if(!this.endfreeze) {
+                if(!this.params.endfreeze) {
                     this.seek(0);
                 }
 
@@ -1402,13 +1444,13 @@ VideoPlayer.prototype = {
                 this.stopSet();
 
                 // SHOW POSTER
-                if(this.flag_hasposter && !this.endfreeze) {
+                if(this.flag_hasposter && !this.params.endfreeze) {
                     this.dom_poster.style.display = 'block';
                 }
             
                 // SHOW PLAY BUTTON
                 setTimeout(()=>{
-                    if( !this.chromeless ) {
+                    if( !this.params.chromeless ) {
                         this.dom_bigplay.style.display = 'block';
                         this.dom_controller.style.display = 'none';
                     }
@@ -1425,7 +1467,7 @@ VideoPlayer.prototype = {
         this.dom_replay.style.display = 'none';
         this.reflow(true);
         
-        if(this.replaywithsound) {
+        if(this.params.replaywithsound) {
             this.disableNotification('volume');
             this.unmute();
         }
@@ -1438,21 +1480,21 @@ VideoPlayer.prototype = {
         this.disableNotification('volume');
         this.unmute();
 
-        if(!this.continuecfs) this.seek(0);
+        if(!this.params.continuecfs) this.seek(0);
 
         if(!this.flag_restartplay && !this.flag_cfs) {
             this.flag_cfs = true;
             this.track_cfs();
 
-            if(this.ismobile && !this.chromeless)
-                this.proxy.controls = this.controlbar ? true : false;
+            if(this.ismobile && !this.params.chromeless)
+                this.proxy.controls = this.params.controlbar ? true : false;
         }
 
-        this.preview = 0;
+        this.params.preview = 0;
         this.flag_restartplay = false;
 
         if(bool && !this.ismobile) {
-            this.dom_controller.style.display = this.controlbar ? 'block':'none';
+            this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
         }
 
         this.enableNotifications();
@@ -1473,7 +1515,7 @@ VideoPlayer.prototype = {
     },
 
     reflow(passive) {
-        if(this.flag_initialized) {
+        if(this.api) {
             if(this.proxy) {
                 this.proxy.width = this.dom_container.offsetWidth;
                 this.proxy.height = this.dom_container.offsetHeight;
@@ -1538,6 +1580,41 @@ VideoPlayer.prototype = {
             el.classList.remove(className);
         } else {
             el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+        }
+    },
+
+    checkForSafari() {
+        this.issafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
+    },
+
+    checkForMobile() {
+        const DESKTOP_AGENTS = [
+            'desktop'
+        ];
+
+        let mobileFlag = true;
+
+        if( window['device'] ) {
+            // USE DEVICEJS IF AVAILABLE
+            for (let i = 0; i < DESKTOP_AGENTS.length; i++) {
+                let regex;
+                    regex = new RegExp(DESKTOP_AGENTS[i], 'i');
+
+                if( window.document.documentElement.className.match(regex) ) {
+                    mobileFlag = false;
+                }
+            }
+        } else {
+            // BACKUP [RUDIMENTARY] DETECTION
+            mobileFlag = 'ontouchstart' in window;
+        }
+
+        if( mobileFlag ) {
+            this.ismobile = true;
+            this.trace("mobile browser detected");
+        } else {
+            this.ismobile = false;
+            this.trace("desktop browser detected");
         }
     },
 

@@ -9,7 +9,6 @@ html(lang="en")
 			
 
 	body
-
 		#videoPlayer.abs
 
 		#videoPlayer2.abs
@@ -81,20 +80,25 @@ html(lang="en")
 				span video.autoplay
 				//- span#tooltip Auto play immediately when loaded
 
+			.cboxwrapper.loop
+				input#loop(type="checkbox").cb
+				span video.loop
+				//- span#tooltip Restart automatically on video end
+
 			.cboxwrapper.startmuted
 				input#startmuted(type="checkbox").cb
 				span video.startmuted
 				//- span#tooltip Start muted on first play
 
+			.cboxwrapper.continuecfs
+				input#continuecfs(type="checkbox").cb
+				span video.continuecfs
+				span#tooltip Do not restart video on ClickForSound
+
 			.cboxwrapper.replaywithsound
 				input#replaywithsound(type="checkbox").cb
 				span video.replaywithsound
 				span#tooltip Force unmute on replay
-
-			.cboxwrapper.loop
-				input#loop(type="checkbox").cb
-				span video.loop
-				//- span#tooltip Restart automatically on video end
 
 			.cboxwrapper.allowfullscreen
 				input#allowfullscreen(type="checkbox").cb
@@ -118,27 +122,32 @@ html(lang="en")
 			.cboxwrapper.elementtrigger
 				input#elementtrigger(type="checkbox").cb
 				span video.elementtrigger
-				span#tooltip Enables playback/pause by clicking the video element (similar to YouTube, etc.) Does not affect regular (visible) controls
+				span#tooltip Enables starting of video by clicking the video element
 
 			.cboxwrapper.elementplayback
 				input#elementplayback(type="checkbox").cb
 				span video.elementplayback
-				span#tooltip Enables playback/pause by clicking the video element during normal playback 
+				span#tooltip Enables playback/pause by clicking the video element during normal playback (similar to YouTube, etc.)
 		
 			.cboxwrapper.controlbar
 				input#controlbar(type="checkbox").cb
 				span video.controlbar
 				span#tooltip Enables/Disables the bottom control bar on playback
 
-			.cboxwrapper.progressive
-				input#progressive(type="checkbox").cb
-				span video.progressive
-				span#tooltip "Preload" video contents on load
+			.cboxwrapper.preload
+				input#preload(type="checkbox").cb
+				span video.preload
+				span#tooltip "Preload" video contents on load (metadata or none)
 
 			.cboxwrapper.inline
 				input#inline(type="checkbox").cb
 				span video.inline
 				span#tooltip Set <code>playsinline</code> attribute to video element
+
+			.cboxwrapper.endfreeze
+				input#endfreeze(type="checkbox").cb
+				span video.endfreeze
+				span#tooltip Leave video element visible on stop (override poster if present)
 
 			.cboxwrapper.preview
 				input#preview(type="checkbox").cb
