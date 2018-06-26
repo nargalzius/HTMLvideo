@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  5.4
+ *  5.5
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -58,8 +58,8 @@ VideoPlayer.prototype = {
     flag_first: true,
     flag_buffering: false,
     flag_loaded: false,
-    flag_ap_nonce: true,
-    
+    flag_ap_nonce: false,
+    flag_listener: false,
     flag_restartplay: false,
     flag_hasposter: false,
     flag_cfs: false,
@@ -126,25 +126,25 @@ VideoPlayer.prototype = {
     barsize: 27,
 
     eventList: [
-        'abort',
+        // 'abort',
         'canplay',
-        'canplaythrough',
+        // 'canplaythrough',
         'durationchange',
-        'emptied',
+        // 'emptied',
         'ended',
-        'error',
-        'loadeddata',
-        'loadedmetadata',
+        // 'error',
+        // 'loadeddata',
+        // 'loadedmetadata',
         'loadstart',
         'pause',
         'play',
         'playing',
         'progress',
-        'ratechange',
-        'seeked',
-        'seeking',
-        'stalled',
-        'suspend',
+        // 'ratechange',
+        // 'seeked',
+        // 'seeking',
+        // 'stalled',
+        // 'suspend',
         'timeupdate',
         'volumechange',
         'waiting'
@@ -157,6 +157,8 @@ VideoPlayer.prototype = {
         play: true,
         pause: true
     },
+
+    listeners: [],
     
     disableNotification(str) {
         this.notifications[str] = false;
@@ -292,6 +294,11 @@ VideoPlayer.prototype = {
             this.params.autoplay = false;
         }
 
+        if( this.params.autoplay && this.issafari) {
+            this.flag_ap_nonce = true;
+        }
+
+        // DEAL WITH INLINE
         if( this.params.inline ) {
             if( "playsInline" in document.createElement('video') ) {
                 this.params.inline = true;
@@ -299,6 +306,8 @@ VideoPlayer.prototype = {
                 this.params.inline = false;
             }
         }
+
+
     },
 
     init(params) {
@@ -386,6 +395,8 @@ VideoPlayer.prototype = {
             this.dom_frame = document.createElement('div');
             this.dom_frame.style.zIndex = this.zindex;
             this.dom_frame.style.position = 'absolute';
+            this.dom_frame.style.width = '100%';
+            this.dom_frame.style.height = '100%';
             this.dom_container.appendChild(this.dom_frame);
 
             // POSTER
@@ -400,7 +411,7 @@ VideoPlayer.prototype = {
             this.dom_poster.style.height = '100%';
             this.dom_poster.style.backgroundSize = 'cover';
             this.dom_poster.style.backgroundRepeat = 'no-repeat';
-            this.dom_container.appendChild(this.dom_poster);
+            this.dom_frame.appendChild(this.dom_poster);
             if(this.params.elementtrigger) {
                 this.dom_poster.style.cursor = 'pointer';
             }
@@ -602,16 +613,15 @@ VideoPlayer.prototype = {
         if(this.api) {
 
             clearInterval(this.load_int);
+            // this.resetTracking();
 
-            this.trackReset();
+            if(this.flag_loaded)
+                this.unload();
 
             this.evaluate(params);
             this.trace(this.params, 'params (load)');
 
             this.flag_first = true;
-
-            if(this.flag_loaded)
-                this.unload();
 
             this.dom_spinner.style.display = 'block';
 
@@ -702,8 +712,10 @@ VideoPlayer.prototype = {
                 tve.appendChild(tvs);
             }
 
-            if(this.params.elementtrigger) {
-                tve.style.cursor = 'pointer';
+            if( this.params.elementtrigger ) {
+                this.dom_frame.style.cursor = 'pointer';
+            } else {
+                this.dom_frame.style.cursor = 'auto';
             }
 
             if(this.params.inline) {
@@ -713,23 +725,16 @@ VideoPlayer.prototype = {
             this.proxy = tve;
 
             this.setListeners();
-
-            this.proxy.addEventListener('click', (e) => {
-                this.controlHandler(e);
-            });
-
-
+            
             this.reflow(true);
 
             this.dom_frame.appendChild(tve);
             this.flag_loaded = true;
 
             // FIRST LINE OF DEFENSE
-            if(this.params.autoplay && !this.issafari) {
-                this.flag_ap_nonce = false;
+            if( this.params.autoplay && !this.flag_ap_nonce ) {
                 this.play();
-            } 
-                
+            }
 
         }
         else {
@@ -752,46 +757,7 @@ VideoPlayer.prototype = {
     mLeave() {
         this.dom_controller.style.display = 'none';
     },
-    mClick() {
 
-        for(let dom in this.centered_controls )
-            this.trace(this.centered_controls[dom].style.display, dom)
-
-        if ( this.dom_bigplay.style.display === 'block' && this.params.elementtrigger )
-            this.bigPlay();
-        else if ( this.dom_replay.style.display === 'block' && this.params.elementtrigger )
-            this.bigReplay();
-        else if ( this.dom_bigsound.style.display === 'block' && this.params.elementplayback )
-            this.cfs(true);
-        else if ( this.dom_preview.style.display === 'block' && this.params.elementplayback )
-            this.play();
-        else if ( this.params.elementplayback && this.flag_playing )
-            this.playPause();
-        else {
-            if( this.params.elementtrigger && this.flag_loaded ) {
-
-                if( !this.flag_playing ||
-                    this.dom_bigplay.style.display === 'block' ||
-                    this.dom_replay.style.display === 'block' || 
-                    this.dom_preview.style.display === 'block' ) {
-
-                    this.dom_bigplay.style.display = 'none';
-                    this.dom_replay.style.display = 'none';
-
-                    this.dom_spinner.style.display = 'block';
-
-                    this.play(true);
-                
-                }
-
-                if( this.dom_bigsound.style.display === 'block' && !this.params.elementplayback) {
-                    this.cfs(true);
-                }        
-            }
-
-            this.reflow(true);
-        }
-    },
     barSeek(e) {
         let ro = (e.pageX - this.dom_pbar.getBoundingClientRect().left);
         let tp = ( ro / this.dom_container.offsetWidth );
@@ -821,29 +787,39 @@ VideoPlayer.prototype = {
         this.flag_hasposter = true;
     },
 
+    resetPlayback(bool) {
+        if(!this.params.endfreeze || bool)
+            this.resetTracking();
+        this.flag_completed = false;
+        this.flag_playing = false;
+        this.flag_nonce = true;
+    },
+
+    resetVariables() {
+        this.playhead = 0;
+        this.duration = 0;
+        this.buffered = 0;
+        this.flag_started = false;
+        this.flag_paused = false;
+        this.flag_isfs = false;
+        this.flag_first = true;
+        this.flag_buffering = false;
+        this.flag_loaded = false;
+        this.flag_ap_nonce = false;
+        this.flag_restartplay = false;
+        this.flag_hasposter = true;
+        this.flag_cfs = false;
+        this.flag_progress = false;
+        this.flag_stopped = false;
+    },
+
     unload(bool) {
 
         if(this.flag_loaded) {
 
-            this.flag_loaded = false;
-            
-            this.playhead = 0;
-            this.duration = 0;
-            this.buffered = 0;
-            this.flag_isfs = false;
-            this.flag_started = false;
-            this.flag_playing = false;
-            this.flag_first = true;
-            this.flag_completed = false;
-            this.flag_hasposter = false;
-            this.flag_restartplay = false;
+            this.removeListeners();
 
             if( this.proxy ) {
-                
-                // AVOID FIRING DURING DESTROY
-                if(!bool) this.trace('unloading player');
-
-                this.removeListeners();
 
                 if (document.getElementById('replay_btn')) this.dom_container.removeChild(this.dom_replay);
                 if (document.getElementById('fullscreen_btn')) this.dom_controller.removeChild(this.dom_fs);
@@ -859,13 +835,13 @@ VideoPlayer.prototype = {
                 // this.pause();
                 // this.proxy.src = "";
                 // this.proxy.load();
-                this.proxy.parentNode.removeChild(this.proxy);
+                this.dom_frame.removeChild(this.proxy);
+                this.dom_frame.style.cursor = 'auto';
                 this.proxy = null;
-
-                this.dom_frame.innerHTML = '';
             }
 
-            this.trackReset();
+            this.resetPlayback(true);
+            this.resetVariables();
         }
     },
 
@@ -882,56 +858,91 @@ VideoPlayer.prototype = {
     },
 
     setListeners() {
-        
-        this.dom_container.addEventListener( 'click',      (e) => { this.mClick(e);         });
-        this.dom_container.addEventListener( 'mouseenter', (e) => { this.mEnter(e);         });
-        this.dom_container.addEventListener( 'mouseleave', (e) => { this.mLeave(e);         });
-        this.dom_pbar.addEventListener(      'click',      (e) => { this.barSeek(e);        });
-        this.dom_phead.addEventListener(     'click',      (e) => { this.barSeek(e);        });
-        this.dom_play.addEventListener(      'click',      (e) => { this.controlHandler(e); });
-        this.dom_pause.addEventListener(     'click',      (e) => { this.controlHandler(e); });
-        this.dom_mute.addEventListener(      'click',      (e) => { this.controlHandler(e); });
-        this.dom_unmute.addEventListener(    'click',      (e) => { this.controlHandler(e); });
-        this.dom_fs.addEventListener(        'click',      (e) => { this.controlHandler(e); });
-        this.dom_bigplay.addEventListener(   'click',      (e) => { this.controlHandler(e); });
-        this.dom_bigsound.addEventListener(  'click',      (e) => { this.controlHandler(e); });
-        this.dom_preview.addEventListener(   'click',      (e) => { this.controlHandler(e); });
-        this.dom_replay.addEventListener(    'click',      (e) => { this.controlHandler(e); });
-        this.dom_poster.addEventListener(    'click',      (e) => { this.controlHandler(e); });
+
+        this.trace('SET LISTENERS');
+
+        if(!this.flag_listener) {
+            this.dom_container.addEventListener( 'mouseenter', (e) => { this.mEnter(e);         }, false);
+            this.dom_container.addEventListener( 'mouseleave', (e) => { this.mLeave(e);         }, false);
+            this.dom_pbar.addEventListener(      'click',      (e) => { this.barSeek(e);        }, false);
+            this.dom_phead.addEventListener(     'click',      (e) => { this.barSeek(e);        }, false);
+            this.dom_play.addEventListener(      'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_pause.addEventListener(     'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_mute.addEventListener(      'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_unmute.addEventListener(    'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_bigplay.addEventListener(   'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_bigsound.addEventListener(  'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_preview.addEventListener(   'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_frame.addEventListener(     'click',      (e) => { this.controlHandler(e); }, false);
+        }
+
+        this.dom_fs.addEventListener(        'click',      (e) => { this.controlHandler(e); }, false);
+        this.dom_replay.addEventListener(    'click',      (e) => { this.controlHandler(e); }, false);
 
         for (let i = 0; i < this.eventList.length; i++ )
-            this.proxy.addEventListener( this.eventList[i], (e) => { this.eventHandler(e); } );
+            this.proxy.addEventListener( this.eventList[i], (e) => { this.eventHandler(e); }, false );
+
+        this.flag_listener = true;
     },
 
     removeListeners() {
-        
-        this.dom_container.removeEventListener( 'click',      (e) => { this.mClick(e);         });
-        this.dom_container.removeEventListener( 'mouseenter', (e) => { this.mEnter(e);         });
-        this.dom_container.removeEventListener( 'mouseleave', (e) => { this.mLeave(e);         });
-        this.dom_pbar.removeEventListener(      'click',      (e) => { this.barSeek(e);        });
-        this.dom_phead.removeEventListener(     'click',      (e) => { this.barSeek(e);        });
-        this.dom_play.removeEventListener(      'click',      (e) => { this.controlHandler(e); });
-        this.dom_pause.removeEventListener(     'click',      (e) => { this.controlHandler(e); });
-        this.dom_mute.removeEventListener(      'click',      (e) => { this.controlHandler(e); });
-        this.dom_unmute.removeEventListener(    'click',      (e) => { this.controlHandler(e); });
-        this.dom_fs.removeEventListener(        'click',      (e) => { this.controlHandler(e); });
-        this.dom_bigplay.removeEventListener(   'click',      (e) => { this.controlHandler(e); });
-        this.dom_bigsound.removeEventListener(  'click',      (e) => { this.controlHandler(e); });
-        this.dom_preview.removeEventListener(   'click',      (e) => { this.controlHandler(e); });
-        this.dom_replay.removeEventListener(    'click',      (e) => { this.controlHandler(e); });
-        this.dom_poster.removeEventListener(    'click',      (e) => { this.controlHandler(e); });
-        
+        this.trace('UNSET LISTENERS');
+
+        this.dom_fs.removeEventListener(     'click', (e) => { this.controlHandler(e); }, false);
+        this.dom_replay.removeEventListener( 'click', (e) => { this.controlHandler(e); }, false);
 
         for (let i = 0; i < this.eventList.length; i++ )
-            this.proxy.removeEventListener( this.eventList[i], (e) => { this.eventHandler(e); } );
+            this.proxy.removeEventListener( this.eventList[i], (e) => { this.eventHandler(e); }, false );
         
     },
 
     controlHandler(e) {
         switch(e.currentTarget) {
-            case this.dom_play:
-                this.playPause();
+            case this.dom_frame:
+                // for (let dom in this.centered_controls )
+                //     this.trace(this.centered_controls[dom].style.display, dom)
+
+                if ( this.dom_bigplay.style.display === 'block' ){
+                    if( this.params.elementtrigger ) this.bigPlay();
+                }
+                else if ( this.dom_replay.style.display === 'block' ) {
+                    if( this.params.elementtrigger ) this.bigReplay();
+                }
+                else if ( this.dom_bigsound.style.display === 'block' ) {
+                    if( this.params.elementplayback ) this.cfs(true);
+                }
+                else if ( this.dom_preview.style.display === 'block' ) {
+                    if( this.params.elementplayback ) this.play();
+                }
+                else if ( this.params.elementplayback && this.flag_playing ) {
+                    this.playPause();
+                }
+                else {
+                    if( this.params.elementtrigger && this.flag_loaded ) {
+
+                        if( !this.flag_playing ||
+                            this.dom_bigplay.style.display === 'block' ||
+                            this.dom_replay.style.display === 'block' || 
+                            this.dom_preview.style.display === 'block' ) {
+
+                            this.dom_bigplay.style.display = 'none';
+                            this.dom_replay.style.display = 'none';
+
+                            this.dom_spinner.style.display = 'block';
+
+                            this.play(true);
+                        
+                        }
+
+                        if( this.dom_bigsound.style.display === 'block' && !this.params.elementplayback) {
+                            this.cfs(true);
+                        }        
+                    }
+
+                    this.reflow(true);
+                }
             break;
+            case this.dom_play:
             case this.dom_pause:
                 this.playPause();
             break;
@@ -961,8 +972,8 @@ VideoPlayer.prototype = {
 
     bigPlay() {
         this.play();
-        this.dom_spinner.style.display = 'block';
         this.dom_bigplay.style.display = 'none';
+        this.dom_spinner.style.display = 'block';
         this.reflow(true);
     },
 
@@ -980,7 +991,7 @@ VideoPlayer.prototype = {
             this.dom_controller.style.display = 'none';
         }
 
-        this.trackReset();
+        this.resetTracking();
     },
 
     playPause() {
@@ -999,17 +1010,8 @@ VideoPlayer.prototype = {
 
         switch(e.type) {
 
-            case 'loaded':
-                this.callback_ready();
-            break;
             case 'canplay':
                 if(this.flag_first) { // NOT SURE ABOUT THIS
-
-                    if(!this.flag_hasposter && !this.params.autoplay && !this.ismobile) {
-                        this.trace('no poster');
-                        this.dom_bigplay.style.display = 'block';
-                        this.dom_controller.style.display = 'none';
-                    }
 
                     if(this.ismobile) {
                         this.dom_controller.style.display = 'none';
@@ -1078,8 +1080,10 @@ VideoPlayer.prototype = {
 
                         if(this.params.continuecfs)
                             this.track_cfs();
-                        else
+                        else {
                             this.track_start();
+                            this.callback_start();
+                        }
 
                         this.callback_play();
 
@@ -1109,7 +1113,7 @@ VideoPlayer.prototype = {
                         this.disableNotification('end');
                         this.disableNotification('pause');
                         this.flag_restartplay = true;
-                        this.trackReset();
+                        this.resetTracking();
                         this.params.preview = 0;
                         this.track_preview_end();
                     }
@@ -1177,14 +1181,14 @@ VideoPlayer.prototype = {
                         this.track_preview_end();
                     } else {
                         this.track_end();
-                        this.trackReset();
+                        this.resetTracking();
                         this.flag_playing = false;
                     }
 
                     if( this.params.elementtrigger )
-                        this.dom_poster.style.cursor = 'pointer';
+                        this.dom_frame.style.cursor = 'pointer';
                     else
-                        this.dom_poster.style.cursor = 'auto';
+                        this.dom_frame.style.cursor = 'auto';
                         
                 }
 
@@ -1248,19 +1252,15 @@ VideoPlayer.prototype = {
                             this.proxy.style.display = 'block';
                         }
 
-                        // SET BACKGROUND CURSOR
-                        if( this.params.elementplayback )
-                            this.proxy.style.cursor = 'pointer';
-                        else
-                            this.proxy.style.cursor = 'auto';
-
-
                         if(this.flag_nonce) {
 
-                            this.flag_nonce = false;
+                            // SET BACKGROUND CURSOR
+                            if( this.params.elementplayback )
+                                this.dom_frame.style.cursor = 'pointer';
+                            else
+                                this.dom_frame.style.cursor = 'auto';
 
-                            this.callback_play();
-                            this.callback_start();
+                            this.flag_nonce = false;
 
                             if(this.notifications.preview_start) {
                                 this.track_preview_start();
@@ -1271,6 +1271,9 @@ VideoPlayer.prototype = {
                             if(this.notifications.replay && !this.params.loop) {
                                 this.track_replay();
                             }
+
+                            this.callback_play();
+                            this.callback_start();
 
                             this.enableNotifications();
                         }
@@ -1374,6 +1377,9 @@ VideoPlayer.prototype = {
                     }
                     this.dom_spinner.style.display = 'none';
                 }
+
+                this.callback_ready();
+
                 this.reflow(true);
             break;
 
@@ -1423,7 +1429,7 @@ VideoPlayer.prototype = {
         q75: false,
     },
 
-    trackReset() {
+    resetTracking() {
         this.playhead = 0;
         this.track.started = false;
         this.track.q25 = false;
@@ -1455,8 +1461,8 @@ VideoPlayer.prototype = {
             // this.trace(this.proxy.buffered, 'buffered');
             
             if(this.flag_stopped) {
-                this.stopSet();
-                this.trackReset();
+                this.resetPlayback();
+                this.resetTracking();
                 this.seek(0);
             }
 
@@ -1525,14 +1531,6 @@ VideoPlayer.prototype = {
         return this.flag_playing; 
     },
 
-    stopSet() {
-        if(!this.params.endfreeze)
-            this.trackReset();
-        this.flag_completed = false;
-        this.flag_playing = false;
-        this.flag_nonce = true;
-    },
-
     stop() {
         if(this.proxy) {
 
@@ -1568,7 +1566,7 @@ VideoPlayer.prototype = {
                 this.disableNotification('pause');
                 this.pause();
 
-                this.stopSet();
+                this.resetPlayback();
 
                 // SHOW POSTER
                 if(this.flag_hasposter && !this.params.endfreeze) {

@@ -226,6 +226,7 @@ function callbacks() {
 
     video.track_cfs = function(){
         setMuteState();
+        if(video.params.preview) disablePreview();
         video.trace('track_cfs');
     };
     
@@ -242,9 +243,9 @@ function callbacks() {
 
     video.track_preview_start = function() {
         video.trace('track_preview_start');
-        video.trace('preview: '+video.preview);
-        video.trace('autoplay: '+video.autoplay);
-        video.trace('startmuted: '+video.startmuted);
+        video.trace('preview: '+video.params.preview);
+        video.trace('autoplay: '+video.params.autoplay);
+        video.trace('startmuted: '+video.params.startmuted);
     };
 
     video.track_preview_end = function() {
@@ -278,7 +279,12 @@ function paramClicks() {
                 var tobj = {};
                     tobj[name] = tnum;
 
-                video.load(tobj);
+                video.unload();
+                // setTimeout(function(){
+                    video.load(tobj);
+                // }, 1000);
+
+                
 
             } else {
                 video.params[name] = bool;
@@ -288,7 +294,10 @@ function paramClicks() {
                     var tobj = {};
                         tobj[name] = bool;
                     
-                    video.load(tobj);
+                    video.unload();
+                    // setTimeout(function(){
+                        video.load(tobj);
+                    // }, 1000);
                 }
             }
 

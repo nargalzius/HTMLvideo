@@ -14,15 +14,12 @@ $( document ).ready(init);
 
 function init(){
 	console.log()
-
-	$('#video1').click(function(){
-		createVideo1();
-	});
 	// $('#video2').click(function(){
 	// 	createVideo1();
 	// });
 
 	video = new VideoPlayer();
+	// video.default_params.poster = null;
 	video.debug = true;
 	video.dom_debug = document.getElementById('debug');
 	video.track_q25 = function() {
@@ -38,7 +35,7 @@ function init(){
 		// elementtrigger: false,
 		// elementplayback: false,
 		// controlbar: false,
-		// preview: 5,
+		preview: 5,
 		// continuecfs: true,
 		// inline: false,
 		preload: 0,
@@ -48,49 +45,4 @@ function init(){
 	// video.init(true);
 	// video.load(multiSource, poster);
 	// video.load(multiSource);
-
-
-	// $(window).on('resize', () => {
-	// 	video.reflow();
-	// });
 }
-
-function createVideo1(){
-	// video = new VideoPlayer();
-	// video.dom_debug = document.getElementById('debugField');
-	// video.debug = true;
-	// // video.preload = true;
-	// // video.autoplay = false;
-	// // video.startmuted = true;
-	
-	// // video.preview = 5;
-	// // video.chromeless = true;
-	// // video.controlbar = false;
-	// // video.bigbuttons = false;
-	// // video.elementtrigger = true;
-	// // video.elementplayback = false;
-
-	// video.init('videoPlayer');
-	// video.load(multiSource, poster);
-	// setTimeout(()=>{
-	// 	video.stop();
-	// }, 5000);
-}
-
-// function createVideo2(){
-// 	video2 = new VideoPlayer();
-// 	// video2.dom_debug = document.getElementById('debugField');
-// 	video2.debug = true;
-// 	video2.autoplay = true;
-// 	// video2.startmuted = false;
-// 	// video2.checkForMobile();
-// 	// video2.preview = 5;
-// 	// video2.chromeless = true;
-// 	// video2.controlbar = false;
-// 	// video2.bigbuttons = false;
-// 	// video2.elementtrigger = true;
-// 	// video2.elementplayback = false;
-
-// 	video2.init('videoPlayer2');
-// 	video2.load(singleSource, poster);
-// }
