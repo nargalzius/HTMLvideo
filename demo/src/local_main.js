@@ -25,18 +25,27 @@ function init(){
 	video = new VideoPlayer();
 	video.debug = true;
 	video.dom_debug = document.getElementById('debug');
+	video.track_q25 = function() {
+		// video.unload();
+	}
 	
 	var params = {
 		// endfreeze: true,
-		// autoplay: true,
-		// startmuted: true,
+		autoplay: true,
+		// src: 'https://joystick.cachefly.net/JMC/v/vid_become_legend.mp4',
+		startmuted: true,
 		// chromeless: true,
+		// elementtrigger: false,
+		// elementplayback: false,
+		// controlbar: false,
 		// preview: 5,
 		// continuecfs: true,
-		// preload: true,
+		// inline: false,
+		preload: 0,
 		// allowfullscreen: true,
 	}
-	video.init(true);
+	video.init(params);
+	// video.init(true);
 	// video.load(multiSource, poster);
 	// video.load(multiSource);
 
@@ -62,7 +71,7 @@ function createVideo1(){
 	// // video.elementplayback = false;
 
 	// video.init('videoPlayer');
-	video.load(multiSource, poster);
+	// video.load(multiSource, poster);
 	// setTimeout(()=>{
 	// 	video.stop();
 	// }, 5000);

@@ -1,27 +1,190 @@
-// @ codekit-prepend "../../device.js"
-
-var video;
 var multiSource = [
     'https://joystick.cachefly.net/resources/video/video.mp4',
     'https://joystick.cachefly.net/resources/video/video.webm',
     'https://joystick.cachefly.net/resources/video/video.ogv'];
 var poster = 'https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg';
-var singleSource = 'https://joystick.cachefly.net/JMC/v/vid_become_legend.mp4';
+// var singleSource = 'https://joystick.cachefly.net/resources/video/video2009.mp4';
+var singleSource = 'http://joystick.cachefly.net/JMC/v/vid_become_legend.mp4';
 var resetVars;
-// var inlinePossible = ('playsInline' in document.createElement('video'));
+
+var container = document.getElementById('groupwrapper1');
+
+var tooltips = {
+    debug: "Trace to console<br>This demo is an exception - default value for <code>debug</code> is <strong>false</strong>",
+    id: "containing div",
+    src: "video file",
+    poster: "video poster file",
+    autoplay: "",
+    startmuted: "",
+    replaywithsound: "Force unmute on replay",
+    allowfullscreen: "",
+    playonseek: "Force play/resume on scrubber seek",
+    uniquereplay: "Use replay icon. Re-uses play icon if set to <strong>false</strong>",
+    chromeless: "Remove all control buttons<br><strong>WARNING:</strong> if you set <code>elementtrigger</code> to <strong>false</strong> as well, you'll have to trigger/control the video programatically.",
+    elementtrigger: "Enables starting of video by clicking the video element",
+    elementplayback: "Enables playback/pause by clicking the video element during normal playback (similar to YouTube, etc.)",
+    controlbar: "Enables/Disables the bottom control bar on playback",
+    loop: "",
+    preload: "Set preload (none, metadata, all)",
+    inline: "Set <code>playsinline</code> attribute to video element",
+    preview: "Enable timed \"Click For Sound\" behavior",
+    continuecfs: "Do not restart video on ClickForSound",
+    endfreeze: "Leave video element visible on stop (override poster if present)",
+    ismobile: "Disable custom bar controls and use vanilla <code>&lt;video&gt;</code> controls.",
+}
+
+
+var video = new VideoPlayer();
+    video.debug = true;
+    video.default_params.id = 'videoPlayer';
+    video.dom_debug = document.getElementById('debugField');
+    video.init(true);
 
 $( document ).ready(init);
 
-function init(){
-    video = new VideoPlayer();
-    // video.dom_debug = document.getElementById('debugField');
-    video.debug = true;
-    // video.loadDelay = 0;
-    video.endfreeze = true;
+function init() {
 
-    video.checkForMobile();
-    video.preload = false;
+    // GENERATE PARAMS
+    for(var key in video.default_params) {
+
+        if( key !== 'id' || 'src' || 'poster' || 'ismobile' ) {
+
+            switch(key) {
+                case 'id':
+                case 'src':
+                case 'poster':
+                case 'ismobile':
+                case 'preload':
+
+                break;
+                default:
+                    var el = document.createElement('div');
+                        el.className = 'cboxwrapper '+key;
+                    var inp = document.createElement('input');
+                        inp.id = key;
+                        inp.className = 'cb';
+                        inp.type = "checkbox";
+                        el.appendChild(inp);
+                    var txt = document.createElement('span');
+                        txt.innerHTML = 'params.'+key;
+                        el.appendChild(txt);
+
+                    if(key === 'preview') {
+                        var inp2 = document.createElement('input');
+                            inp2.type = "checkbox";
+                            inp2.id = 'prevTime';
+                            inp2.className = 'hide';
+                            inp2.type = 'textfield';
+                            inp2.maxlength, 3;
+                            // inp2.value = 3;
+                            el.appendChild(inp2);
+                    }
+
+                    var tt = document.createElement('span');
+                        tt.className = 'tooltip';
+                        tt.innerHTML = tooltips[key];
+                        if(tooltips[key])
+                            el.appendChild(tt);
+
+                    container.appendChild(el);
+            }
+        }
+    }
+
+    // ASSIGN PARAM CLICKS
+    paramClicks();
+
+    // INTERFACE CLICKS
+    uiClicks();
+
+    // ASSIGN CALLBACKS
+    callbacks();
+
+    // DEBUG FIELD CLEAR
+    $('#debugField').click(function(){
+        $(this).html('');
+    });
+
+    // PREPOPULATE MULTI FIELD
+    ppMulti();
+
+    $('#poster').val(poster);
+    $('#width').val($('#videoPlayer').width());
+    $('#height').val($('#videoPlayer').height());
+
+    setCheckboxes();
+    $('#startmuted').parent().addClass('inactive');
+
+}
+
+
+/*
+
+
+
+function init(){
     
+    
+
+    // resetVars = {
+    //     autoplay: video.autoplay,
+    //     startmuted: video.startmuted,
+    //     replaywithsound: video.replaywithsound,
+    //     allowfullscreen: video.allowfullscreen,
+    //     uniquereplay: video.uniquereplay,
+    //     ismobile: video.ismobile,
+    //     playonseek: video.playonseek,
+    //     elementtrigger: video.elementtrigger,
+    //             elementplayback: video.elementplayback,
+    //             controlbar: video.controlbar,
+    //     chromeless: video.chromeless,
+    //     loop: video.loop,
+    //     debug: video.debug,
+    //     preload: video.preload,
+    //     inline: video.inline,
+    //     preview: video.preview,
+    //     endfreeze: video.endfreeze,
+    //     continuecfs: video.continuecfs,
+    // };
+
+
+    resetVariables();
+
+
+    
+
+    
+
+    
+
+    // video.init('videoPlayer');
+    // loadVid();
+    
+}
+
+//
+
+function loadSecondaryVideo()
+{
+    video2 = new VideoPlayer();
+    video2.init('videoPlayer2');
+    video2.autoplay = true;
+    video2.startmuted = true;
+    video2.load([
+        'http://joystick.cachefly.net/JMC/v/vid_become_legend.mp4',
+        'http://joystick.cachefly.net/JMC/v/vid_become_legend.ogv',
+        'http://joystick.cachefly.net/JMC/v/vid_become_legend.webm'
+    ]);
+}
+
+// $('#tempBTN').click(function(){
+//     $('#videoPlayer').detach().appendTo('#videoPlayer2');
+//     video.play();
+// })
+
+*/
+
+function callbacks() {
     video.track_mute = function(){
         setMuteState();
         video.trace('track_mute');
@@ -88,54 +251,10 @@ function init(){
         disablePreview();
         video.trace('track_preview_end');
     };
+}
 
-    resetVars = {
-        autoplay: video.autoplay,
-        startmuted: video.startmuted,
-        replaywithsound: video.replaywithsound,
-        allowfullscreen: video.allowfullscreen,
-        uniquereplay: video.uniquereplay,
-        ismobile: video.ismobile,
-        playonseek: video.playonseek,
-        elementtrigger: video.elementtrigger,
-                elementplayback: video.elementplayback,
-                controlbar: video.controlbar,
-        chromeless: video.chromeless,
-        loop: video.loop,
-        debug: video.debug,
-        preload: video.preload,
-        inline: video.inline,
-        preview: video.preview,
-        endfreeze: video.endfreeze,
-        continuecfs: video.continuecfs,
-    };
-
-
-    resetVariables();
-
-    $('#debugField').click(function(){
-        $(this).html('');
-    });
-
+function paramClicks() {
     $('.cb').click(function(e){
-
-        if( !$(this).parent().hasClass('inactive') && ( 
-            $(this).attr('id') === 'ismobile' || 
-            $(this).attr('id') === 'allowfullscreen' || 
-            $(this).attr('id') === 'autoplay' ||
-            $(this).attr('id') === 'startmuted' ||
-            $(this).attr('id') === 'chromeless' ||
-            $(this).attr('id') === 'uniquereplay' ||
-            $(this).attr('id') === 'preview' ||
-            $(this).attr('id') === 'elementtrigger' ||
-            $(this).attr('id') === 'elementplayback' || 
-            $(this).attr('id') === 'controlbar' || 
-            $(this).attr('id') === 'inline' ||
-            $(this).attr('id') === 'preload'
-            ) )
-        {
-            quickReset(100);
-        }
 
         if(!$(this).parent().hasClass('inactive'))
         {
@@ -144,22 +263,80 @@ function init(){
 
             if( $(this).attr('id') === 'preview' ) {
 
+                var tnum;
+                
+
                 if(bool) {
-                    video.preview = Number( ( Number( $('#prevTime').val() ) > 0 ) ? $('#prevTime').val() : $('#prevTime').val('3')  );
+                    tnum = Number( ( Number( $('#prevTime').val() ) > 0 ) ? $('#prevTime').val() : $('#prevTime').val('3')  );
+                    $('#autoplay').prop('checked', true).parent().addClass('inactive');
+                    $('#startmuted').prop('checked', true).parent().addClass('inactive');
                 } else {
-                    video.preview = 0;
+                    tnum = 0;
                     disablePreview();
                 }
+
+                var tobj = {};
+                    tobj[name] = tnum;
+
+                video.load(tobj);
+
             } else {
                 video.params[name] = bool;
+
+                // RESET TO REFLECT
+                if( !$(this).parent().hasClass('inactive') ) {
+                    var tobj = {};
+                        tobj[name] = bool;
+                    
+                    video.load(tobj);
+                }
             }
 
             setExceptions();
+
         }
         else
             e.preventDefault();
+
     });
 
+    $('#prevTime').val('3').keypress(function(e) {
+        if(e.which == 13) {
+            var pTime = Number( $('#prevTime').val() );
+            
+            // video.preview = pTime;
+
+            if(pTime === 0) {
+                $('#prevTime').val('3');
+                disablePreview();
+            } else {
+                $('#prevTime').removeClass('hide');
+                $('#preview').prop('checked', true);
+                $('#autoplay').prop('checked', true).parent().addClass('inactive');
+                $('#startmuted').prop('checked', true).parent().addClass('inactive');
+                video.params.autoplay = true;
+                video.params.startmuted = true;
+                // $('#startmuted').prop('checked', false).parent().removeClass('inactive');
+            }
+
+            // alert(pTime +' - '+ video.preview);
+
+            video.load({preview: pTime});
+            
+        }
+    });
+}
+
+function disablePreview() {
+    $('#prevTime').addClass('hide');
+    $('#preview').prop('checked', false);
+    video.params.autoplay = false;
+    $('#autoplay').prop('checked', false).parent().removeClass('inactive');
+    video.params.startmuted = false;
+    $('#startmuted').prop('checked', false).parent().addClass('inactive');
+}
+
+function uiClicks() {
     $('#destroy').click(function(){
         if($(this).hasClass('active')) {
             video.destroy();
@@ -182,6 +359,8 @@ function init(){
             video.unload();
             $('#play').removeClass('active');
             $('#pause').removeClass('active');
+            $('#stop').removeClass('active');
+            $('#replay').removeClass('active');
             $('#mute').removeClass('active');
             $('#unload').removeClass('active');
             $('#unmute').removeClass('active');
@@ -191,7 +370,7 @@ function init(){
 
     $('#initialize').click(function(){
         if($(this).hasClass('active')) {
-            video.init('videoPlayer');
+            video.init();
             $('#load').addClass('active');
             $('#destroy').addClass('active');
             $(this).removeClass('active');
@@ -266,49 +445,6 @@ function init(){
     $('#ppSingle').click(function(){
         $('#sources').val(singleSource);
     });
-
-    ppMulti();
-    $('#poster').val(poster);
-    $('#width').val($('#videoPlayer').width());
-    $('#height').val($('#videoPlayer').height());
-
-    $('#prevTime').val('3').keypress(function(e) {
-        if(e.which == 13) {
-            var pTime = Number( $('#prevTime').val() );
-            
-            video.preview = pTime;
-
-            if(pTime === 0) {
-                $('#prevTime').val('3');
-                disablePreview();
-            } else {
-                $('#prevTime').removeClass('hide');
-                $('#preview').prop('checked', true);
-                video.params.autoplay = false;
-                $('#autoplay').prop('checked', false).parent().removeClass('inactive');
-                video.params.startmuted = false;
-                // $('#startmuted').prop('checked', false).parent().removeClass('inactive');
-            }
-
-            // alert(pTime +' - '+ video.preview);
-
-            setTimeout(quickReset, 100);
-            
-        }
-    });
-
-    // video.init('videoPlayer');
-    // loadVid();
-    
-}
-
-function disablePreview() {
-    $('#prevTime').addClass('hide');
-    $('#preview').prop('checked', false);
-    video.params.autoplay = false;
-    $('#autoplay').prop('checked', false).parent().removeClass('inactive');
-    video.params.startmuted = false;
-    $('#startmuted').prop('checked', false).parent().addClass('inactive');
 }
 
 function setMuteState() {
@@ -321,40 +457,8 @@ function setMuteState() {
     }
 }
 
-function quickReset(num) {
-
-    video.destroy();
-    
-    setTimeout(function(){
-        video.init('videoPlayer');
-        loadVid();
-        $('#debugField').html('');
-    }, num);
-
-    $('#play').addClass('active');
-    $('#stop').removeClass('active');
-    $('#replay').removeClass('active');
-    $('#pause').removeClass('active');
-    $('#mute').removeClass('active');
-    $('#unmute').removeClass('active');
-
-    $('#load').addClass('active');
-    $('#unload').addClass('active');
-    $('#destroy').addClass('active');
-    $('#play').addClass('active');
-    $('#stop').removeClass('active');
-        $('#initialize').removeClass('active');
-    $('#pause').removeClass('active');
-    $('#unmute').removeClass('active');
-    $('#mute').removeClass('active');
-    $('#replay').removeClass('active');
-
-    console.log(video);
-}
-
 function ppMulti()
 {
-
     $('#sources').val('')
 
     for(var i = 0; i < multiSource.length; i++)
@@ -366,6 +470,46 @@ function ppMulti()
 
         $('#sources').val($('#sources').val()+tstr);
     }
+}
+
+function resetVariables() {
+
+    for(var p in video.default_params) {
+        video.params[p] = video.default_params[p];
+
+    }
+
+    // video.default_params.id = 'videoPlayer';
+    
+
+    // video.autoplay = resetVars.autoplay;
+    // video.startmuted = resetVars.startmuted;
+    // video.replaywithsound = resetVars.replaywithsound;
+    // video.allowfullscreen = resetVars.allowfullscreen;
+    // video.uniquereplay = resetVars.uniquereplay;
+    // video.ismobile = resetVars.ismobile;
+    // video.playonseek = resetVars.playonseek;
+    // video.chromeless = resetVars.chromeless;
+    // video.elementtrigger = resetVars.elementtrigger;
+    // video.elementplayback = resetVars.elementplayback;
+    // video.controlbar = resetVars.controlbar;
+    // video.loop = resetVars.loop;
+    // video.debug = resetVars.debug;
+    // video.preload = resetVars.preload;
+    // video.inline = resetVars.inline;
+    // video.preview = resetVars.preview;
+    // video.endfreeze = resetVars.endfreeze;
+    // video.continuecfs = resetVars.continuecfs;
+
+    
+    setCheckboxes();
+
+    setExceptions();
+
+    video.load({});
+
+    // quickReset(100);
+
 }
 
 function loadVid()
@@ -383,138 +527,58 @@ function loadVid()
             'width': $('#width').val()+'px'
         });
     }
-    if($('#poster').val())
-        video.load(tsource, $.trim($('#poster').val()));
-    else
-        video.load(tsource);
-}
-
-//
-
-function resetVariables() {
-
-    for(var p in resetVars) {
-        video.params[p] = resetVars[p];
-
-    }
-
-    video.autoplay = resetVars.autoplay;
-    video.startmuted = resetVars.startmuted;
-    video.replaywithsound = resetVars.replaywithsound;
-    video.allowfullscreen = resetVars.allowfullscreen;
-    video.uniquereplay = resetVars.uniquereplay;
-    video.ismobile = resetVars.ismobile;
-    video.playonseek = resetVars.playonseek;
-    video.chromeless = resetVars.chromeless;
-    video.elementtrigger = resetVars.elementtrigger;
-    video.elementplayback = resetVars.elementplayback;
-    video.controlbar = resetVars.controlbar;
-    video.loop = resetVars.loop;
-    video.debug = resetVars.debug;
-    video.preload = resetVars.preload;
-    video.inline = resetVars.inline;
-    video.preview = resetVars.preview;
-    video.endfreeze = resetVars.endfreeze;
-    video.continuecfs = resetVars.continuecfs;
-
-    setExceptions();
-
-    quickReset(100);
-
-}
-
-function setExceptions() {
-
-    $('.cboxwrapper').removeClass('inactive');
-
-    if(video.preview) {
-        // video.preview = Number( ( $('#prevTime').val() );
-        video.autoplay = true;
-        video.startmuted = true;
-        $('#autoplay').parent().addClass('inactive');
-        $('#startmuted').parent().addClass('inactive');
-        $('#prevTime').removeClass('hide');
-
-    } 
-    
-        // if(!inlinePossible) {
-        //     $('#inline').parent().addClass('inactive');
-            
-        //     if(video.ismobile) {
-        //         $('#autoplay').parent().addClass('inactive');
-        //         $('#preview').parent().addClass('inactive');
-        //         alert("Browser does not support playsInline attribute. Disabling all flags related to autoplay");
-        //     }
-        // }
-
-
-    if(video.preview == 0) {
-        // $('#prevTime').addClass('hide').val('3');
-    }
-
-
-    if(video.ismobile)
-    {
-        //video.preview = 0;
-        //video.autoplay = false;
-        //video.startmuted = false;
-        // $('#autoplay').parent().addClass('inactive');
-        // $('#startmuted').parent().addClass('inactive');
-        $('#allowfullscreen').parent().addClass('inactive');
-        $('#playonseek').parent().addClass('inactive');
-        $('#replaywithsound').parent().addClass('inactive');
-        // $('#preview').parent().addClass('inactive');
-    }
-
-    if(!video.autoplay) {
-        video.startmuted = false;
-        $('#startmuted').parent().addClass('inactive');
+    if($('#poster').val()) {
+        video.load({
+            src: tsource, 
+            poster: $.trim( $('#poster').val() )
+        });
     } else {
-            // IF AUTOPLAY IS SET
-            if(video.ismobile) {
-                // if(inlinePossible) {
-                    video.inline = true;
-                    video.startmuted = true;
-                // } else {
-                //     video.autoplay = false;
-                //     video.startmuted = false;
-                //     $('#startmuted').parent().addClass('inactive');
-                // }
-            }
-        }
-
-    if(video.loop) {
-        $('#replaywithsound').parent().addClass('inactive');
-        $('#uniquereplay').parent().addClass('inactive');
+        video.load({src: tsource});
     }
-
-    setCheckboxes();
-
 }
 
 function setCheckboxes() {
-    // console.log('');
-    for(var p in resetVars) {
+    for(var p in video.params) {
         // console.log(p+': '+video.params[p]);
         $('#'+p).prop('checked', video.params[p]);
     }
     // console.log('');
 }
 
-function loadSecondaryVideo()
-{
-    video2 = new VideoPlayer();
-    video2.init('videoPlayer2');
-    video2.autoplay = true;
-    video2.startmuted = true;
-    video2.load([
-        'http://joystick.cachefly.net/JMC/v/vid_become_legend.mp4',
-        'http://joystick.cachefly.net/JMC/v/vid_become_legend.ogv',
-        'http://joystick.cachefly.net/JMC/v/vid_become_legend.webm'
-    ]);
-}
+function setExceptions() {
 
-// $('#tempBTN').click(function(){
-//     $('#videoPlayer').detach().appendTo('#videoPlayer2');
-//     video.play();
-// })
+    $('.cboxwrapper').removeClass('inactive');
+
+    if(video.params.preview) {
+        // video.params.autoplay = true;
+        // video.params.startmuted = true;
+        $('#autoplay').parent().addClass('inactive');
+        $('#startmuted').parent().addClass('inactive');
+        $('#prevTime').removeClass('hide');
+    } 
+
+    if(video.params.preview === 0) {
+        $('#prevTime').addClass('hide').val('3');
+    }
+
+    if(video.ismobile)
+    {
+        $('#allowfullscreen').parent().addClass('inactive');
+        $('#playonseek').parent().addClass('inactive');
+        $('#replaywithsound').parent().addClass('inactive');
+    }
+
+    if(!video.params.autoplay) {
+        video.params.startmuted = false;
+        $('#startmuted').parent().addClass('inactive');
+    }
+
+    if(video.params.loop) {
+        $('#replaywithsound').parent().addClass('inactive');
+        $('#uniquereplay').parent().addClass('inactive');
+    }
+
+    if(video.params.chromeless) {
+        $('#controlbar').parent().addClass('inactive');   
+    }
+}
