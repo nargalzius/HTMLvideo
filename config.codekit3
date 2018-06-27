@@ -117,7 +117,7 @@
 		"oA": 0,
 		"oAP": "\/demo\/public_html\/HTMLvideo-min.js",
 		"oF": 2,
-		"sC": 0,
+		"sC": 3,
 		"tS": 1
 		},
 	"\/project.sublime-project": {
@@ -562,7 +562,7 @@
 			}
 		},
 	"esLintConfigFileHandlingType": 0,
-	"esLintECMAVersion": 7,
+	"esLintECMAVersion": 6,
 	"esLintEnvironmentsMask": 1,
 	"esLintRules": {
 		"accessor-pairs": {

@@ -1,14 +1,17 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  5.5
+ *  5.6
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
  *  documentation: https://github.com/nargalzius/HTMLvideo
+ *  demo: https://codepen.io/nargalzius/full/KmbROq
  *
  *  Copyright (c) 2015, All Rights Reserved, www.nargalzius.com
  */
+
+/* eslint-disable no-console */
 
 function VideoPlayer(){}
 
@@ -38,7 +41,7 @@ VideoPlayer.prototype = {
         preload: 'none',
         inline: true,
         preview: 0,
-        continuecfs: false,
+        continuecfs: true,
         endfreeze: false
     },
 
@@ -279,7 +282,7 @@ VideoPlayer.prototype = {
             this.params.id = params;
         } else
         if( params && params.constructor === Boolean ) {
-
+            // INTENTIONALLY EMPTY
         } else
             delete this.params['src'];
 
@@ -759,8 +762,8 @@ VideoPlayer.prototype = {
     },
 
     barSeek(e) {
-        let ro = (e.pageX - this.dom_pbar.getBoundingClientRect().left);
-        let tp = ( ro / this.dom_container.offsetWidth );
+        let ro = e.pageX - this.dom_pbar.getBoundingClientRect().left;
+        let tp = ro / this.dom_container.offsetWidth;
 
         this.seek( this.duration * tp );
 
@@ -813,7 +816,7 @@ VideoPlayer.prototype = {
         this.flag_stopped = false;
     },
 
-    unload(bool) {
+    unload() {
 
         if(this.flag_loaded) {
 
@@ -847,7 +850,7 @@ VideoPlayer.prototype = {
 
     destroy() {
         if(this.api) {
-            this.unload(true);
+            this.unload();
             this.dom_container.innerHTML = '';
             this.api = false;
             this.trace('destroying player');
@@ -1426,7 +1429,7 @@ VideoPlayer.prototype = {
         started: false,
         q25: false,
         q50: false,
-        q75: false,
+        q75: false
     },
 
     resetTracking() {
@@ -1676,7 +1679,7 @@ VideoPlayer.prototype = {
             }
 
             if( this.dom_debug ) {
-                this.dom_debug.innerHTML += ( str2 ? ( str2 + ': ' ) : '' ) + str + '<br>';
+                this.dom_debug.innerHTML += ( str2 ? str2 + ': ' : '' ) + str + '<br>';
             }
         }
     },
