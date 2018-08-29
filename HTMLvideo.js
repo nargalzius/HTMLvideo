@@ -12,6 +12,7 @@
  */
 
 /* eslint-disable no-console */
+/* eslint comma-dangle: ["error", "only-multiline"] */
 
 function VideoPlayer(){}
 
@@ -1356,6 +1357,7 @@ VideoPlayer.prototype = {
                 ) {
                     this.dom_spinner.style.display = 'block';
                     this.reflow(true);
+                    this.callback_buffer();
                 }
             break;
 
@@ -1404,25 +1406,6 @@ VideoPlayer.prototype = {
         }
     },
 
-    callback_loading()          { /* this.trace('------------------ callback_loading'); */ },
-    callback_progress()         { /* this.trace('------------------ callback_progress'); */ },
-    callback_ready()            { this.trace('------------------ callback_ready'); },
-    callback_end()              { this.trace('------------------ callback_end'); },
-    callback_play()             { this.trace('------------------ callback_play'); },
-    callback_error(str1, str2)  { this.trace(str1, str2); },
-    callback_stop()             { this.trace('------------------ callback_stop'); },
-    callback_pause()            { this.trace('------------------ callback_pause'); },
-    callback_start()            { this.trace('------------------ callback_start'); },
-    callback_volume()           { 
-
-        let tempstr = '';
-
-        if(this.notifications.volume) tempstr = this.isMuted() ? ' (muted)' : ' (unmuted)';
-
-        this.trace('------------------ callback_volume'+tempstr);
-        
-    },
-
     // TRACKING
 
     track: {
@@ -1440,22 +1423,42 @@ VideoPlayer.prototype = {
         this.track.q75 = false;
     },
 
-    track_start()           { this.trace('------------------ track_start'); },
-    track_stop()            { this.trace('------------------ track_stop'); },
-    track_end()             { this.trace('------------------ track_end'); },
-    track_preview_start()   { this.trace('------------------ track_preview_start'); },
-    track_preview_end()     { this.trace('------------------ track_preview_end'); },
-    track_play()            { this.trace('------------------ track_play'); },
-    track_pause()           { this.trace('------------------ track_pause'); },
-    track_replay()          { this.trace('------------------ track_replay'); },
-    track_mute()            { this.trace('------------------ track_mute'); },
-    track_unmute()          { this.trace('------------------ track_unmute'); },
-    track_q25()             { this.trace('------------------ track_q25'); },
-    track_q50()             { this.trace('------------------ track_q50'); },
-    track_q75()             { this.trace('------------------ track_q75'); },
-    track_enterfs()         { this.trace('------------------ track_enterfs'); },
-    track_exitfs()          { this.trace('------------------ track_exitfs'); },
-    track_cfs()             { this.trace('------------------ track_cfs'); },
+    track_cfs()                { this.trace('track_cfs',           'DEFAULT CALLBACK'); },
+    track_preview_start()      { this.trace('track_preview_start', 'DEFAULT CALLBACK'); },
+    track_preview_end()        { this.trace('track_preview_end',   'DEFAULT CALLBACK'); },
+
+    track_start()              { this.trace('track_start',   'DEFAULT CALLBACK'); },
+    track_stop()               { this.trace('track_stop',    'DEFAULT CALLBACK'); },
+    track_end()                { this.trace('track_end',     'DEFAULT CALLBACK'); },
+    track_play()               { this.trace('track_play',    'DEFAULT CALLBACK'); },
+    track_replay()             { this.trace('track_replay',  'DEFAULT CALLBACK'); },
+    track_pause()              { this.trace('track_pause',   'DEFAULT CALLBACK'); },
+    track_mute()               { this.trace('track_mute',    'DEFAULT CALLBACK'); },
+    track_unmute()             { this.trace('track_unmute',  'DEFAULT CALLBACK'); },
+    track_q25()                { this.trace('track_q25',     'DEFAULT CALLBACK'); },
+    track_q50()                { this.trace('track_q50',     'DEFAULT CALLBACK'); },
+    track_q75()                { this.trace('track_q75',     'DEFAULT CALLBACK'); },
+    track_enterfs()            { this.trace('track_enterfs', 'DEFAULT CALLBACK'); },
+    track_exitfs()             { this.trace('track_exitfs',  'DEFAULT CALLBACK'); },
+
+    callback_buffer()   {},
+    callback_loading()  {},
+    callback_progress() {},
+    callback_ready()           { this.trace('callback_ready', 'DEFAULT CALLBACK'); },
+    callback_end()             { this.trace('callback_end', 'DEFAULT CALLBACK'); },
+    callback_play()            { this.trace('callback_play', 'DEFAULT CALLBACK'); },
+    callback_stop()            { this.trace('callback_stop', 'DEFAULT CALLBACK'); },
+    callback_pause()           { this.trace('callback_pause', 'DEFAULT CALLBACK'); },
+    callback_start()           { this.trace('callback_start', 'DEFAULT CALLBACK'); },
+    callback_error(str1, str2) { this.trace(str1, str2); },
+    callback_volume()          { 
+
+        let tempstr = '';
+
+        if(this.notifications.volume) tempstr = this.isMuted() ? ' (muted)' : ' (unmuted)';
+
+        this.trace('callback_volume'+tempstr, 'DEFAULT CALLBACK');
+    },
 
     play(bool) {
         if(this.proxy) {
@@ -1475,11 +1478,11 @@ VideoPlayer.prototype = {
                 promise.then( () => {
                     if(bool && !this.ismobile)
                         this.dom_controller.style.display = this.params.controlbar ? 'block' : 'none';
-                } ).catch( (e) => {
+                } ).catch( () => {
                     // ONLY MAKE SURE IT HAPPENS WHEN LOADING
                     if(!this.flag_started) {
                         this.emergencyPlay();
-                        this.callback_error(e, 'promise error');
+                        this.callback_error('callback_error', 'DEFAULT CALLBACK');
                     }
                 } );
             }
@@ -1674,8 +1677,11 @@ VideoPlayer.prototype = {
     trace(str, str2) {
         if(this.debug) {
 
-            if(window.console) {
-                window.console.log(str, str2 ? str2 : '');
+            if(window['console']) {
+                if(str2)
+                    console.log(str, str2);
+                else
+                    console.log(str);
             }
 
             if( this.dom_debug ) {
@@ -1748,5 +1754,5 @@ VideoPlayer.prototype = {
 
     help() {
         window.open('https://github.com/nargalzius/HTMLvideo');
-    }
+    },
 };

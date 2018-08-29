@@ -4,7 +4,7 @@ var multiSource = [
     'https://joystick.cachefly.net/resources/video/video.ogv'];
 var poster = 'https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg';
 // var singleSource = 'https://joystick.cachefly.net/resources/video/video2009.mp4';
-var singleSource = 'http://joystick.cachefly.net/JMC/v/vid_become_legend.mp4';
+var singleSource = 'https://joystick.cachefly.net/resources/video/joystick2009.mp4';
 var resetVars;
 
 var container = document.getElementById('groupwrapper1');
@@ -488,37 +488,9 @@ function resetVariables() {
 
     }
 
-    // video.default_params.id = 'videoPlayer';
-    
-
-    // video.autoplay = resetVars.autoplay;
-    // video.startmuted = resetVars.startmuted;
-    // video.replaywithsound = resetVars.replaywithsound;
-    // video.allowfullscreen = resetVars.allowfullscreen;
-    // video.uniquereplay = resetVars.uniquereplay;
-    // video.ismobile = resetVars.ismobile;
-    // video.playonseek = resetVars.playonseek;
-    // video.chromeless = resetVars.chromeless;
-    // video.elementtrigger = resetVars.elementtrigger;
-    // video.elementplayback = resetVars.elementplayback;
-    // video.controlbar = resetVars.controlbar;
-    // video.loop = resetVars.loop;
-    // video.debug = resetVars.debug;
-    // video.preload = resetVars.preload;
-    // video.inline = resetVars.inline;
-    // video.preview = resetVars.preview;
-    // video.endfreeze = resetVars.endfreeze;
-    // video.continuecfs = resetVars.continuecfs;
-
-    
     setCheckboxes();
-
     setExceptions();
-
     video.load({});
-
-    // quickReset(100);
-
 }
 
 function loadVid()

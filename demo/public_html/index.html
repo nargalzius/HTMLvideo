@@ -5,34 +5,11 @@
     <link rel="stylesheet" type="text/css" href="style.css"/>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/device.js/0.2.7/device.min.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script type="text/javascript" src="//use.fontawesome.com/567b6b8249.js"></script>
     <script type="text/javascript" src="HTMLvideo-min.js"></script>
   </head>
   <body>
-    <div id="videoPlayer" class="abs"></div>
-    <div id="videoPlayer2" class="abs">
-    </div>
-    <div id="groupwrapper1" class="rel">
-      <div class="iconControl"><a id="defaults" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-sliders"> </i><span>defaults</span></a><a id="initialize" title="video.init(&quot;video_container&quot;)"><i aria-hidden="true" class="btn fa fa-lg fa-hourglass-start"></i><span>(re)initialize</span></a><a id="load" title="video.load( [video_file(s)], poster_file )" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-cloud-download"></i><span>load video</span></a><a id="unload" title="video.unload()" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-chain-broken"></i><span>unload</span></a><a id="destroy" title="video.destroy()" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-trash-o"></i><span>destroy</span></a><a id="play" title="video.play()" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-play-circle"></i><span>play</span></a><a id="pause" title="video.pause()"><i aria-hidden="true" class="btn fa fa-lg fa-pause-circle"></i><span>pause</span></a><a id="mute" title="video.mute()"><i aria-hidden="true" class="btn fa fa-lg fa-volume-off"></i><span>mute</span></a><a id="unmute" title="video.unmute()"><i aria-hidden="true" class="btn fa fa-lg fa-volume-up"></i><span>unmute</span></a><a id="stop" title="video.stop()"><i aria-hidden="true" class="btn fa fa-lg fa-stop-circle"></i><span>stop</span></a><a id="replay" title="video.replay()"><i aria-hidden="true" class="btn fa fa-lg fa-repeat"></i><span>replay</span></a><a id="reflow" title="video.resize(w,h)" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-expand"></i><span>resize</span></a></div>
-      <div id="resize" class="fieldwrapper">
-        <input id="width" type="textfield"/><span>x</span>
-        <input id="height" type="textfield"/>
-      </div>
-    </div>
-    <div id="groupwrapper2" class="rel">
-      <div class="fieldwrapper">
-        <div class="header">Enter video source URL(s) below</div>
-        <textarea id="sources" class="activeextarea"></textarea>
-        <div class="info">For multiple sources, separate using a comma</div>
-        <div class="info">Click <span id='ppMulti' class='btn linkage'>here</span> (multiple) or <span id='ppSingle' class='btn linkage'>here</span> (single) to pre-populate.</div>
-      </div>
-      <div class="fieldwrapper">
-        <div class="header">Enter (optional) video poster URL below</div>
-        <input id="poster" type="textfield"/>
-        <div class="info"> Click <span id='ppPoster' class='btn linkage'>here</span> to pre-populate.</div>
-      </div>
-    </div>
-    <div id="debugField" class="abs"></div>
+    <div id="video" class="rel"></div>
+    <div id="debug"></div>
     <script type="text/javascript" src="main.js"></script>
   </body>
 </html>
