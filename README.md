@@ -6,7 +6,7 @@ Minified version can be found in the `demo/public_html` folder
 
 Tested using [BrowserStack](https://browserstack.com)
 
-![BrowserStack](/i/browserstack-logo-600x315.png)
+![BrowserStack](browserstack-logo-600x315.png)
 
 ---
 
