@@ -5,89 +5,11 @@
     <link rel="stylesheet" type="text/css" href="style.css"/>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/device.js/0.2.7/device.min.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script type="text/javascript" src="//use.fontawesome.com/567b6b8249.js"></script>
     <script type="text/javascript" src="HTMLvideo-min.js"></script>
   </head>
   <body>
-    <div id="videoPlayer" class="abs"></div>
-    <div id="videoPlayer2" class="abs">
-    </div>
-    <div id="groupwrapper1" class="rel">
-      <div class="iconControl"><a id="defaults" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-sliders"> </i><span>defaults</span></a><a id="initialize" title="video.init(&quot;video_container&quot;)"><i aria-hidden="true" class="btn fa fa-lg fa-hourglass-start"></i><span>(re)initialize</span></a><a id="load" title="video.load( [video_file(s)], poster_file )" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-cloud-download"></i><span>load video</span></a><a id="unload" title="video.unload()" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-chain-broken"></i><span>unload</span></a><a id="destroy" title="video.destroy()" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-trash-o"></i><span>destroy</span></a><a id="play" title="video.play()" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-play-circle"></i><span>play</span></a><a id="pause" title="video.pause()"><i aria-hidden="true" class="btn fa fa-lg fa-pause-circle"></i><span>pause</span></a><a id="mute" title="video.mute()"><i aria-hidden="true" class="btn fa fa-lg fa-volume-off"></i><span>mute</span></a><a id="unmute" title="video.unmute()"><i aria-hidden="true" class="btn fa fa-lg fa-volume-up"></i><span>unmute</span></a><a id="stop" title="video.stop()"><i aria-hidden="true" class="btn fa fa-lg fa-stop-circle"></i><span>stop</span></a><a id="replay" title="video.replay()"><i aria-hidden="true" class="btn fa fa-lg fa-repeat"></i><span>replay</span></a><a id="reflow" title="video.resize(w,h)" class="active"><i aria-hidden="true" class="btn fa fa-lg fa-expand"></i><span>resize</span></a></div>
-      <div id="resize" class="fieldwrapper">
-        <input id="width" type="textfield"/><span>x</span>
-        <input id="height" type="textfield"/>
-      </div>
-      <div class="cboxwrapper debug">
-        <input id="debug" type="checkbox" class="cb"/><span>video.debug</span><span id="tooltip">Trace to console<br>This demo is an exception - default value for <code>debug</code> is <strong>false</strong></span>
-      </div>
-      <div class="cboxwrapper ismobile">
-        <input id="ismobile" type="checkbox" class="cb"/><span>video.ismobile</span><span id="tooltip">Disable custom bar controls and use vanilla <code>&lt;video&gt;</code> controls.</span>
-      </div>
-      <div class="cboxwrapper autoplay">
-        <input id="autoplay" type="checkbox" class="cb"/><span>video.autoplay</span>
-      </div>
-      <div class="cboxwrapper loop">
-        <input id="loop" type="checkbox" class="cb"/><span>video.loop</span>
-      </div>
-      <div class="cboxwrapper startmuted">
-        <input id="startmuted" type="checkbox" class="cb"/><span>video.startmuted</span>
-      </div>
-      <div class="cboxwrapper continuecfs">
-        <input id="continuecfs" type="checkbox" class="cb"/><span>video.continuecfs</span><span id="tooltip">Do not restart video on ClickForSound</span>
-      </div>
-      <div class="cboxwrapper replaywithsound">
-        <input id="replaywithsound" type="checkbox" class="cb"/><span>video.replaywithsound</span><span id="tooltip">Force unmute on replay</span>
-      </div>
-      <div class="cboxwrapper allowfullscreen">
-        <input id="allowfullscreen" type="checkbox" class="cb"/><span>video.allowfullscreen</span>
-      </div>
-      <div class="cboxwrapper playonseek">
-        <input id="playonseek" type="checkbox" class="cb"/><span>video.playonseek</span><span id="tooltip">Force play/resume on scrubber seek </span>
-      </div>
-      <div class="cboxwrapper uniquereplay">
-        <input id="uniquereplay" type="checkbox" class="cb"/><span>video.uniquereplay</span><span id="tooltip">Use replay icon. Re-uses play icon if set to <strong>false</strong></span>
-      </div>
-      <div class="cboxwrapper chromeless">
-        <input id="chromeless" type="checkbox" class="cb"/><span>video.chromeless</span><span id="tooltip">Remove all control buttons<br><strong>WARNING:</strong> if you set <code>elementtrigger</code> to <strong>false</strong> as well, you'll have to trigger/control the video programatically.</span>
-      </div>
-      <div class="cboxwrapper elementtrigger">
-        <input id="elementtrigger" type="checkbox" class="cb"/><span>video.elementtrigger</span><span id="tooltip">Enables starting of video by clicking the video element</span>
-      </div>
-      <div class="cboxwrapper elementplayback">
-        <input id="elementplayback" type="checkbox" class="cb"/><span>video.elementplayback</span><span id="tooltip">Enables playback/pause by clicking the video element during normal playback (similar to YouTube, etc.)</span>
-      </div>
-      <div class="cboxwrapper controlbar">
-        <input id="controlbar" type="checkbox" class="cb"/><span>video.controlbar</span><span id="tooltip">Enables/Disables the bottom control bar on playback</span>
-      </div>
-      <div class="cboxwrapper preload">
-        <input id="preload" type="checkbox" class="cb"/><span>video.preload</span><span id="tooltip">"Preload" video contents on load (metadata or none)</span>
-      </div>
-      <div class="cboxwrapper inline">
-        <input id="inline" type="checkbox" class="cb"/><span>video.inline</span><span id="tooltip">Set <code>playsinline</code> attribute to video element</span>
-      </div>
-      <div class="cboxwrapper endfreeze">
-        <input id="endfreeze" type="checkbox" class="cb"/><span>video.endfreeze</span><span id="tooltip">Leave video element visible on stop (override poster if present)</span>
-      </div>
-      <div class="cboxwrapper preview">
-        <input id="preview" type="checkbox" class="cb"/><span>video.preview</span>
-        <input id="prevTime" type="textfield" maxlength="3" class="hide"/><span id="tooltip">Enable timed "Click For Sound" behavior</span>
-      </div>
-    </div>
-    <div id="groupwrapper2" class="rel">
-      <div class="fieldwrapper">
-        <div class="header">Enter video source URL(s) below</div>
-        <textarea id="sources" class="activeextarea"></textarea>
-        <div class="info">For multiple sources, separate using a comma</div>
-        <div class="info">Click <span id='ppMulti' class='btn linkage'>here</span> (multiple) or <span id='ppSingle' class='btn linkage'>here</span> (single) to pre-populate.</div>
-      </div>
-      <div class="fieldwrapper">
-        <div class="header">Enter (optional) video poster URL below</div>
-        <input id="poster" type="textfield"/>
-        <div class="info"> Click <span id='ppPoster' class='btn linkage'>here</span> to pre-populate.</div>
-      </div>
-    </div>
-    <div id="debugField" class="abs"></div>
+    <div id="video" class="rel"></div>
+    <div id="debug"></div>
     <script type="text/javascript" src="main.js"></script>
   </body>
 </html>

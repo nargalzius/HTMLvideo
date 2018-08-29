@@ -46,4 +46,3 @@ function init(){
 	// video.load(multiSource, poster);
 	// video.load(multiSource);
 }
-

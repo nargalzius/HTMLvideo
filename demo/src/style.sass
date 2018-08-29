@@ -1,10 +1,19 @@
-@import reset.sass
-@import global.sass
-// @import url(http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css)
+@import url('http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css')
 
 html,
 body
 	font-family: sans-serif
+
+.btn
+	cursor: pointer
+
+.abs
+	position: absolute
+	display: block
+
+.rel
+	position: relative
+	display: block
 
 #videoPlayer
 	display: block
@@ -131,7 +140,7 @@ $opac: 0.8
 	input.cb
 		width: 20px
 
-	#tooltip
+	.tooltip
 		position: absolute
 		top: -50%		
 		width: 200px
@@ -153,23 +162,23 @@ $opac: 0.8
 			font-weight: bold
 
 	&:hover
-		#tooltip
-			opacity: 1
+		.tooltip
+			opacity: 1 !important
 
 	&.preview
-		#tooltip
+		.tooltip
 			left: 180px
 
 	&.debug
-		#tooltip
+		.tooltip
 			left: 140px
 
 	&.inline
-		#tooltip
+		.tooltip
 			left: 180px
 
 	&.chromeless
-		#tooltip
+		.tooltip
 			left: 180px
 
 #prevTime

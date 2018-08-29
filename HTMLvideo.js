@@ -1,41 +1,55 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  5.2
+ *  5.6
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
  *  documentation: https://github.com/nargalzius/HTMLvideo
+ *  demo: https://codepen.io/nargalzius/full/KmbROq
  *
  *  Copyright (c) 2015, All Rights Reserved, www.nargalzius.com
  */
+
+/* eslint-disable no-console */
+/* eslint comma-dangle: ["error", "only-multiline"] */
 
 function VideoPlayer(){}
 
 VideoPlayer.prototype = {
     // USER ACCESSIBLE
     debug: false,
-    autoplay: false,
-    startmuted: false,
-    replaywithsound: true,
-    allowfullscreen: false,
-    playonseek: true,
-    uniquereplay: false,
-    chromeless: false,
-    elementtrigger: true,
-    elementplayback: true,
-    bigbuttons: true,
-    controlbar: true,
-    loop: false,
-    preload: false,
-    inline: true,
-    preview: 0,
-    continuecfs: false,
-    endfreeze: false,
+    params: {},
+    default_params: {
+        id: 'video',
+        src: [
+            'https://joystick.cachefly.net/resources/video/video.mp4',
+            'https://joystick.cachefly.net/resources/video/video.webm',
+            'https://joystick.cachefly.net/resources/video/video.ogv'
+        ],
+        poster: "https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg",
+        autoplay: false,
+        startmuted: false,
+        replaywithsound: true,
+        allowfullscreen: false,
+        playonseek: true,
+        uniquereplay: false,
+        chromeless: false,
+        elementtrigger: true,
+        elementplayback: true,
+        controlbar: true,
+        loop: false,
+        preload: 'none',
+        inline: true,
+        preview: 0,
+        continuecfs: true,
+        endfreeze: false
+    },
 
     // DON'T MESS WITH THESE UNLESS YOU REALLY KNOW WHAT YOU'RE DOING
     proxy: null,
     ismobile: null,
+    issafari: null,
     zindex: null,
     playhead: 0,
     duration: 0,
@@ -43,55 +57,28 @@ VideoPlayer.prototype = {
     
     flag_started: false,
     flag_playing: false,
+    flag_paused: false,
     flag_isfs: false,
-    flag_firsttime: true,
-    flag_initialized: false,
+    flag_first: true,
+    flag_buffering: false,
+    flag_loaded: false,
+    flag_ap_nonce: false,
+    flag_listener: false,
     flag_restartplay: false,
     flag_hasposter: false,
     flag_cfs: false,
     flag_nonce: true,
-    flag_progress: true,
+    flag_progress: false,
     flag_completed: false,
     flag_stopped: false,
+
+    api: false,
+    load_int: null,
+
     mTypes: {
         'mp4': 'video/mp4',
         'ogv': 'video/ogg',
         'webm': 'video/webm'
-    },
-
-    isSafari() {
-        return !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
-    },
-
-    checkForMobile() {
-        const DESKTOP_AGENTS = [
-            'desktop'
-        ];
-
-        let mobileFlag = true;
-
-        if( window['device'] ) {
-            // USE DEVICEJS IF AVAILABLE
-            for (let i = 0; i < DESKTOP_AGENTS.length; i++) {
-                let regex;
-                    regex = new RegExp(DESKTOP_AGENTS[i], 'i');
-
-                if( window.document.documentElement.className.match(regex) ) {
-                    mobileFlag = false;
-                }
-            }
-        } else {
-            // BACKUP [RUDIMENTARY] DETECTION
-            mobileFlag = 'ontouchstart' in window;
-        }
-
-        if( mobileFlag ) {
-            this.ismobile = true;
-            this.trace("mobile browser detected");
-        } else {
-            this.ismobile = false;
-            this.trace("desktop browser detected");
-        }
     },
 
     svg: {
@@ -106,7 +93,8 @@ VideoPlayer.prototype = {
         fs: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="16" viewBox="0 0 32 32"><path fill="#444444" d="M27.414 24.586l-4.586-4.586-2.828 2.828 4.586 4.586-4.586 4.586h12v-12zM12 0h-12v12l4.586-4.586 4.543 4.539 2.828-2.828-4.543-4.539zM12 22.828l-2.828-2.828-4.586 4.586-4.586-4.586v12h12l-4.586-4.586zM32 0h-12l4.586 4.586-4.543 4.539 2.828 2.828 4.543-4.539 4.586 4.586z"></path></svg>'
     },
 
-    centered_controls: [],
+    centered_controls: {},
+    temp_storage: {},
 
     colors_scrubber_bg: '#000',
     colors_scrubber_progress: '#666',
@@ -141,6 +129,31 @@ VideoPlayer.prototype = {
 
     barsize: 27,
 
+    eventList: [
+        // 'abort',
+        'canplay',
+        // 'canplaythrough',
+        'durationchange',
+        // 'emptied',
+        'ended',
+        // 'error',
+        // 'loadeddata',
+        // 'loadedmetadata',
+        'loadstart',
+        'pause',
+        'play',
+        'playing',
+        'progress',
+        // 'ratechange',
+        // 'seeked',
+        // 'seeking',
+        // 'stalled',
+        // 'suspend',
+        'timeupdate',
+        'volumechange',
+        'waiting'
+    ],
+
     notifications: {
         volume: false,
         start: true,
@@ -149,7 +162,7 @@ VideoPlayer.prototype = {
         pause: true
     },
 
-    loadDelay: 0,
+    listeners: [],
     
     disableNotification(str) {
         this.notifications[str] = false;
@@ -215,35 +228,99 @@ VideoPlayer.prototype = {
         this.dom_fs.getElementsByTagName('path')[0].style.fill = this.colors_fs;
     },
 
-    init(vc) {
-        if(!this.flag_initialized)
-        {
-            if(this.ismobile === null) { this.checkForMobile(); }
+    evaluate(params) {
 
-            if(this.preview) {
-                this.autoplay = true;
-                this.startmuted = true;
-                
-                // if(this.ismobile)
-                //     this.inline = true;
-            } 
+        if(this.ismobile === null) { this.checkForMobile(); }
+        if(this.issafari === null) { this.checkForSafari(); }
 
-            if( this.autoplay && ( this.ismobile || this.isSafari() ) ) {
-                this.inline = true;
-                this.startmuted = true;
-            }
-        
+        if(Object.keys(this.params).length === 0)
+            for( let key in this.default_params )
+                this.params[key] = this.default_params[key]
 
-            if(typeof vc === 'object') {
-                if( typeof(jQuery) === 'undefined' ) { 
-                    this.dom_playercontainer = vc; 
-                } else {
-                    this.dom_playercontainer = document.getElementById( vc.attr('id') ); 
+        if( params && params.constructor === Object ) {
+            for( let key in params ) {
+                switch(key) {
+                    case 'preload':
+                        switch(params[key]) {
+                            case false:
+                            case 0:
+                            case 'none':
+                                this.params[key] = 'none';        
+                            break;
+                            
+                            case true:
+                            case 1:
+                            case 'metadata':
+                                this.params[key] = 'metadata';
+                            break;
+
+                            case 2:
+                            case 'all':
+                            case 'auto':
+                                this.params[key] = 'auto';
+                            break;
+                        }
+                    break;
+                    case 'chromeless':
+                        this.params[key] = params[key];
+
+                        if(params[key] === true)
+                            this.params.controlbar = false;
+                    break;
+                    case 'preview':
+                        if(params[key]) {
+                            this.params[key] = params[key];
+                            this.params.autoplay = true;
+                            this.params.startmuted = true;
+                        }
+                    break;
+                    default:
+                        this.params[key] = params[key];
                 }
-            } else {
-                this.dom_container = document.getElementById( vc );
             }
+        } else
+        if( params && params.constructor === String ) {
+            this.params.id = params;
+        } else
+        if( params && params.constructor === Boolean ) {
+            // INTENTIONALLY EMPTY
+        } else
+            delete this.params['src'];
 
+
+        // RESOLVE AUTOPLAY
+        if( this.params.autoplay && "autoplay" in document.createElement('video') ) {
+            if( this.ismobile || this.issafari ) {
+                if(!this.params.startmuted)
+                    this.params.startmuted = true; 
+            }
+        } else {
+            this.params.autoplay = false;
+        }
+
+        if( this.params.autoplay && this.issafari) {
+            this.flag_ap_nonce = true;
+        }
+
+        // DEAL WITH INLINE
+        if( this.params.inline ) {
+            if( "playsInline" in document.createElement('video') ) {
+                this.params.inline = true;
+            } else {
+                this.params.inline = false;
+            }
+        }
+
+
+    },
+
+    init(params) {
+        if(!this.api)
+        {
+
+            this.evaluate(params);
+
+            this.dom_container = document.getElementById( this.params.id );
             this.dom_container.style.backgroundColor = '#000';
             this.dom_container.style.overflow = 'hidden';
 
@@ -322,6 +399,8 @@ VideoPlayer.prototype = {
             this.dom_frame = document.createElement('div');
             this.dom_frame.style.zIndex = this.zindex;
             this.dom_frame.style.position = 'absolute';
+            this.dom_frame.style.width = '100%';
+            this.dom_frame.style.height = '100%';
             this.dom_container.appendChild(this.dom_frame);
 
             // POSTER
@@ -336,15 +415,15 @@ VideoPlayer.prototype = {
             this.dom_poster.style.height = '100%';
             this.dom_poster.style.backgroundSize = 'cover';
             this.dom_poster.style.backgroundRepeat = 'no-repeat';
-            this.dom_container.appendChild(this.dom_poster);
-            if(this.elementtrigger) {
+            this.dom_frame.appendChild(this.dom_poster);
+            if(this.params.elementtrigger) {
                 this.dom_poster.style.cursor = 'pointer';
             }
 
             // CONTROL
 
             this.dom_controller = document.createElement('div');
-            this.dom_controller.style.display = this.controlbar ? 'block':'none';
+            this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
             this.dom_controller.style.zIndex = this.zindex;
             this.dom_controller.style.position = 'relative';
             this.dom_controller.style.height = this.barsize + 'px';
@@ -354,7 +433,7 @@ VideoPlayer.prototype = {
             this.dom_controller.style.display = 'none';
             this.dom_controller.className = 'v_control_bar';
 
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_controller);
             }
 
@@ -399,22 +478,6 @@ VideoPlayer.prototype = {
 
             tcppc.appendChild(this.dom_pause);
 
-            // FULL SCREEN
-
-            if(this.allowfullscreen)
-            {
-                this.dom_template_fs();
-                this.addClass(this.dom_fs, 'cbtn');
-                this.addClass(this.dom_fs, 'v_control_sb');
-                this.addClass(this.dom_fs, 'fs');
-                this.dom_fs.style.position = 'absolute';
-                this.dom_fs.style.display = 'block';
-                this.dom_fs.style.top = 5 + 'px';
-                this.dom_fs.style.right = 10 + 'px';
-                this.dom_fs.style.cursor = 'pointer';
-                this.dom_controller.appendChild(this.dom_fs);
-            }
-
             // MUTE UNMUTE
 
             let tcmmc = document.createElement('div');
@@ -422,13 +485,8 @@ VideoPlayer.prototype = {
                 tcmmc.style.top = 0 + 'px';
                 tcmmc.className = 'v_control_mu';
                 tcmmc.style.textAlign = 'left';
-                if(this.allowfullscreen) {
-                    tcmmc.style.right = 58 + 'px';
-                }
-                else {
-                    tcmmc.style.right = 30 + 'px';
-                }
             this.dom_controller.appendChild(tcmmc);
+            this.temp_storage.muteunmute = tcmmc;
 
             this.dom_template_mute();
             this.addClass(this.dom_mute, 'cbtn');
@@ -493,11 +551,11 @@ VideoPlayer.prototype = {
             this.dom_bigplay.style.position = 'absolute';
             this.dom_bigplay.style.cursor = 'pointer';
             this.dom_bigplay.style.textShadow = this.dom_template_textshadow;
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_bigplay);
             }
             this.dom_bigplay.style.display = 'none';
-            this.centered_controls.push(this.dom_bigplay);
+            this.centered_controls.play = this.dom_bigplay;
 
             this.dom_preview = this.dom_bigplay.cloneNode(true);
             this.addClass(this.dom_preview, 'cbtn');
@@ -507,30 +565,11 @@ VideoPlayer.prototype = {
             this.dom_preview.style.display = 'block';
             this.dom_preview.style.position = 'absolute';
             this.dom_preview.style.cursor = 'pointer';
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_preview);
             }
             this.dom_preview.style.display = 'none';
-            this.centered_controls.push(this.dom_preview);
-
-            if(this.uniquereplay) {
-                this.dom_template_replay();
-            } else {
-                this.dom_replay = this.dom_bigplay.cloneNode(true);
-                this.removeClass(this.dom_replay, 'play');
-            }
-            this.addClass(this.dom_replay, 'cbtn');
-            this.addClass(this.dom_replay, 'v_control_bb');
-            this.addClass(this.dom_replay, 'replay');
-            this.dom_replay.style.zIndex = this.zindex + 2;
-            this.dom_replay.style.display = 'block';
-            this.dom_replay.style.position = 'absolute';
-            this.dom_replay.style.cursor = 'pointer';
-            if(!this.chromeless) {
-                this.dom_container.appendChild(this.dom_replay);
-            }
-            this.dom_replay.style.display = 'none';
-            this.centered_controls.push(this.dom_replay);
+            this.centered_controls.preview = this.dom_preview;
 
             this.dom_template_bigsound();
             this.addClass(this.dom_bigsound, 'cbtn');
@@ -540,11 +579,11 @@ VideoPlayer.prototype = {
             this.dom_bigsound.style.display = 'block';
             this.dom_bigsound.style.position = 'absolute';
             this.dom_bigsound.style.cursor = 'pointer';
-            if(!this.chromeless) {
+            if(!this.params.chromeless) {
                 this.dom_container.appendChild(this.dom_bigsound);
             }
             this.dom_bigsound.style.display = 'none';
-            this.centered_controls.push(this.dom_bigsound);
+            this.centered_controls.sound = this.dom_bigsound;
 
             this.dom_template_spinner();
             this.addClass(this.dom_spinner, 'cbtn');
@@ -555,15 +594,155 @@ VideoPlayer.prototype = {
             this.dom_spinner.style.position = 'absolute';
             this.dom_container.appendChild(this.dom_spinner);
             this.dom_spinner.style.display = 'none';
-            this.centered_controls.push(this.dom_spinner);
-
+            this.centered_controls.wait = this.dom_spinner;
+            
             this.reflow(true);
 
-            this.flag_initialized = true;
-            this.trace('video flag_initialized');
+            this.api = true;
+            this.trace('HTML Video Player Class Ready');
+
+            if(this.params.src) {
+                // setTimeout(()=>{
+                this.load(this.params);
+                // }, 10);
+            } else
+                this.trace(this.params, 'params (init)');
+        } else {
+            this.trace('HTML Video Player Class Already Initialized');
+        }
+    },
+
+    load(params) {
+        
+        if(this.api) {
+
+            clearInterval(this.load_int);
+            // this.resetTracking();
+
+            if(this.flag_loaded)
+                this.unload();
+
+            this.evaluate(params);
+            this.trace(this.params, 'params (load)');
+
+            this.flag_first = true;
+
+            this.dom_spinner.style.display = 'block';
+
+            if(this.params.poster) this.setPoster(this.params.poster);
+
+            // REPLAY AND FULLSCREEN
+
+            this.dom_template_fs();
+            this.addClass(this.dom_fs, 'cbtn');
+            this.addClass(this.dom_fs, 'v_control_sb');
+            this.addClass(this.dom_fs, 'fs');
+            this.dom_fs.id = 'fullscreen_btn'
+            this.dom_fs.style.position = 'absolute';
+            this.dom_fs.style.display = 'block';
+            this.dom_fs.style.top = 5 + 'px';
+            this.dom_fs.style.right = 10 + 'px';
+            this.dom_fs.style.cursor = 'pointer';            
+            if(this.params.allowfullscreen)
+                this.dom_controller.appendChild(this.dom_fs);
+
+            if(this.params.allowfullscreen) {
+                this.temp_storage.muteunmute.style.right = 58 + 'px';
+            }
+            else {
+                this.temp_storage.muteunmute.style.right = 30 + 'px';
+            }
+
+            if(this.params.uniquereplay) {
+                this.dom_template_replay();
+            } else {
+                this.dom_replay = this.dom_bigplay.cloneNode(true);
+                this.removeClass(this.dom_replay, 'play');
+            }
+            this.addClass(this.dom_replay, 'cbtn');
+            this.addClass(this.dom_replay, 'v_control_bb');
+            this.addClass(this.dom_replay, 'replay');
+            this.dom_replay.id = 'replay_btn'
+            this.dom_replay.style.zIndex = this.zindex + 2;
+            this.dom_replay.style.display = 'block';
+            this.dom_replay.style.position = 'absolute';
+            this.dom_replay.style.cursor = 'pointer';
+            if(!this.params.chromeless) {
+                this.dom_container.appendChild(this.dom_replay);
+            }
+            this.dom_replay.style.display = 'none';
+            this.centered_controls.replay = this.dom_replay;
+
+            // RESUME
+            
+            this.reflow(true);
+
+            let tve = document.createElement('video');
+                tve.width = this.dom_container.offsetWidth;
+                tve.height = this.dom_container.offsetHeight;
+
+            if(this.params.startmuted)
+                tve.muted = true;
+
+            if(this.params.poster)
+                tve.poster = this.params.poster;
+
+            tve.preload = this.params.preload;
+
+            if(this.params.chromeless) {
+                this.dom_controller.style.display = 'none';
+                tve.controls = false;
+            } else {
+
+                if(this.ismobile) {
+                    this.dom_controller.style.display = 'none';
+
+                    if(!this.params.autoplay)
+                        tve.controls = this.params.controlbar ? true : false;
+                }                   
+            }
+
+            if(typeof this.params.src === 'object') {
+                this.params.src.forEach( (e) => {
+                    let tvs = document.createElement('source');
+                        tvs.src = e;
+                        tvs.type = this.getMediaType(e);
+                    tve.appendChild(tvs);
+                });
+            } else {
+                let tvs = document.createElement('source');
+                    tvs.src = this.params.src;
+                    tvs.type = this.getMediaType(this.params.src);
+                tve.appendChild(tvs);
+            }
+
+            if( this.params.elementtrigger ) {
+                this.dom_frame.style.cursor = 'pointer';
+            } else {
+                this.dom_frame.style.cursor = 'auto';
+            }
+
+            if(this.params.inline) {
+                tve.playsInline = true;
+            }
+
+            this.proxy = tve;
+
+            this.setListeners();
+            
+            this.reflow(true);
+
+            this.dom_frame.appendChild(tve);
+            this.flag_loaded = true;
+
+            // FIRST LINE OF DEFENSE
+            if( this.params.autoplay && !this.flag_ap_nonce ) {
+                this.play();
+            }
+
         }
         else {
-            this.trace('already flag_initialized');
+            setInterval(()=>{ this.load(params) }, 500);
         }
     },
 
@@ -576,36 +755,20 @@ VideoPlayer.prototype = {
             ( this.dom_bigplay.style.display !== 'block' ) &&
             ( this.dom_preview.style.display !== 'block' )
         ) {
-            this.dom_controller.style.display = this.controlbar ? 'block':'none';
+            this.dom_controller.style.display = this.params.controlbar ? 'block' : 'none';
         }
     },
     mLeave() {
         this.dom_controller.style.display = 'none';
     },
-    mClick() {
-        if(this.elementtrigger) {
-            if( !this.flag_playing ||
-                this.dom_bigplay.style.display === 'block' ||
-                this.dom_replay.style.display === 'block' || 
-                this.dom_preview.style.display === 'block' ) {
-                this.play(true);
-            
-            } 
 
-            if( this.dom_bigsound.style.display === 'block' ) {
-                this.cfs(true);
-            }
-        
-        }
-        
-    },
     barSeek(e) {
-        let ro = (e.pageX - this.dom_pbar.getBoundingClientRect().left);
-        let tp = ( ro / this.dom_container.offsetWidth );
+        let ro = e.pageX - this.dom_pbar.getBoundingClientRect().left;
+        let tp = ro / this.dom_container.offsetWidth;
 
         this.seek( this.duration * tp );
 
-        if( this.dom_play.style.display === 'block' && this.playonseek ) {
+        if( this.dom_play.style.display === 'block' && this.params.playonseek ) {
             this.play();
         }
     },
@@ -613,176 +776,84 @@ VideoPlayer.prototype = {
         this.proxy.currentTime = num;
     },
 
-    load(vf, vp, forceManualPlay) {
-        this.trackReset();
-
-        if(this.flag_initialized) {
-
-            this.flag_firsttime = true;
-
-            this.unload();
-
-            this.dom_spinner.style.display = 'block';
-
-            if(vp) this.setPoster(vp);
-            
-            this.reflow(true);
-
-            let tve = document.createElement('video');
-                tve.width = this.dom_container.offsetWidth;
-                tve.height = this.dom_container.offsetHeight;
-            
-            if( this.autoplay && 'autoplay' in tve )
-                tve.autoplay = true;
-
-            if(this.startmuted)
-                tve.muted = true;
-
-            tve.preload = this.preload ? "metadata" : "none";
-
-            if(this.chromeless) {
-                this.dom_controller.style.display = 'none';
-                tve.controls = false;
-            } else {
-
-                if(this.ismobile) {
-                    this.dom_controller.style.display = 'none';
-
-                    if(!this.autoplay)
-                        tve.controls = this.controlbar ? true : false;
-                }                   
-            }
-
-            if(typeof vf === 'object') {
-                vf.forEach( (e) => {
-                    let tvs = document.createElement('source');
-                        tvs.src = e;
-                        tvs.type = this.getMediaType(e);
-                    tve.appendChild(tvs);
-                });
-            } else {
-                let tvs = document.createElement('source');
-                    tvs.src = vf;
-                    tvs.type = this.getMediaType(vf);
-                tve.appendChild(tvs);
-            }
-
-            if(vp) {
-                tve.poster = vp;
-            }
-
-            if(this.elementtrigger) {
-                tve.style.cursor = 'pointer';
-            }
-
-            this.dom_frame.appendChild(tve);
-
-            this.proxy = tve;
-
-            this.setListeners(); // COME BACK HERE
-
-            if(this.inline) {
-                if( "playsInline" in document.createElement('video') ) {
-                    tve.playsInline = true;
-                }
-            }
-
-            if( !this.autoplay ) {
-                this.dom_spinner.style.display = 'none';
-                this.dom_bigplay.style.display = 'block';
-            }
-
-            if( this.ismobile && this.autoplay )
-                this.proxy.style.display = 'block';
-            else
-                this.proxy.style.display = 'none';
-
-            this.proxy.addEventListener('click', (e) => {
-                this.controlHandler(e);
-            });
-
-            this.reflow(true);
-
-            if( this.autoplay || forceManualPlay ) {
-                this.play();
-            }
-        }
-        else {
-            this.trace('initialize video first');
-        }
-    },
-
     setPoster(str) {
         let newImg = new Image();
             newImg.onload = () => {
-                this.trace('loaded: '+str);
+                this.trace('poster loaded: '+str);
 
                 this.dom_poster.style.backgroundImage = 'url('+str+')';
-                this.dom_poster.style.display = 'block';
 
-                if(this.autoplay) {
-                    this.dom_spinner.style.display = 'block';
-                    this.dom_bigplay.style.display = 'none';
-                } else {
-                    this.dom_spinner.style.display = 'none';
-                    this.dom_bigplay.style.display = 'block';
-                    
-                }
-
-                this.reflow(true); // NOT SURE
-
+                if(this.playhead === 0)
+                    this.dom_poster.style.display = 'block';
             };
             newImg.src = str;
 
         this.flag_hasposter = true;
     },
 
-    unload(bool) {
-        
+    resetPlayback(bool) {
+        if(!this.params.endfreeze || bool)
+            this.resetTracking();
+        this.flag_completed = false;
+        this.flag_playing = false;
+        this.flag_nonce = true;
+    },
+
+    resetVariables() {
         this.playhead = 0;
         this.duration = 0;
         this.buffered = 0;
-        this.flag_isfs = false;
         this.flag_started = false;
-        this.flag_playing = false;
-        this.flag_firsttime = true;
-        this.flag_completed = false;
-        this.flag_hasposter = false;
+        this.flag_paused = false;
+        this.flag_isfs = false;
+        this.flag_first = true;
+        this.flag_buffering = false;
+        this.flag_loaded = false;
+        this.flag_ap_nonce = false;
         this.flag_restartplay = false;
+        this.flag_hasposter = true;
+        this.flag_cfs = false;
+        this.flag_progress = false;
+        this.flag_stopped = false;
+    },
 
-        if( this.proxy ) {
-            
-            // AVOID FIRING DURING DESTROY
-            if(!bool) this.trace('unloading player');
+    unload() {
+
+        if(this.flag_loaded) {
 
             this.removeListeners();
 
-            this.dom_bigplay.style.display = 'none';
-            this.dom_bigsound.style.display = 'none';
-            this.dom_replay.style.display = 'none';
-            this.dom_poster.style.display = 'none';
-            this.dom_controller.style.display = 'none';
-            this.dom_spinner.style.display = 'none';
+            if( this.proxy ) {
 
-            // THOROUGHNESS ;P
+                if (document.getElementById('replay_btn')) this.dom_container.removeChild(this.dom_replay);
+                if (document.getElementById('fullscreen_btn')) this.dom_controller.removeChild(this.dom_fs);
 
-            this.pause();
-            this.proxy.src = "";
-            this.proxy.load();
-            this.proxy.parentNode.removeChild(this.proxy);
-            this.proxy = null;
+                this.dom_poster.style.backgroundImage = 'none';
+                this.dom_controller.style.display = 'none';
+                
+                for (var el in this.centered_controls )
+                    this.centered_controls[el].style.display = 'none';
 
-            this.dom_frame.innerHTML = '';
+                // // THOROUGHNESS ;P
+
+                // this.pause();
+                // this.proxy.src = "";
+                // this.proxy.load();
+                this.dom_frame.removeChild(this.proxy);
+                this.dom_frame.style.cursor = 'auto';
+                this.proxy = null;
+            }
+
+            this.resetPlayback(true);
+            this.resetVariables();
         }
-
-        this.trackReset();
     },
 
     destroy() {
-        if(this.flag_initialized) {
-            this.unload(true);
+        if(this.api) {
+            this.unload();
             this.dom_container.innerHTML = '';
-            this.flag_initialized = false;
+            this.api = false;
             this.trace('destroying player');
         }
         else {
@@ -791,435 +862,93 @@ VideoPlayer.prototype = {
     },
 
     setListeners() {
-        this.dom_pbar.addEventListener(         'click',        (e) => { this.barSeek(e); });
-        this.dom_phead.addEventListener(        'click',        (e) => { this.barSeek(e); });
-        this.dom_container.addEventListener(    'mouseenter',   (e) => { this.mEnter(e); });
-        this.dom_container.addEventListener(    'mouseleave',   (e) => { this.mLeave(e); });
-        this.dom_container.addEventListener(    'click',        (e) => { this.mClick(e); });
-        this.dom_play.addEventListener(         'click',        (e) => { this.controlHandler(e); });
-        this.dom_pause.addEventListener(        'click',        (e) => { this.controlHandler(e); });
-        this.dom_mute.addEventListener(         'click',        (e) => { this.controlHandler(e); });
-        this.dom_unmute.addEventListener(       'click',        (e) => { this.controlHandler(e); });
-        this.dom_bigplay.addEventListener(      'click',        (e) => { this.controlHandler(e); });
-        this.dom_bigsound.addEventListener(     'click',        (e) => { this.controlHandler(e); });
-        this.dom_preview.addEventListener(      'click',        (e) => { this.controlHandler(e); });
-        this.dom_replay.addEventListener(       'click',        (e) => { this.controlHandler(e); });
-        if(this.allowfullscreen) {
-            this.dom_fs.addEventListener(       'click',        (e) => { this.controlHandler(e); });
+
+        this.trace('SET LISTENERS');
+
+        if(!this.flag_listener) {
+            this.dom_container.addEventListener( 'mouseenter', (e) => { this.mEnter(e);         }, false);
+            this.dom_container.addEventListener( 'mouseleave', (e) => { this.mLeave(e);         }, false);
+            this.dom_pbar.addEventListener(      'click',      (e) => { this.barSeek(e);        }, false);
+            this.dom_phead.addEventListener(     'click',      (e) => { this.barSeek(e);        }, false);
+            this.dom_play.addEventListener(      'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_pause.addEventListener(     'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_mute.addEventListener(      'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_unmute.addEventListener(    'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_bigplay.addEventListener(   'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_bigsound.addEventListener(  'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_preview.addEventListener(   'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_frame.addEventListener(     'click',      (e) => { this.controlHandler(e); }, false);
         }
-        this.proxy.addEventListener(            'ended',        (e) => { this.dlEnded(e); });
-        this.proxy.addEventListener(            'play',         (e) => { this.dlPlay(e); });
-        this.proxy.addEventListener(            'pause',        (e) => { this.dlPause(e); });
-        this.proxy.addEventListener(            'volumechange', (e) => { this.dlVolumeChange(e); });
-        this.proxy.addEventListener(            'timeupdate',   (e) => { this.dlTimeUpdate(e); });
-        this.proxy.addEventListener(            'canplay',      (e) => { this.dlCanPlay(e); });
-        this.proxy.addEventListener(            'progress',     (e) => { this.dlProgress(e); });
+
+        this.dom_fs.addEventListener(        'click',      (e) => { this.controlHandler(e); }, false);
+        this.dom_replay.addEventListener(    'click',      (e) => { this.controlHandler(e); }, false);
+
+        for (let i = 0; i < this.eventList.length; i++ )
+            this.proxy.addEventListener( this.eventList[i], (e) => { this.eventHandler(e); }, false );
+
+        this.flag_listener = true;
     },
 
     removeListeners() {
-        this.dom_pbar.removeEventListener(      'click',        (e) => { this.barSeek(e); });
-        this.dom_phead.removeEventListener(     'click',        (e) => { this.barSeek(e); });
-        this.dom_container.removeEventListener( 'mouseenter',   (e) => { this.mEnter(e); });
-        this.dom_container.removeEventListener( 'mouseleave',   (e) => { this.mLeave(e); });
-        this.dom_container.removeEventListener( 'click',        (e) => { this.mClick(e); });
-        this.dom_play.removeEventListener(      'click',        (e) => { this.controlHandler(e); });
-        this.dom_pause.removeEventListener(     'click',        (e) => { this.controlHandler(e); });
-        this.dom_mute.removeEventListener(      'click',        (e) => { this.controlHandler(e); });
-        this.dom_unmute.removeEventListener(    'click',        (e) => { this.controlHandler(e); });
-        this.dom_bigplay.removeEventListener(   'click',        (e) => { this.controlHandler(e); });
-        this.dom_bigsound.removeEventListener(  'click',        (e) => { this.controlHandler(e); });
-        this.dom_replay.removeEventListener(    'click',        (e) => { this.controlHandler(e); });
-        if(this.allowfullscreen) {
-            this.dom_fs.removeEventListener(    'click',        (e) => { this.controlHandler(e); });
-        }
-        this.proxy.removeEventListener(         'ended',        (e) => { this.dlEnded(e); });
-        this.proxy.removeEventListener(         'play',         (e) => { this.dlPlay(e); });
-        this.proxy.removeEventListener(         'pause',        (e) => { this.dlPause(e); });
-        this.proxy.removeEventListener(         'volumechange', (e) => { this.dlVolumeChange(e); });
-        this.proxy.removeEventListener(         'timeupdate',   (e) => { this.dlTimeUpdate(e); });
-        this.proxy.removeEventListener(         'canplay',      (e) => { this.dlCanPlay(e); });
-        this.proxy.removeEventListener(         'progress',     (e) => { this.dlProgress(e); });
-    },
+        this.trace('UNSET LISTENERS');
 
-    dlEnded() {
-        this.flag_completed = true;
+        this.dom_fs.removeEventListener(     'click', (e) => { this.controlHandler(e); }, false);
+        this.dom_replay.removeEventListener( 'click', (e) => { this.controlHandler(e); }, false);
 
-        if( !this.loop ) this.flag_nonce = true;
-        this.callback_end();
-
-        if(this.loop) {
-
-            this.play();
-            this.trace('looping video...');
-
-        } else {
-
-            if(this.replaywithsound) {
-                this.disableNotification('volume');
-                this.unmute();
-            }
-
-            if(this.flag_hasposter && !this.endfreeze) {
-                this.dom_poster.style.display = 'block';
-            } else {
-                if(!this.ismobile) {
-                    this.dom_controller.style.display = 'none';
-                }
-            }
-
-            if(!this.chromeless && !this.preview) {
-                this.dom_replay.style.display = 'block';
-            }
-
-            if(!this.endfreeze) {
-                this.proxy.style.display = 'none';
-            }
-            
-            this.dom_bigsound.style.display = 'none';
-
-            this.disableNotification('volume');
-
-            if(this.preview) {
-                this.dom_preview.style.display = 'block';
-                this.preview = 0;
-                this.flag_completed = false;
-                this.track_preview_end();
-            } else {
-                this.track_end();
-                this.trackReset();
-                this.flag_playing = false;
-            }
-
-            this.dom_poster.style.cursor = 'pointer';
-        }
-
-        this.reflow(true);
-    },
-
-    dlPlay() {
-
-        this.dom_pause.style.display = 'block';
-        this.dom_play.style.display = 'none';
-
-        if(!this.track.started && !this.flag_completed) {
-            this.track.started = true;
-
-            if(this.preview) {
-                // PREVIEW
-                this.disableNotification('start');
-                this.disableNotification('play');
-                this.disableNotification('replay');
-            }
-            else {
-                // REGULAR START
-                this.disableNotification('play');
-                this.disableNotification('preview_start');
-                this.disableNotification('replay');
-            }
-        }
-        else {
-            if(this.flag_completed)
-            {
-                // REPLAY
-                this.flag_completed = false;
-                this.track.started = true;
-                this.disableNotification('play');
-                this.disableNotification('preview_start');
-                this.disableNotification('start');
-            } else {
-                // UNPAUSE
-                this.disableNotification('preview_start');
-                this.disableNotification('replay');
-                this.disableNotification('start');
-            }
-        }
-
-        if(this.flag_restartplay) {
-            this.cfs(true);
-        }
-
-        if(!this.flag_nonce) {
-
-            if(!this.flag_stopped) {
-
-                this.callback_play();
-
-                if(this.notifications.play)
-                    this.track_play();
-
-                this.enableNotifications();
-
-            }
-        }
-
-        this.flag_progress = true;
-    },
-
-    dlPause() {
-        this.dom_pause.style.display = 'none';
-        this.dom_play.style.display = 'block';
-
-        if( this.preview < this.playhead ) {
-            this.callback_pause();
-            
-            if(this.preview) {
-                this.dom_bigsound.style.display = 'none';
-                this.dom_preview.style.display = 'block';
-                this.reflow();
-                this.disableNotification('end');
-                this.disableNotification('pause');
-                this.flag_restartplay = true;
-                this.trackReset();
-                this.preview = 0;
-                this.track_preview_end();
-            }
-            else {
-                this.disableNotification('end');
-                this.disableNotification('preview_end');
-                if(this.notifications.pause && 
-                  (this.playhead !== this.duration) 
-                ) {
-                    this.track_pause(); 
-                }
-            }
-        }
-    },
-    dlVolumeChange() {
-        if(this.isMuted()) {
-            this.dom_mute.style.display = 'none';
-            this.dom_unmute.style.display = 'block';
-
-            if(this.notifications.volume) {
-                this.track_mute();
-            }
-        } else {
-            this.dom_mute.style.display = 'block';
-            this.dom_unmute.style.display = 'none';
-            this.dom_bigsound.style.display = 'none';
-            if(this.notifications.volume) {
-                this.track_unmute();
-            }
-        }
-
-        this.callback_volume();
-    },
-
-    dlProgress() {
-        if(this.proxy) {
-            for(let i = 0; i < this.proxy.buffered.length; i ++) {
-                this.buffered = ( this.proxy.buffered.end(i) / this.duration ) * 100;
-            }
-
-            this.dom_pbar.style.width = this.buffered+'%';
-
-            this.callback_loading();
-        }
-    },
-
-    dlTimeUpdate() {
-        
-        if(this.flag_progress) {
-
-            this.flag_playing = true;
-
-            if(this.proxy && this.flag_firsttime) {
-                this.flag_firsttime = false;
-                this.flag_started = true;
-
-                if( this.startmuted && this.autoplay ) {
-                
-                    this.dom_bigsound.style.display = 'block';
-                    this.dom_controller.style.display = 'none';
-                    this.flag_playing = false;
-
-                    this.reflow(true);
-                }
-            }
-
-            if( this.proxy ) {
-                this.playhead = this.proxy.currentTime;
-                this.duration = this.proxy.duration;
-            }
-
-            if( this.dom_controller.style.display === 'block' && this.ismobile ) {
-                this.dom_controller.style.display = 'none';
-            }
-            if( this.dom_bigplay.style.display === 'block' ) {
-                this.dom_bigplay.style.display = 'none';
-            }
-            if( this.dom_replay.style.display === 'block' ) {
-                this.dom_replay.style.display = 'none';
-            }
-            if( this.dom_preview.style.display === 'block' ) {
-                this.dom_preview.style.display = 'none';
-            }
-
-            if( this.playhead > 0 ) {
-                if( this.dom_spinner.style.display === 'block' ) {
-                    this.dom_spinner.style.display = 'none';
-                }
-                if( this.dom_poster.style.display === 'block' ) {
-                    this.dom_poster.style.display = 'none';
-                }
-                if( this.proxy && this.proxy.style.display === 'none') {
-                    this.proxy.style.display = 'block';
-                }
-                if( !this.elementplayback && 
-                    this.dom_bigsound.style.display === 'none' &&
-                    this.dom_preview.style.display === 'none'
-                ) {
-                    this.proxy.style.cursor = 'auto';
-                }
-
-                if(this.flag_nonce) {
-
-                    this.flag_nonce = false;
-
-                    this.callback_play();
-                    this.callback_start();
-
-                    if(this.notifications.preview_start) {
-                        this.track_preview_start();
-                    }
-                    if(this.notifications.start) {
-                        this.track_start();
-                    }
-                    if(this.notifications.replay && !this.loop) {
-                        this.track_replay();
-                    }
-
-                    this.enableNotifications();
-                }
-            }
-
-            let phpercentage = ( this.playhead / this.duration ) * 100;
-
-            this.dom_phead.style.width = phpercentage+'%';
-
-            // QUARTILES
-
-            if(!this.preview && this.track.q25 !== true && phpercentage >= 25) {
-                this.track.q25 = true;
-                this.track_q25();
-            }
-
-            if(!this.preview && this.track.q50 !== true && phpercentage >= 50) {
-                this.track.q50 = true;
-                this.track_q50();
-            }
-
-            if(!this.preview && this.track.q75 !== true && phpercentage >= 75) {
-                this.track.q75 = true;
-                this.track_q75();
-            }
-
-            this.callback_progress();
-
-            if(this.preview && ( this.playhead > this.preview ) ) {
-                this.pause();
-            }
-        }
-    },
-
-    dlCanPlay() {
-
-        if(this.flag_firsttime) { // NOT SURE ABOUT THIS
-
-            if(!this.autoplay) {
-                this.dom_spinner.style.display = 'none';
-
-                if(!this.ismobile) {
-                    this.dom_bigplay.style.display = 'block';
-                }
-
-            }
-
-            if(!this.flag_hasposter && !this.autoplay && !this.ismobile) {
-                this.trace('no poster');
-                this.dom_bigplay.style.display = 'block';
-                this.dom_controller.style.display = 'none';
-            }
-
-            if(this.ismobile) {
-                this.dom_controller.style.display = 'none';
-
-                if( this.autoplay ) {
-                    this.dom_spinner.style.display = 'block';
-                    this.dom_bigplay.style.display = 'none';
-                    this.dom_poster.style.display = 'none';
-                    this.proxy.style.display = 'block';
-                } else {
-                    if(!this.chromeless)
-                        this.dom_bigplay.style.display = 'block';
-                }
-            } 
-
-            this.reflow(true);
-            // this.ready = true;
-            this.callback_ready();
-
-        }
-    },
-    callback_loading()      { /* this.trace('------------------ callback_loading'); */ },
-    callback_progress()     { /* this.trace('------------------ callback_progress'); */ },
-    callback_ready()        { this.trace('------------------ callback_ready'); },
-    callback_end()          { this.trace('------------------ callback_end'); },
-    callback_play()         { this.trace('------------------ callback_play'); },
-    callback_error()        { this.trace('------------------ callback_error'); },
-    callback_stop()         { this.trace('------------------ callback_stop'); },
-    callback_pause()        { this.trace('------------------ callback_pause'); },
-    callback_start()        { this.trace('------------------ callback_start'); },
-    callback_volume()       { 
-
-        let tempstr = '';
-
-        if(this.notifications.volume) tempstr = this.isMuted() ? ' (muted)' : ' (unmuted)';
-
-        this.trace('------------------ callback_volume'+tempstr);
+        for (let i = 0; i < this.eventList.length; i++ )
+            this.proxy.removeEventListener( this.eventList[i], (e) => { this.eventHandler(e); }, false );
         
     },
-
-    // TRACKING
-
-    track: {
-        started: false,
-        q25: false,
-        q50: false,
-        q75: false,
-    },
-
-    trackReset() {
-        this.playhead = 0;
-        this.track.started = false;
-        this.track.q25 = false;
-        this.track.q50 = false;
-        this.track.q75 = false;
-    },
-
-    track_start()           { this.trace('------------------ track_start'); },
-    track_stop()            { this.trace('------------------ track_stop'); },
-    track_end()             { this.trace('------------------ track_end'); },
-    track_preview_start()   { this.trace('------------------ track_preview_start'); },
-    track_preview_end()     { this.trace('------------------ track_preview_end'); },
-    track_play()            { this.trace('------------------ track_play'); },
-    track_pause()           { this.trace('------------------ track_pause'); },
-    track_replay()          { this.trace('------------------ track_replay'); },
-    track_mute()            { this.trace('------------------ track_mute'); },
-    track_unmute()          { this.trace('------------------ track_unmute'); },
-    track_q25()             { this.trace('------------------ track_q25'); },
-    track_q50()             { this.trace('------------------ track_q50'); },
-    track_q75()             { this.trace('------------------ track_q75'); },
-    track_enterfs()         { this.trace('------------------ track_enterfs'); },
-    track_exitfs()          { this.trace('------------------ track_exitfs'); },
-    track_cfs()             { this.trace('------------------ track_cfs'); },
 
     controlHandler(e) {
         switch(e.currentTarget) {
-            case this.dom_play:
-                this.play();
+            case this.dom_frame:
+                // for (let dom in this.centered_controls )
+                //     this.trace(this.centered_controls[dom].style.display, dom)
+
+                if ( this.dom_bigplay.style.display === 'block' ){
+                    if( this.params.elementtrigger ) this.bigPlay();
+                }
+                else if ( this.dom_replay.style.display === 'block' ) {
+                    if( this.params.elementtrigger ) this.bigReplay();
+                }
+                else if ( this.dom_bigsound.style.display === 'block' ) {
+                    if( this.params.elementplayback ) this.cfs(true);
+                }
+                else if ( this.dom_preview.style.display === 'block' ) {
+                    if( this.params.elementplayback ) this.play();
+                }
+                else if ( this.params.elementplayback && this.flag_playing ) {
+                    this.playPause();
+                }
+                else {
+                    if( this.params.elementtrigger && this.flag_loaded ) {
+
+                        if( !this.flag_playing ||
+                            this.dom_bigplay.style.display === 'block' ||
+                            this.dom_replay.style.display === 'block' || 
+                            this.dom_preview.style.display === 'block' ) {
+
+                            this.dom_bigplay.style.display = 'none';
+                            this.dom_replay.style.display = 'none';
+
+                            this.dom_spinner.style.display = 'block';
+
+                            this.play(true);
+                        
+                        }
+
+                        if( this.dom_bigsound.style.display === 'block' && !this.params.elementplayback) {
+                            this.cfs(true);
+                        }        
+                    }
+
+                    this.reflow(true);
+                }
             break;
+            case this.dom_play:
             case this.dom_pause:
-                this.pause();
+                this.playPause();
             break;
             case this.dom_mute:
                 this.mute();
@@ -1231,28 +960,10 @@ VideoPlayer.prototype = {
                 this.goFS();
             break;
             case this.dom_bigplay:
-                this.play();
-                this.dom_spinner.style.display = 'block';
-                this.dom_bigplay.style.display = 'none';
-                this.reflow(true);
+                this.bigPlay();
             break;
             case this.dom_replay:
-
-                this.replay();
-
-                if(this.replaywithsound || this.ismobile) {
-                    this.disableNotification('volume');
-                    this.unmute();
-                }
-
-                if(!this.ismobile) {
-                    this.dom_controller.style.display = this.controlbar ? 'block':'none';
-                } else {
-                    this.dom_controller.style.display = 'none';
-                }
-
-                this.trackReset();
-
+                this.bigReplay();
             break;
             case this.dom_preview: 
                 this.play();
@@ -1260,42 +971,504 @@ VideoPlayer.prototype = {
             case this.dom_bigsound:
                 this.cfs(true);
             break;
-            case this.proxy:
-
-                // ELEMENT TRIGGER
-                if(
-                    this.elementtrigger &&
-                    this.dom_play.style.display === 'block' &&
-                    this.dom_bigsound.style.display === 'none' &&
-                    this.elementplayback
-                ) {
-                    if(!this.ismobile || ( this.ismobile && this.inline && !this.controlbar ) )
-                        this.play();
-                }
-
-                if( this.elementtrigger &&
-                    this.dom_pause.style.display === 'block' &&
-                    this.dom_bigsound.style.display === 'none' &&
-                    this.elementplayback
-                ) {
-                    if(!this.ismobile || ( this.ismobile && this.inline && !this.controlbar ) ) 
-                        this.pause();
-                }
-
-                // if( this.ismobile && this.elementtrigger && this.chromeless ) {
-                    
-                // }
-
-                
-            break;
         }
     },
+
+    bigPlay() {
+        this.play();
+        this.dom_bigplay.style.display = 'none';
+        this.dom_spinner.style.display = 'block';
+        this.reflow(true);
+    },
+
+    bigReplay() {
+        this.replay();
+
+        if(this.params.replaywithsound || this.ismobile) {
+            this.disableNotification('volume');
+            this.unmute();
+        }
+
+        if(!this.ismobile) {
+            this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
+        } else {
+            this.dom_controller.style.display = 'none';
+        }
+
+        this.resetTracking();
+    },
+
+    playPause() {
+        if(this.flag_paused) {
+            this.flag_paused = false;
+            this.play();
+        } else {
+            this.flag_paused = true;
+            this.pause();
+        }
+    },
+
+    eventHandler(e) {
+
+        // this.trace(e.type);
+
+        switch(e.type) {
+
+            case 'canplay':
+                if(this.flag_first) { // NOT SURE ABOUT THIS
+
+                    if(this.ismobile) {
+                        this.dom_controller.style.display = 'none';
+
+                        if( this.params.autoplay ) {
+                            this.dom_spinner.style.display = 'block';
+                            this.dom_bigplay.style.display = 'none';
+                            this.dom_poster.style.display = 'none';
+                            this.proxy.style.display = 'block';
+                        } 
+                    }
+
+                    this.reflow(true);
+                }
+            break;
+            case 'play':
+
+                // SET PLAYBACK CONTROLLER PLAY/PAUSE ICON
+                this.dom_pause.style.display = 'block';
+                this.dom_play.style.display = 'none';
+
+                if(!this.track.started && !this.flag_completed) {
+                    this.track.started = true;
+
+                    if(this.params.preview) {
+                        // PREVIEW
+                        this.disableNotification('start');
+                        this.disableNotification('play');
+                        this.disableNotification('replay');
+                    }
+                    else {
+                        // REGULAR START
+                        this.disableNotification('play');
+                        this.disableNotification('preview_start');
+                        this.disableNotification('replay');
+                    }
+                }
+                else {
+
+                    if(this.flag_completed)
+                    {
+                        // REPLAY
+                        this.flag_completed = false;
+                        this.track.started = true;
+                        this.disableNotification('play');
+                        this.disableNotification('preview_start');
+                        this.disableNotification('start');
+                    } else {
+                        // UNPAUSE
+                        this.disableNotification('preview_start');
+                        this.disableNotification('replay');
+
+                        if(this.playhead !== this.duration) // ACCOUNT FOR "FULL PREVIEW"
+                            this.disableNotification('start');
+                    }
+                }
+
+                if(this.flag_restartplay) {
+                    this.cfs(true);
+                }
+
+                if(!this.flag_nonce) {
+
+                    // PREVIEW STOPPED
+                    if(!this.flag_stopped) {
+
+                        if(this.params.continuecfs)
+                            this.track_cfs();
+                        else {
+                            this.track_start();
+                            this.callback_start();
+                        }
+
+                        this.callback_play();
+
+                        if(this.notifications.play) {
+                            this.track_play();
+                        }
+
+                        this.enableNotifications();
+
+                    }
+                }
+
+                this.flag_progress = true;
+            break;
+            case 'pause':
+                // SET PLAYBACK CONTROLLER PLAY/PAUSE ICON
+                this.dom_pause.style.display = 'none';
+                this.dom_play.style.display = 'block';
+
+                if( this.params.preview < this.playhead ) {
+                    this.callback_pause();
+                    
+                    if(this.params.preview) {
+                        this.dom_bigsound.style.display = 'none';
+                        this.dom_preview.style.display = 'block';
+                        this.reflow();
+                        this.disableNotification('end');
+                        this.disableNotification('pause');
+                        this.flag_restartplay = true;
+                        this.resetTracking();
+                        this.params.preview = 0;
+                        this.track_preview_end();
+                    }
+                    else {
+                        this.disableNotification('end');
+                        this.disableNotification('preview_end');
+                        if(this.notifications.pause && 
+                          (this.playhead !== this.duration) 
+                        ) {
+                            this.track_pause(); 
+                        }
+                    }
+                }
+
+                this.flag_progress = false;
+            break;
+            case 'ended': 
+
+                this.flag_completed = true;
+
+                if( !this.params.loop ) this.flag_nonce = true;
+                this.callback_end();
+
+                if(this.params.loop) {
+                    this.play();
+                    this.trace('looping video...');
+                } else {
+
+                    // FORCE UNMUTE ON REPLAY IF APPLICABLE
+                    if(this.params.replaywithsound) {
+                        this.disableNotification('volume');
+                        this.unmute();
+                    }
+
+                    // ENDFRAME LOGIC
+
+                    if(!this.params.endfreeze) {
+                        this.proxy.style.display = 'none';
+                    }
+
+                    if(this.flag_hasposter && !this.params.endfreeze) {
+                        this.dom_poster.style.display = 'block';
+                    } 
+
+                    // HIDE CONTROLLER FOR DESKTOP
+                    if(!this.ismobile) {
+                        this.dom_controller.style.display = 'none';
+                    }
+
+
+                    // SHOW REPLAY ICON
+                    if(!this.params.chromeless && !this.params.preview) {
+                        this.dom_replay.style.display = 'block';
+                    }
+        
+                    // HIDE CFS ICON
+                    this.dom_bigsound.style.display = 'none';
+
+                    this.disableNotification('volume');
+
+                    if(this.params.preview) {
+                        this.dom_preview.style.display = 'block';
+                        this.params.preview = 0;
+                        this.flag_completed = false;
+                        this.track_preview_end();
+                    } else {
+                        this.track_end();
+                        this.resetTracking();
+                        this.flag_playing = false;
+                    }
+
+                    if( this.params.elementtrigger )
+                        this.dom_frame.style.cursor = 'pointer';
+                    else
+                        this.dom_frame.style.cursor = 'auto';
+                        
+                }
+
+                this.reflow(true);
+
+            break;
+            case 'timeupdate':
+
+                if(this.flag_progress) {
+
+                    if( this.proxy ) this.playhead = this.proxy.currentTime;
+
+                    if( this.playhead > 0 ) {
+
+                        if(this.proxy && this.flag_first) {
+                            this.flag_first = false;
+                            this.flag_started = true;
+
+                            if( this.params.startmuted && this.params.autoplay && !this.params.chromeless ) {
+                            
+                                this.dom_bigsound.style.display = 'block';
+                                this.dom_controller.style.display = 'none';
+                                this.flag_playing = false;
+
+                                this.reflow(true);
+                            } else
+                                this.flag_playing = true;
+                        }
+
+
+                        if( this.dom_controller.style.display === 'block' && this.ismobile ) {
+                            this.dom_controller.style.display = 'none';
+                        }
+                        if( this.dom_bigplay.style.display === 'block' ) {
+                            this.dom_bigplay.style.display = 'none';
+                        }
+                        if( this.dom_replay.style.display === 'block' ) {
+                            this.dom_replay.style.display = 'none';
+                        }
+                        if( this.dom_preview.style.display === 'block' ) {
+                            this.dom_preview.style.display = 'none';
+                        }
+
+                        this.flag_playing = true;
+                        // this.trace(this.flag_playing, 'flag_playing')
+
+                        // HIDE SPINNER
+                        if(!this.flag_buffering) {
+                            if( this.dom_spinner.style.display === 'block' ) {
+                                this.dom_spinner.style.display = 'none';
+                            }
+                        }
+
+                        // HIDE POSTER
+                        if( this.dom_poster.style.display === 'block' ) {
+                            this.dom_poster.style.display = 'none';
+                        }
+
+                        // SHOW VIDEO
+                        if( this.proxy && this.proxy.style.display === 'none') {
+                            this.proxy.style.display = 'block';
+                        }
+
+                        if(this.flag_nonce) {
+
+                            // SET BACKGROUND CURSOR
+                            if( this.params.elementplayback )
+                                this.dom_frame.style.cursor = 'pointer';
+                            else
+                                this.dom_frame.style.cursor = 'auto';
+
+                            this.flag_nonce = false;
+
+                            if(this.notifications.preview_start) {
+                                this.track_preview_start();
+                            }
+                            if(this.notifications.start) {
+                                this.track_start();
+                            }
+                            if(this.notifications.replay && !this.params.loop) {
+                                this.track_replay();
+                            }
+
+                            this.callback_play();
+                            this.callback_start();
+
+                            this.enableNotifications();
+                        }
+                    }
+
+                    let phpercentage = ( this.playhead / this.duration ) * 100;
+
+                    this.dom_phead.style.width = phpercentage+'%';
+
+                    // QUARTILES
+
+                    if(!this.params.preview && this.track.q25 !== true && phpercentage >= 25) {
+                        this.track.q25 = true;
+                        this.track_q25();
+                    }
+
+                    if(!this.params.preview && this.track.q50 !== true && phpercentage >= 50) {
+                        this.track.q50 = true;
+                        this.track_q50();
+                    }
+
+                    if(!this.params.preview && this.track.q75 !== true && phpercentage >= 75) {
+                        this.track.q75 = true;
+                        this.track_q75();
+                    }
+
+                    this.callback_progress();
+
+                    if(this.params.preview && ( this.playhead > this.params.preview ) ) {
+                        this.pause();
+                    }
+                }
+            break;
+            case 'progress':
+
+                if( this.params.autoplay && this.flag_ap_nonce) {
+                    this.flag_ap_nonce = false;
+                    this.play();
+                }
+                else
+                if(this.proxy) {
+                    for(let i = 0; i < this.proxy.buffered.length; i ++) {
+                        this.buffered = ( this.proxy.buffered.end(i) / this.duration ) * 100;
+                    }
+
+                    this.dom_pbar.style.width = this.buffered+'%';
+
+                    this.callback_loading();
+                }
+            break;
+
+            case 'volumechange':
+                if(this.isMuted()) {
+                    this.dom_mute.style.display = 'none';
+                    this.dom_unmute.style.display = 'block';
+
+                    if(this.notifications.volume) {
+                        this.track_mute();
+                        this.callback_volume();
+                    }
+                } else {
+                    this.dom_mute.style.display = 'block';
+                    this.dom_unmute.style.display = 'none';
+                    this.dom_bigsound.style.display = 'none';
+                    if(this.notifications.volume) {
+                        this.track_unmute();
+                        this.callback_volume();
+                    }
+                }
+            break;
+
+            case 'waiting':
+                this.flag_buffering = true;
+                if( this.flag_playing && !this.ismobile &&
+                    this.dom_preview.style.display != 'block' &&
+                    this.dom_bigsound.style.display != 'block'
+                ) {
+                    this.dom_spinner.style.display = 'block';
+                    this.reflow(true);
+                    this.callback_buffer();
+                }
+            break;
+
+            case 'playing':
+                this.flag_buffering = false;
+                if( this.playhead > 0 )
+                    this.dom_spinner.style.display = 'none';
+            break;
+
+            case 'canplaythrough':
+                if( this.playhead > 0 )
+                    this.dom_spinner.style.display = 'none';
+            break;
+
+            case 'loadstart':
+                
+                if( this.params.autoplay ) {
+                    this.dom_spinner.style.display = 'block';
+                } else {
+                    if(!this.params.chromeless) {
+                        this.dom_bigplay.style.display = 'block';
+                    }
+                    this.dom_spinner.style.display = 'none';
+                }
+
+                this.callback_ready();
+
+                this.reflow(true);
+            break;
+
+            case 'suspend':
+
+            break;
+
+            case 'error':
+                console.log(e)
+            break;
+
+            case 'durationchange':
+                this.duration = this.proxy.duration;
+            break;
+
+            default:
+                this.trace(e.type);
+
+        }
+    },
+
+    // TRACKING
+
+    track: {
+        started: false,
+        q25: false,
+        q50: false,
+        q75: false
+    },
+
+    resetTracking() {
+        this.playhead = 0;
+        this.track.started = false;
+        this.track.q25 = false;
+        this.track.q50 = false;
+        this.track.q75 = false;
+    },
+
+    track_cfs()                { this.trace('track_cfs',           'DEFAULT CALLBACK'); },
+    track_preview_start()      { this.trace('track_preview_start', 'DEFAULT CALLBACK'); },
+    track_preview_end()        { this.trace('track_preview_end',   'DEFAULT CALLBACK'); },
+
+    track_start()              { this.trace('track_start',   'DEFAULT CALLBACK'); },
+    track_stop()               { this.trace('track_stop',    'DEFAULT CALLBACK'); },
+    track_end()                { this.trace('track_end',     'DEFAULT CALLBACK'); },
+    track_play()               { this.trace('track_play',    'DEFAULT CALLBACK'); },
+    track_replay()             { this.trace('track_replay',  'DEFAULT CALLBACK'); },
+    track_pause()              { this.trace('track_pause',   'DEFAULT CALLBACK'); },
+    track_mute()               { this.trace('track_mute',    'DEFAULT CALLBACK'); },
+    track_unmute()             { this.trace('track_unmute',  'DEFAULT CALLBACK'); },
+    track_q25()                { this.trace('track_q25',     'DEFAULT CALLBACK'); },
+    track_q50()                { this.trace('track_q50',     'DEFAULT CALLBACK'); },
+    track_q75()                { this.trace('track_q75',     'DEFAULT CALLBACK'); },
+    track_enterfs()            { this.trace('track_enterfs', 'DEFAULT CALLBACK'); },
+    track_exitfs()             { this.trace('track_exitfs',  'DEFAULT CALLBACK'); },
+
+    callback_buffer()   {},
+    callback_loading()  {},
+    callback_progress() {},
+    callback_ready()           { this.trace('callback_ready', 'DEFAULT CALLBACK'); },
+    callback_end()             { this.trace('callback_end', 'DEFAULT CALLBACK'); },
+    callback_play()            { this.trace('callback_play', 'DEFAULT CALLBACK'); },
+    callback_stop()            { this.trace('callback_stop', 'DEFAULT CALLBACK'); },
+    callback_pause()           { this.trace('callback_pause', 'DEFAULT CALLBACK'); },
+    callback_start()           { this.trace('callback_start', 'DEFAULT CALLBACK'); },
+    callback_error(str1, str2) { this.trace(str1, str2); },
+    callback_volume()          { 
+
+        let tempstr = '';
+
+        if(this.notifications.volume) tempstr = this.isMuted() ? ' (muted)' : ' (unmuted)';
+
+        this.trace('callback_volume'+tempstr, 'DEFAULT CALLBACK');
+    },
+
     play(bool) {
         if(this.proxy) {
+
+            // this.trace(this.playhead, 'playhead');
+            // this.trace(this.proxy.buffered, 'buffered');
             
             if(this.flag_stopped) {
-                this.stopSet();
-                this.trackReset();
+                this.resetPlayback();
+                this.resetTracking();
                 this.seek(0);
             }
 
@@ -1304,33 +1477,38 @@ VideoPlayer.prototype = {
             if(promise !== undefined) {
                 promise.then( () => {
                     if(bool && !this.ismobile)
-                        this.dom_controller.style.display = this.controlbar ? 'block':'none';
-                } ).catch( (e) => {
-                    this.emergencyPlay();
-                    this.callback_error(e);
+                        this.dom_controller.style.display = this.params.controlbar ? 'block' : 'none';
+                } ).catch( () => {
+                    // ONLY MAKE SURE IT HAPPENS WHEN LOADING
+                    if(!this.flag_started) {
+                        this.emergencyPlay();
+                        this.callback_error('callback_error', 'DEFAULT CALLBACK');
+                    }
                 } );
             }
         }
     },
     emergencyPlay() {
-        this.startmuted = false;
-        this.autoplay = false;
-        this.preview = 0;
-        if( !this.chromeless )
-            this.dom_bigplay.style.display = 'block';
-        else
-            this.elementtrigger = true;
+        this.flag_playing = false;
+        this.flag_paused = false;
+        this.params.elementtrigger = true;
+        this.params.startmuted = false;
+        this.params.autoplay = false;
+        this.params.preview = 0;
+
         this.dom_poster.style.display = 'block';
-        this.dom_bigsound.style.display = 'none';
-        this.dom_replay.style.display = 'none';
         this.dom_controller.style.display = 'none';
-        this.dom_spinner.style.display = 'none';
+
+        for (var el in this.centered_controls )
+            this.centered_controls[el].style.display = 'none';
+
+        this.dom_bigplay.style.display = 'block';
         this.reflow();
 
         if(this.proxy) {
             this.unmute();
             
-            if( this.ismobile && !this.chromeless ) 
+            if( this.ismobile && !this.params.chromeless ) 
                 this.proxy.controls = true;
         }
     },
@@ -1341,27 +1519,22 @@ VideoPlayer.prototype = {
     },
 
     mute() { 
-        this.proxy.muted = true; 
+        if( this.proxy )
+            this.proxy.muted = true; 
     },
 
     unmute() { 
-        this.proxy.muted = false; 
+        if( this.proxy )
+            this.proxy.muted = false; 
     },
 
     isMuted() { 
-        return this.proxy.muted; 
+        if( this.proxy )
+            return this.proxy.muted; 
     },
 
     isPlaying() { 
         return this.flag_playing; 
-    },
-
-    stopSet() {
-        if(!this.endfreeze)
-            this.trackReset();
-        this.flag_completed = false;
-        this.flag_playing = false;
-        this.flag_nonce = true;
     },
 
     stop() {
@@ -1375,9 +1548,9 @@ VideoPlayer.prototype = {
 
                 this.flag_stopped = true;
                 
-                if(this.preview > 0) {
+                if(this.params.preview > 0) {
                     // PREVIEW END
-                    this.preview = 0;
+                    this.params.preview = 0;
                     this.flag_completed = false;
                     this.track_preview_end();
                 } else {
@@ -1386,29 +1559,29 @@ VideoPlayer.prototype = {
                 }
 
                 // SILENTLY ENABLE SOUND
-                if(this.replaywithsound) {
+                if(this.params.replaywithsound) {
                     this.disableNotification('volume');
                     this.unmute();
                 }
 
                 // RESET "STATE"
-                if(!this.endfreeze) {
+                if(!this.params.endfreeze) {
                     this.seek(0);
                 }
 
                 this.disableNotification('pause');
                 this.pause();
 
-                this.stopSet();
+                this.resetPlayback();
 
                 // SHOW POSTER
-                if(this.flag_hasposter && !this.endfreeze) {
+                if(this.flag_hasposter && !this.params.endfreeze) {
                     this.dom_poster.style.display = 'block';
                 }
             
                 // SHOW PLAY BUTTON
                 setTimeout(()=>{
-                    if( !this.chromeless ) {
+                    if( !this.params.chromeless ) {
                         this.dom_bigplay.style.display = 'block';
                         this.dom_controller.style.display = 'none';
                     }
@@ -1425,7 +1598,7 @@ VideoPlayer.prototype = {
         this.dom_replay.style.display = 'none';
         this.reflow(true);
         
-        if(this.replaywithsound) {
+        if(this.params.replaywithsound) {
             this.disableNotification('volume');
             this.unmute();
         }
@@ -1438,21 +1611,21 @@ VideoPlayer.prototype = {
         this.disableNotification('volume');
         this.unmute();
 
-        if(!this.continuecfs) this.seek(0);
+        if(!this.params.continuecfs) this.seek(0);
 
         if(!this.flag_restartplay && !this.flag_cfs) {
             this.flag_cfs = true;
             this.track_cfs();
 
-            if(this.ismobile && !this.chromeless)
-                this.proxy.controls = this.controlbar ? true : false;
+            if(this.ismobile && !this.params.chromeless)
+                this.proxy.controls = this.params.controlbar ? true : false;
         }
 
-        this.preview = 0;
+        this.params.preview = 0;
         this.flag_restartplay = false;
 
         if(bool && !this.ismobile) {
-            this.dom_controller.style.display = this.controlbar ? 'block':'none';
+            this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
         }
 
         this.enableNotifications();
@@ -1473,7 +1646,7 @@ VideoPlayer.prototype = {
     },
 
     reflow(passive) {
-        if(this.flag_initialized) {
+        if(this.api) {
             if(this.proxy) {
                 this.proxy.width = this.dom_container.offsetWidth;
                 this.proxy.height = this.dom_container.offsetHeight;
@@ -1501,15 +1674,18 @@ VideoPlayer.prototype = {
         }
     },
 
-    trace(str) {
+    trace(str, str2) {
         if(this.debug) {
 
-            if(window.console) {
-                window.console.log(str);
+            if(window['console']) {
+                if(str2)
+                    console.log(str, str2);
+                else
+                    console.log(str);
             }
 
             if( this.dom_debug ) {
-                this.dom_debug.innerHTML += str + '<br>';
+                this.dom_debug.innerHTML += ( str2 ? str2 + ': ' : '' ) + str + '<br>';
             }
         }
     },
@@ -1541,7 +1717,42 @@ VideoPlayer.prototype = {
         }
     },
 
+    checkForSafari() {
+        this.issafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
+    },
+
+    checkForMobile() {
+        const DESKTOP_AGENTS = [
+            'desktop'
+        ];
+
+        let mobileFlag = true;
+
+        if( window['device'] ) {
+            // USE DEVICEJS IF AVAILABLE
+            for (let i = 0; i < DESKTOP_AGENTS.length; i++) {
+                let regex;
+                    regex = new RegExp(DESKTOP_AGENTS[i], 'i');
+
+                if( window.document.documentElement.className.match(regex) ) {
+                    mobileFlag = false;
+                }
+            }
+        } else {
+            // BACKUP [RUDIMENTARY] DETECTION
+            mobileFlag = 'ontouchstart' in window;
+        }
+
+        if( mobileFlag ) {
+            this.ismobile = true;
+            this.trace("mobile browser detected");
+        } else {
+            this.ismobile = false;
+            this.trace("desktop browser detected");
+        }
+    },
+
     help() {
         window.open('https://github.com/nargalzius/HTMLvideo');
-    }
+    },
 };
