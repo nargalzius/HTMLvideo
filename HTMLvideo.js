@@ -1,7 +1,7 @@
 /*!
  *  HTML VIDEO HELPER
  *
- *  5.6
+ *  5.7
  *
  *  author: Carlo J. Santos
  *  email: carlosantos@gmail.com
@@ -23,11 +23,10 @@ VideoPlayer.prototype = {
     default_params: {
         id: 'video',
         src: [
-            'https://joystick.cachefly.net/resources/video/video.mp4',
-            'https://joystick.cachefly.net/resources/video/video.webm',
-            'https://joystick.cachefly.net/resources/video/video.ogv'
+            'https://nargalzius.github.io/v/video_sample.mp4',
         ],
-        poster: "https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg",
+        poster: 'https://nargalzius.github.io/i/video_sample_poster.jpg',
+        // poster: "https://farm9.staticflickr.com/8557/10238331725_b82c75be44_o.jpg",
         autoplay: false,
         startmuted: false,
         replaywithsound: true,
@@ -48,8 +47,20 @@ VideoPlayer.prototype = {
 
     // DON'T MESS WITH THESE UNLESS YOU REALLY KNOW WHAT YOU'RE DOING
     proxy: null,
-    ismobile: null,
-    issafari: null,
+    is_mobile: null, // TOUCH-BASED
+    
+    // USERAGENT SETTINGS
+    ua_ie: false,
+    ua_edge: false,
+    ua_firefox: false,
+    ua_safari: false,
+    ua_android: false,
+    ua_ios: false,
+    ua_chrome: false,
+    ua_opera: false,
+    ua_win: false,
+    ua_other: false,
+
     zindex: null,
     playhead: 0,
     duration: 0,
@@ -230,8 +241,8 @@ VideoPlayer.prototype = {
 
     evaluate(params) {
 
-        if(this.ismobile === null) { this.checkForMobile(); }
-        if(this.issafari === null) { this.checkForSafari(); }
+        if(this.is_mobile === null) { this.checkMobile(); }
+        this.checkUA();
 
         if(Object.keys(this.params).length === 0)
             for( let key in this.default_params )
@@ -290,15 +301,22 @@ VideoPlayer.prototype = {
 
         // RESOLVE AUTOPLAY
         if( this.params.autoplay && "autoplay" in document.createElement('video') ) {
-            if( this.ismobile || this.issafari ) {
-                if(!this.params.startmuted)
-                    this.params.startmuted = true; 
+            if( this.is_mobile ) {
+                this.trace("Autoplay on mobile: forcing mute");
+                this.params.startmuted = true;
+            }
+
+            if( this.is_mobile && this.is_win ) {
+                this.trace("IE environment: overriding autoplay");
+                this.params.startmuted = false;
+                this.params.autoplay = false;
+                this.params.preview = 0;
             }
         } else {
             this.params.autoplay = false;
         }
 
-        if( this.params.autoplay && this.issafari) {
+        if( this.params.autoplay && this.ua_safari) {
             this.flag_ap_nonce = true;
         }
 
@@ -694,7 +712,7 @@ VideoPlayer.prototype = {
                 tve.controls = false;
             } else {
 
-                if(this.ismobile) {
+                if(this.is_mobile) {
                     this.dom_controller.style.display = 'none';
 
                     if(!this.params.autoplay)
@@ -728,7 +746,9 @@ VideoPlayer.prototype = {
 
             this.proxy = tve;
 
-            this.setListeners();
+            // setTimeout(()=>{
+                this.setListeners();
+            // }, 500)
             
             this.reflow(true);
 
@@ -749,7 +769,7 @@ VideoPlayer.prototype = {
     mEnter() {
         if( this.flag_started &&
             !this.flag_isfs &&
-            !this.ismobile &&
+            !this.is_mobile &&
             ( this.dom_bigsound.style.display !== 'block' ) &&
             ( this.dom_replay.style.display !== 'block' ) &&
             ( this.dom_bigplay.style.display !== 'block' ) &&
@@ -803,7 +823,21 @@ VideoPlayer.prototype = {
         this.playhead = 0;
         this.duration = 0;
         this.buffered = 0;
+        // this.flag_started = false;
+        // this.flag_paused = false;
+        // this.flag_isfs = false;
+        // this.flag_first = true;
+        // this.flag_buffering = false;
+        // this.flag_loaded = false;
+        // this.flag_ap_nonce = false;
+        // this.flag_restartplay = false;
+        // this.flag_hasposter = true;
+        // this.flag_cfs = false;
+        // this.flag_progress = false;
+        // this.flag_stopped = false;
+
         this.flag_started = false;
+        this.flag_playing = false;
         this.flag_paused = false;
         this.flag_isfs = false;
         this.flag_first = true;
@@ -811,10 +845,13 @@ VideoPlayer.prototype = {
         this.flag_loaded = false;
         this.flag_ap_nonce = false;
         this.flag_restartplay = false;
-        this.flag_hasposter = true;
+        this.flag_hasposter = false;
         this.flag_cfs = false;
+        this.flag_nonce = true; // ?
         this.flag_progress = false;
+        // this.flag_completed = false;
         this.flag_stopped = false;
+        // this.flag_listener = false;
     },
 
     unload() {
@@ -863,9 +900,10 @@ VideoPlayer.prototype = {
 
     setListeners() {
 
-        this.trace('SET LISTENERS');
-
         if(!this.flag_listener) {
+
+            this.trace('SET LISTENERS');
+
             this.dom_container.addEventListener( 'mouseenter', (e) => { this.mEnter(e);         }, false);
             this.dom_container.addEventListener( 'mouseleave', (e) => { this.mLeave(e);         }, false);
             this.dom_pbar.addEventListener(      'click',      (e) => { this.barSeek(e);        }, false);
@@ -878,26 +916,30 @@ VideoPlayer.prototype = {
             this.dom_bigsound.addEventListener(  'click',      (e) => { this.controlHandler(e); }, false);
             this.dom_preview.addEventListener(   'click',      (e) => { this.controlHandler(e); }, false);
             this.dom_frame.addEventListener(     'click',      (e) => { this.controlHandler(e); }, false);
+
+            this.dom_fs.addEventListener(        'click',      (e) => { this.controlHandler(e); }, false);
+            this.dom_replay.addEventListener(    'click',      (e) => { this.controlHandler(e); }, false);
+
+            for (let i = 0; i < this.eventList.length; i++ )
+                this.proxy.addEventListener( this.eventList[i], (e) => { this.eventHandler(e); }, false );
+
+            this.flag_listener = true;
         }
-
-        this.dom_fs.addEventListener(        'click',      (e) => { this.controlHandler(e); }, false);
-        this.dom_replay.addEventListener(    'click',      (e) => { this.controlHandler(e); }, false);
-
-        for (let i = 0; i < this.eventList.length; i++ )
-            this.proxy.addEventListener( this.eventList[i], (e) => { this.eventHandler(e); }, false );
-
-        this.flag_listener = true;
     },
 
     removeListeners() {
-        this.trace('UNSET LISTENERS');
+        if(this.flag_listener) {
 
-        this.dom_fs.removeEventListener(     'click', (e) => { this.controlHandler(e); }, false);
-        this.dom_replay.removeEventListener( 'click', (e) => { this.controlHandler(e); }, false);
+            this.trace('UNSET LISTENERS');
 
-        for (let i = 0; i < this.eventList.length; i++ )
-            this.proxy.removeEventListener( this.eventList[i], (e) => { this.eventHandler(e); }, false );
-        
+            this.dom_fs.removeEventListener(     'click', (e) => { this.controlHandler(e); }, false);
+            this.dom_replay.removeEventListener( 'click', (e) => { this.controlHandler(e); }, false);
+
+            for (let i = 0; i < this.eventList.length; i++ )
+                this.proxy.removeEventListener( this.eventList[i], (e) => { this.eventHandler(e); }, false );
+
+            this.flag_listener = false;
+        }
     },
 
     controlHandler(e) {
@@ -984,12 +1026,12 @@ VideoPlayer.prototype = {
     bigReplay() {
         this.replay();
 
-        if(this.params.replaywithsound || this.ismobile) {
+        if(this.params.replaywithsound || this.is_mobile) {
             this.disableNotification('volume');
             this.unmute();
         }
 
-        if(!this.ismobile) {
+        if(!this.is_mobile) {
             this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
         } else {
             this.dom_controller.style.display = 'none';
@@ -1017,7 +1059,7 @@ VideoPlayer.prototype = {
             case 'canplay':
                 if(this.flag_first) { // NOT SURE ABOUT THIS
 
-                    if(this.ismobile) {
+                    if(this.is_mobile) {
                         this.dom_controller.style.display = 'none';
 
                         if( this.params.autoplay ) {
@@ -1090,6 +1132,7 @@ VideoPlayer.prototype = {
                         }
 
                         this.callback_play();
+                        this.flag_stopped = false;
 
                         if(this.notifications.play) {
                             this.track_play();
@@ -1163,7 +1206,7 @@ VideoPlayer.prototype = {
                     } 
 
                     // HIDE CONTROLLER FOR DESKTOP
-                    if(!this.ismobile) {
+                    if(!this.is_mobile) {
                         this.dom_controller.style.display = 'none';
                     }
 
@@ -1184,9 +1227,10 @@ VideoPlayer.prototype = {
                         this.flag_completed = false;
                         this.track_preview_end();
                     } else {
-                        this.track_end();
                         this.resetTracking();
+                        // this.notifications['replay'] = true;
                         this.flag_playing = false;
+                        this.track_end();
                     }
 
                     if( this.params.elementtrigger )
@@ -1223,7 +1267,7 @@ VideoPlayer.prototype = {
                         }
 
 
-                        if( this.dom_controller.style.display === 'block' && this.ismobile ) {
+                        if( this.dom_controller.style.display === 'block' && this.is_mobile ) {
                             this.dom_controller.style.display = 'none';
                         }
                         if( this.dom_bigplay.style.display === 'block' ) {
@@ -1278,6 +1322,7 @@ VideoPlayer.prototype = {
 
                             this.callback_play();
                             this.callback_start();
+                            this.flag_stopped = false;
 
                             this.enableNotifications();
                         }
@@ -1351,7 +1396,7 @@ VideoPlayer.prototype = {
 
             case 'waiting':
                 this.flag_buffering = true;
-                if( this.flag_playing && !this.ismobile &&
+                if( this.flag_playing && !this.is_mobile &&
                     this.dom_preview.style.display != 'block' &&
                     this.dom_bigsound.style.display != 'block'
                 ) {
@@ -1476,7 +1521,7 @@ VideoPlayer.prototype = {
 
             if(promise !== undefined) {
                 promise.then( () => {
-                    if(bool && !this.ismobile)
+                    if(bool && !this.is_mobile)
                         this.dom_controller.style.display = this.params.controlbar ? 'block' : 'none';
                 } ).catch( () => {
                     // ONLY MAKE SURE IT HAPPENS WHEN LOADING
@@ -1508,7 +1553,7 @@ VideoPlayer.prototype = {
         if(this.proxy) {
             this.unmute();
             
-            if( this.ismobile && !this.params.chromeless ) 
+            if( this.is_mobile && !this.params.chromeless ) 
                 this.proxy.controls = true;
         }
     },
@@ -1547,6 +1592,9 @@ VideoPlayer.prototype = {
                 this.callback_stop();
 
                 this.flag_stopped = true;
+
+                // this.flag_nonce = true;
+                // this.flag_playing = false;
                 
                 if(this.params.preview > 0) {
                     // PREVIEW END
@@ -1617,14 +1665,14 @@ VideoPlayer.prototype = {
             this.flag_cfs = true;
             this.track_cfs();
 
-            if(this.ismobile && !this.params.chromeless)
+            if(this.is_mobile && !this.params.chromeless)
                 this.proxy.controls = this.params.controlbar ? true : false;
         }
 
         this.params.preview = 0;
         this.flag_restartplay = false;
 
-        if(bool && !this.ismobile) {
+        if(bool && !this.is_mobile) {
             this.dom_controller.style.display = this.params.controlbar ? 'block':'none';
         }
 
@@ -1717,11 +1765,11 @@ VideoPlayer.prototype = {
         }
     },
 
-    checkForSafari() {
-        this.issafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
-    },
+    // checkForSafari() {
+    //     this.ua_safari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
+    // },
 
-    checkForMobile() {
+    checkMobile() {
         const DESKTOP_AGENTS = [
             'desktop'
         ];
@@ -1744,15 +1792,81 @@ VideoPlayer.prototype = {
         }
 
         if( mobileFlag ) {
-            this.ismobile = true;
+            this.is_mobile = true;
             this.trace("mobile browser detected");
         } else {
-            this.ismobile = false;
+            this.is_mobile = false;
             this.trace("desktop browser detected");
         }
     },
 
+    checkUA() {
+
+        // UA SNIFFER
+        let is_ie = navigator.userAgent.match(/msie|trident/i) ? true: false;
+        let is_edge = navigator.userAgent.match(/edge/i) ? true: false;
+        let is_firefox = navigator.userAgent.match(/firefox|fxios/i) ? true: false;
+        let is_safari = navigator.userAgent.match(/safari/i) ? true: false;
+        let is_android = navigator.userAgent.match(/android/i) ? true: false;
+        let is_ios = navigator.userAgent.match(/iphone|ipad|ipod/i) ? true: false;
+        let is_chrome = navigator.userAgent.match(/chrome|crios/i) ? true: false;
+        let is_opera = navigator.userAgent.match(/opera|opr/i) ? true: false;
+        let is_win = is_ie || is_edge;
+        let is_other = !is_win && !is_opera && !is_chrome && !is_safari && !is_firefox ? true: false;
+
+        // RESOLVE OVERLAPS
+        if (is_chrome || is_firefox) is_safari = false;
+        if (is_opera) is_chrome = false;
+        if (is_win) is_chrome = false;
+
+        this.ua_ie = is_ie;
+        this.ua_edge = is_edge;
+        this.ua_firefox = is_firefox;
+        this.ua_safari = is_safari;
+        this.ua_android = is_android;
+        this.ua_ios = is_ios;
+        this.ua_chrome = is_chrome;
+        this.ua_opera = is_opera;
+        this.ua_win = is_win;
+        this.ua_other = is_other;
+    },
+
     help() {
         window.open('https://github.com/nargalzius/HTMLvideo');
+    },
+
+    listVars() {
+        let vars = [
+            'playhead',
+            'flag_started',
+            'flag_playing',
+            'flag_paused',
+            'flag_isfs',
+            'flag_first',
+            'flag_buffering',
+            'flag_loaded',
+            'flag_ap_nonce',
+            'flag_listener',
+            'flag_restartplay',
+            'flag_hasposter',
+            'flag_cfs',
+            'flag_nonce',
+            'flag_progress',
+            'flag_completed',
+            'flag_stopped',
+            'api',
+            'centered_controls',
+            'temp_storage',
+            'params',
+        ];
+
+        let tobj = {};
+
+        for(let i = 0; i < vars.length; i++) {
+
+            tobj[vars[i]] = this[ vars[i] ];
+        }
+
+        return tobj;
     },
 };
