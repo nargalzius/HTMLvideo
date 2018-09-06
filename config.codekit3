@@ -9,6 +9,13 @@
 	],
 "creatorBuild": "26680",
 "files": {
+	"\/.gitignore": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/.gitignore",
+		"oF": 0
+		},
 	"\/demo\/public_html\/HTMLvideo-min.js": {
 		"ft": 64,
 		"ma": 0,
@@ -120,12 +127,19 @@
 		"sC": 3,
 		"tS": 1
 		},
+	"\/LICENSE": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/LICENSE",
+		"oF": 0
+		},
 	"\/project.sublime-project": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/project.sublime-project",
-		"oF": 1
+		"oF": 0
 		},
 	"\/README.md": {
 		"cB": 0,
